@@ -46,26 +46,33 @@ La dashboard mostra un **confronto side-by-side** con spread percentuale e grafi
 
 Per automatizzare i prezzi **senza API Cardmarket diretta**, le opzioni realistiche sono:
 
-| Strategia | Costo | Sealed | Gradate | EUR (Cardmarket) | USD |
-|-----------|-------|--------|---------|------------------|-----|
-| **[PkmnPrices](https://www.pkmnprices.com/docs)** | Free tier | ✅ | ✅ | ✅ aggregato | ✅ |
-| **[PokeTrace](https://poketrace.com/docs)** | Free tier | ✅ | ✅ | ✅ aggregato | ✅ |
-| **[TCGdex](https://tcgdex.dev/markets-prices)** | Gratuito, **no API key** | ❌ | ❌ | ✅ carte raw | ✅ |
-| **Consultazione manuale** | Gratis | ✅ | ✅ | [cardmarket.com/it](https://www.cardmarket.com/it/Pokemon) | [tcgplayer.com](https://www.tcgplayer.com) |
+| Strategia | Costo | Sealed | Gradate | EUR (Cardmarket) | USD | Note |
+|-----------|-------|--------|---------|------------------|-----|------|
+| **[TCGdex](https://tcgdex.dev/markets-prices)** | **Gratis**, no API key | ❌ | ❌ | ✅ carte raw | ✅ | Unica opzione live davvero gratuita |
+| **[PkmnPrices](https://www.pkmnprices.com/docs) Free** | $0 | ❌ | ❌ | ❌ | ⚠️ solo carte EN | 100 crediti/giorno, no sealed/EU/eBay |
+| **[PkmnPrices](https://www.pkmnprices.com/docs) Pro** | ~$15/mo | ✅ | ✅ | ✅ | ✅ | Copre tutto ciò che serve |
+| **[PokeTrace](https://poketrace.com/docs) Pro** | a pagamento | ✅ | ✅ | ✅ | ✅ | Free: accesso limitato, no EU/gradate |
+| **Consultazione manuale** | Gratis | ✅ | ✅ | [cardmarket.com/it](https://www.cardmarket.com/it/Pokemon) | [tcgplayer.com](https://www.tcgplayer.com) | — |
 
-> **TCGdex** è l’unica opzione gratuita senza registrazione: include prezzi Cardmarket (trend, avg7, avg30) nelle risposte carta, ma **non copre sealed né gradate**.
+> **Attenzione piano Free PkmnPrices:** niente sealed, niente prezzi EU (Cardmarket), niente listing TCGPlayer/Cardmarket, niente eBay vendute, solo carte inglesi. Per la dashboard IT + internazionale serve almeno **Pro**.
 
 ## Integrazione API esterne
 
-La dashboard usa attualmente **dati demo**. Per collegare fonti live:
+La dashboard usa attualmente **dati demo**. Strategia consigliata per prezzi live:
+
+| Componente | Fonte | Piano |
+|------------|-------|-------|
+| Carte raw IT + INTL | **TCGdex** (gratis) | Nessuna key |
+| Sealed + gradate + storico | **PkmnPrices Pro** o **PokeTrace Pro** | A pagamento |
 
 ```env
-# Aggregatori (consigliati per IT + internazionale)
-PKMNPRICES_API_KEY=your_key
-POKETRACE_API_KEY=your_key
-
-# Gratuito, solo carte singole raw
+# Gratis — carte singole live (Cardmarket EUR + TCGPlayer USD)
 TCGDEX_LANG=it
+
+# A pagamento — sealed, gradate, storico completo
+PKMNPRICES_API_KEY=your_pro_key
+# oppure
+POKETRACE_API_KEY=your_pro_key
 ```
 
 ## Struttura progetto
