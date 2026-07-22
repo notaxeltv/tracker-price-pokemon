@@ -143,7 +143,10 @@ export type MarketFilter = "all" | "IT" | "INTL" | "compare";
 export type SealedLanguageFilter = "all" | "IT" | "EN" | "JP";
 export type GradingCompanyFilter = "all" | GradingCompany;
 
-export type DashboardCategory = ProductCategory | "all" | "portfolio";
+export type DashboardCategory = ProductCategory | "all";
+
+/** Vista principale della dashboard */
+export type AppView = "overview" | "market" | "portfolio";
 
 export interface ProductFilters {
   category: DashboardCategory;
