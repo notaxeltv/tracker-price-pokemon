@@ -5,9 +5,12 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "npm run start:prepare && cd .next/standalone && node server.js",
+    "start:prepare": "cp -r public .next/standalone/ && cp -r .next/static .next/standalone/.next/static",
     "lint": "next lint",
-    "scrape": "tsx scripts/scrape-cron.ts"
+    "scrape": "tsx scripts/scrape-cron.ts",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "cheerio": "^1.2.0",
@@ -21,13 +24,14 @@
     "tailwind-merge": "^3.3.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@tailwindcss/postcss": "^4.1.8",
     "@types/node": "^22.15.21",
     "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.5",
+    "dotenv": "^16.5.0",
     "eslint": "^9.27.0",
     "eslint-config-next": "^15.3.3",
-    "dotenv": "^16.5.0",
     "tailwindcss": "^4.1.8",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3"

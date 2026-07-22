@@ -1,0 +1,17 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.local
+    environment:
+      SCRAPE_USE_PLAYWRIGHT: "true"
+      SCRAPE_ON_DEMAND: "true"
+      SCRAPE_USE_SNAPSHOT: "true"
+    volumes:
+      - ppt-data:/app/data
+    restart: unless-stopped
+
+volumes:
+  ppt-data:

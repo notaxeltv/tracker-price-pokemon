@@ -36,6 +36,13 @@ Monitor **Cardmarket** (minimum EU listing) and **eBay EU** (sold + active listi
 | **Sales** | Record sale price + date → **realized P/L** vs **unrealized P/L** (still owned) |
 | **Alerts** | Price above (sell target) / below (stop loss) — visual badges + banner |
 | **Export** | Portfolio → CSV or JSON |
+| **Import** | Portfolio ← CSV (merge by `key`) |
+| **Alerts notify** | Webhook / email webhook after scrape (`ALERT_WEBHOOK_URL`) |
+| **Price history** | Real daily append on each successful scrape (up to 365 days) |
+| **Compare** | Side-by-side chart for two products (Mercato → Confronta) |
+| **Themes** | Dark (Grafite + Teal) / Light toggle |
+| **PWA** | Web manifest — installable on mobile |
+| **Category freshness** | Last scrape time + live count per category tab |
 | **Catalog** | Add / edit / delete custom products from the UI |
 | **Filters** | Search, language, grading, market, sort, **portfolio-only** |
 | **Images** | Optional CardTrader API (images only, never prices) |
@@ -300,6 +307,7 @@ Always click **Aggiorna prezzi** so the new product is included in the scrape ru
 | `GET` | `/api/dashboard?fast=1` | Dashboard JSON from snapshot (no scrape) |
 | `GET` | `/api/portfolio` | Load portfolio entries |
 | `PUT` | `/api/portfolio` | Upsert/delete entry `{ key, entry }` |
+| `POST` | `/api/portfolio/import` | Import portfolio from CSV body |
 | `GET` | `/api/catalog` | List user catalog products |
 | `POST` | `/api/catalog` | Add product |
 | `PUT` | `/api/catalog` | Update user product (requires `id`) |
@@ -447,7 +455,57 @@ User catalog (`data/user-catalog.json`) is preferred for personal one-offs.
 | `build` | `npm run build` | Production build |
 | `start` | `npm start` | Production server |
 | `scrape` | `npm run scrape` | CLI scrape → snapshot |
+| `test:e2e` | `npm run test:e2e` | Playwright E2E tests |
 | `lint` | `npm run lint` | ESLint |
+
+---
+
+## Docker (self-host)
+
+```bash
+cp .env.example .env.local
+# edit .env.local — SCRAPE_USE_PLAYWRIGHT=true recommended on host scrape
+
+docker compose up --build -d
+# open http://localhost:3000
+```
+
+Data persists in Docker volume `ppt-data` (portfolio, snapshot, user catalog).
+
+Run scrapes on the **host** (same `data/` volume) or exec into container:
+
+```bash
+docker compose exec app sh -c "cd /app && npx tsx scripts/scrape-cron.ts"
+```
+
+For Playwright scraping, prefer running `npm run scrape` on your home machine with `./data` mounted.
+
+---
+
+## Alert notifications
+
+Set in `.env.local`:
+
+```bash
+ALERT_WEBHOOK_URL=https://your-webhook.example/alert
+# optional email relay:
+ALERT_EMAIL_WEBHOOK_URL=https://your-email-api.example/send
+```
+
+After each successful scrape refresh, active portfolio alerts trigger a POST with JSON payload (`type`, `status`, `title`, `marketPrice`, `threshold`). State deduplicated in `data/alert-state.json`.
+
+---
+
+## Portfolio CSV import
+
+Export from Portfolio → re-import with **Import CSV**. Required column: `key` (same as export). Merges into existing entries.
+
+Template:
+
+```csv
+key,prodotto,set,categoria,quantita,prezzoAcquistoUnitario,dataAcquisto,alertSopra,alertSotto
+sealed-151-bb-en,151 Booster Box,Scarlet & Violet 151,sealed,1,145.00,2026-01-10,200,120
+```
 
 ---
 
@@ -491,6 +549,13 @@ Monitora **Cardmarket** (minimo listing EU) ed **eBay EU** (vendute + in vendita
 | **Vendite** | Prezzo e data vendita → P/L **realizzato** vs **non realizzato** (ancora posseduti) |
 | **Alert** | Soglia sopra (target vendita) / sotto (stop loss) — badge e banner visivi |
 | **Export** | Portfolio → CSV o JSON |
+| **Import** | Portfolio ← CSV (merge per `key`) |
+| **Notifiche alert** | Webhook / email webhook dopo scrape (`ALERT_WEBHOOK_URL`) |
+| **Storico prezzi** | Append giornaliero reale ad ogni scrape riuscito (fino a 365 giorni) |
+| **Confronto** | Grafico affiancato di due prodotti (Mercato → Confronta) |
+| **Temi** | Dark (Grafite + Teal) / Light con toggle |
+| **PWA** | Manifest web — installabile su mobile |
+| **Freshness categorie** | Ultimo scrape + conteggio live per tab categoria |
 | **Catalogo** | Aggiungi / modifica / elimina prodotti personalizzati da UI |
 | **Filtri** | Ricerca, lingua, grading, mercato, ordinamento, **solo portfolio** |
 | **Immagini** | CardTrader API opzionale (solo immagini, mai prezzi) |
@@ -755,6 +820,7 @@ Clicca sempre **Aggiorna prezzi** per includere il nuovo prodotto nello scrape.
 | `GET` | `/api/dashboard?fast=1` | JSON dashboard dallo snapshot (senza scrape) |
 | `GET` | `/api/portfolio` | Carica voci portfolio |
 | `PUT` | `/api/portfolio` | Inserisci/aggiorna/elimina `{ key, entry }` |
+| `POST` | `/api/portfolio/import` | Import portfolio da body CSV |
 | `GET` | `/api/catalog` | Lista prodotti catalogo utente |
 | `POST` | `/api/catalog` | Aggiungi prodotto |
 | `PUT` | `/api/catalog` | Modifica prodotto utente (richiede `id`) |
@@ -902,7 +968,57 @@ Per prodotti personali usa preferibilmente `data/user-catalog.json` via UI.
 | `build` | `npm run build` | Build produzione |
 | `start` | `npm start` | Server produzione |
 | `scrape` | `npm run scrape` | Scrape CLI → snapshot |
+| `test:e2e` | `npm run test:e2e` | Test E2E Playwright |
 | `lint` | `npm run lint` | ESLint |
+
+---
+
+## Docker (self-host)
+
+```bash
+cp .env.example .env.local
+# modifica .env.local — SCRAPE_USE_PLAYWRIGHT=true consigliato per scrape su host
+
+docker compose up --build -d
+# apri http://localhost:3000
+```
+
+I dati persistono nel volume Docker `ppt-data` (portfolio, snapshot, catalogo utente).
+
+Esegui gli scrape sull'**host** (stesso volume `./data`) oppure dal container:
+
+```bash
+docker compose exec app sh -c "cd /app && npx tsx scripts/scrape-cron.ts"
+```
+
+Per scraping con Playwright, preferisci `npm run scrape` sulla macchina domestica con `./data` montato.
+
+---
+
+## Notifiche alert
+
+Imposta in `.env.local`:
+
+```bash
+ALERT_WEBHOOK_URL=https://your-webhook.example/alert
+# relay email opzionale:
+ALERT_EMAIL_WEBHOOK_URL=https://your-email-api.example/send
+```
+
+Dopo ogni refresh scrape riuscito, gli alert portfolio attivi inviano una POST con payload JSON (`type`, `status`, `title`, `marketPrice`, `threshold`). Lo stato è deduplicato in `data/alert-state.json`.
+
+---
+
+## Import CSV portfolio
+
+Esporta dal Portfolio → re-importa con **Import CSV**. Colonna obbligatoria: `key` (come nell'export). Unisce le voci esistenti.
+
+Template:
+
+```csv
+key,prodotto,set,categoria,quantita,prezzoAcquistoUnitario,dataAcquisto,alertSopra,alertSotto
+sealed-151-bb-en,151 Booster Box,Scarlet & Violet 151,sealed,1,145.00,2026-01-10,200,120
+```
 
 ---
 

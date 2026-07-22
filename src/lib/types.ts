@@ -159,6 +159,8 @@ export interface ProductFilters {
   sortDirection: SortDirection;
   /** Mostra solo prodotti con dati portfolio */
   portfolioOnly?: boolean;
+  /** Confronto due prodotti nel grafico (mercato) */
+  compareMode?: boolean;
 }
 
 /** Dati portfolio manuali — separati dallo snapshot prezzi di mercato. */

@@ -379,3 +379,109 @@ export function DualMarketChart({
     </div>
   );
 }
+
+export interface CompareSeries {
+  label: string;
+  history: PricePoint[];
+  color: string;
+}
+
+interface CompareProductsChartProps {
+  series: CompareSeries[];
+  timeRange: TimeRange;
+  onTimeRangeChange: (range: TimeRange) => void;
+}
+
+export function CompareProductsChart({
+  series,
+  timeRange,
+  onTimeRangeChange,
+}: CompareProductsChartProps) {
+  const data = useMemo(() => {
+    const filtered = series.map((s) => ({
+      label: s.label,
+      points: filterHistoryByRange(s.history, timeRange),
+    }));
+    const dates = new Set<string>();
+    filtered.forEach((s) => s.points.forEach((p) => dates.add(p.date)));
+    return [...dates].sort().map((date) => {
+      const row: Record<string, string | number> = { date };
+      filtered.forEach((s, i) => {
+        const pt = s.points.find((p) => p.date === date);
+        if (pt) row[`s${i}`] = pt.price;
+      });
+      return row;
+    });
+  }, [series, timeRange]);
+
+  const values = data.flatMap((d) =>
+    series.map((_, i) => d[`s${i}`]).filter((v): v is number => typeof v === "number")
+  );
+  const minPrice = values.length ? Math.min(...values) : 0;
+  const maxPrice = values.length ? Math.max(...values) : 100;
+  const padding = (maxPrice - minPrice) * 0.1 || 5;
+
+  return (
+    <div className="chart-card">
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <h3 className="text-sm font-medium text-zinc-300">Confronto prodotti</h3>
+        <div className="flex gap-1">
+          {ranges.map((r) => (
+            <button
+              key={r.id}
+              onClick={() => onTimeRangeChange(r.id)}
+              className={cn(
+                timeRange === r.id ? "btn-range-active" : "btn-range-inactive"
+              )}
+            >
+              {r.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="mb-2 flex flex-wrap gap-3 text-xs">
+        {series.map((s) => (
+          <span key={s.label} style={{ color: s.color }}>
+            ● {s.label}
+          </span>
+        ))}
+      </div>
+      <ResponsiveContainer width="100%" height={250}>
+        <LineChart data={data} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="#30363d" vertical={false} />
+          <XAxis
+            dataKey="date"
+            tick={{ fill: "#71717a", fontSize: 10 }}
+            tickFormatter={(v) =>
+              new Date(v).toLocaleDateString("it-IT", { day: "numeric", month: "short" })
+            }
+            axisLine={false}
+            tickLine={false}
+          />
+          <YAxis
+            domain={[minPrice - padding, maxPrice + padding]}
+            tick={{ fill: "#71717a", fontSize: 10 }}
+            axisLine={false}
+            tickLine={false}
+            width={45}
+          />
+          <Tooltip
+            formatter={(v: number) => formatPrice(v, "EUR")}
+            labelFormatter={(l) => formatDate(String(l))}
+          />
+          {series.map((s, i) => (
+            <Line
+              key={s.label}
+              type="monotone"
+              dataKey={`s${i}`}
+              stroke={s.color}
+              strokeWidth={2}
+              dot={false}
+              connectNulls
+            />
+          ))}
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, Globe, ArrowUpDown, Languages, Wallet } from "lucide-react";
+import { Search, Globe, ArrowUpDown, Languages, Wallet, GitCompare } from "lucide-react";
 import type { GradingCompany, ProductFilters } from "@/lib/types";
 
 interface SearchFiltersProps {
@@ -131,6 +131,17 @@ export function SearchFilters({
             <option value="name-asc">Nome A-Z</option>
           </select>
         </div>
+
+        <label className="btn-ghost cursor-pointer px-3 py-2.5">
+          <input
+            type="checkbox"
+            checked={Boolean(filters.compareMode)}
+            onChange={(e) => onChange({ compareMode: e.target.checked })}
+            className="h-4 w-4 rounded border-border-strong bg-surface-input text-brand focus:ring-brand/30"
+          />
+          <GitCompare className="h-4 w-4 text-brand-light" />
+          Confronta
+        </label>
 
         <label className="btn-ghost cursor-pointer px-3 py-2.5">
           <input

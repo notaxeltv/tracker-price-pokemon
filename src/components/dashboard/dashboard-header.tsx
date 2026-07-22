@@ -3,8 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { SnapshotStatusBadge } from "./snapshot-status-badge";
 import type { DashboardData } from "@/lib/types";
-import { MoreHorizontal, Plus, RefreshCw, Settings2 } from "lucide-react";
+import { MoreHorizontal, Moon, Plus, RefreshCw, Settings2, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTheme } from "@/components/theme-provider";
 
 interface DashboardHeaderProps {
   data: DashboardData;
@@ -27,6 +28,7 @@ export function DashboardHeader({
 }: DashboardHeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -53,6 +55,9 @@ export function DashboardHeader({
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
+          <Button variant="icon" onClick={toggleTheme} aria-label="Cambia tema">
+            {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </Button>
           <Button
             onClick={onRefresh}
             disabled={loading || scraping}
