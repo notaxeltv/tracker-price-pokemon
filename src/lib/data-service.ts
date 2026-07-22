@@ -8,9 +8,7 @@ import type {
 } from "./types";
 import { GRADED_CARDS, SEALED_PRODUCTS } from "./mock-data";
 import {
-  getAllMarketQuotesFromGraded,
   getGradedMarket,
-  getMarketQuote,
   getMaxChange7dForRegion,
   getMaxPriceForRegion,
   getPrimaryMarketQuote,
