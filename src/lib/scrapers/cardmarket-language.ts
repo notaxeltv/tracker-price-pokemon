@@ -36,10 +36,29 @@ export function matchesGradingListing(
   grading?: ScrapeQuery["grading"]
 ): boolean {
   if (!grading) return true;
-  const t = text.toLowerCase();
-  const company = grading.company.toLowerCase();
-  const grade = String(grading.grade);
-  return t.includes(company) && t.includes(grade);
+
+  const company = grading.company.toUpperCase();
+  const grade = String(grading.grade).replace(".", "\\.");
+  const t = text;
+
+  // Grado esatto — evita falsi positivi (es. "201/165" contiene "10")
+  const gradePatterns = [
+    new RegExp(`\\b${company}\\s*${grade}\\b`, "i"),
+    new RegExp(`\\b${grade}\\s*${company}\\b`, "i"),
+    new RegExp(`\\b${company}\\s*${grade}(?:\\s|,|\\.|/|$)`, "i"),
+  ];
+  if (!gradePatterns.some((p) => p.test(t))) return false;
+
+  // Escludi listing raw/non gradati quando cerchiamo PSA/BGS/CGC
+  const lower = t.toLowerCase();
+  if (
+    /\b(raw|ungraded|nm\b|near mint|mint condition)\b/i.test(lower) &&
+    !gradePatterns.some((p) => p.test(t))
+  ) {
+    return false;
+  }
+
+  return true;
 }
 
 export interface CardmarketListing {

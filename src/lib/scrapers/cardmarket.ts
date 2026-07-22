@@ -1,4 +1,4 @@
-import type { Scraper, ScrapeQuery, ScrapeResult } from "./types";
+import type { Scraper, ScrapeQuery, ScrapeResult, CatalogLanguage } from "./types";
 import { DEFAULT_SCRAPER_CONFIG } from "./types";
 import { cacheKey, getCached, setCached } from "./cache";
 import {
@@ -49,6 +49,17 @@ function ok(
   };
 }
 
+/** ID lingua Cardmarket per filtro URL (search Singles) */
+const CARDMARKET_LANGUAGE_ID: Partial<
+  Record<CatalogLanguage, string>
+> = {
+  JP: "6",
+  EN: "1",
+  IT: "5",
+  DE: "3",
+  FR: "2",
+};
+
 function buildSearchTerm(query: ScrapeQuery): string {
   if (query.searchTerm) return query.searchTerm;
   const parts = ["pokemon"];
@@ -74,8 +85,11 @@ export function buildCardmarketUrl(query: ScrapeQuery): string | null {
 
   const params = new URLSearchParams({
     searchString: term,
-    sellerCountry: "13", // Italia — mercato EU
   });
+
+  const langId =
+    query.language && CARDMARKET_LANGUAGE_ID[query.language];
+  if (langId) params.set("language", langId);
 
   return `https://www.cardmarket.com/it/Pokemon/Products/Singles?${params}`;
 }
