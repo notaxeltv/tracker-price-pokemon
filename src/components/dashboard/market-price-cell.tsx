@@ -27,6 +27,11 @@ export function MarketPriceCell({ quote, compact }: MarketPriceCellProps) {
       <p className="font-semibold text-zinc-100">
         {formatPrice(quote.price, quote.currency)}
       </p>
+      {quote.activeListingPrice != null && quote.activeListingPrice > 0 && (
+        <p className="text-[10px] text-zinc-400">
+          in vendita: {formatPrice(quote.activeListingPrice, quote.currency)}
+        </p>
+      )}
       <p className={cn("text-xs font-medium", getChangeColor(quote.change7d))}>
         7g: {formatPercent(quote.change7d)}
       </p>
@@ -51,7 +56,7 @@ export function MarketBadge({ region }: MarketBadgeProps) {
           : "bg-orange-500/10 text-orange-400"
       )}
     >
-      {region === "IT" ? "🇮🇹 IT" : "🌍 INTL"}
+      {region === "IT" ? "Cardmarket" : "eBay EU"}
     </span>
   );
 }
@@ -133,13 +138,13 @@ export function SpreadBadge({ spreadPercent }: SpreadBadgeProps) {
         cheaper === "INTL" && "bg-orange-500/10 text-orange-400",
         cheaper === "pari" && "bg-zinc-800 text-zinc-400"
       )}
-      title="Spread IT vs INTL (EUR equivalente)"
+      title="Spread Cardmarket vs eBay EU"
     >
       {cheaper === "pari"
         ? "≈ pari"
         : cheaper === "IT"
-          ? `IT −${Math.abs(spreadPercent)}%`
-          : `INTL −${Math.abs(spreadPercent)}%`}
+          ? `CM −${Math.abs(spreadPercent)}%`
+          : `eBay −${Math.abs(spreadPercent)}%`}
     </span>
   );
 }

@@ -34,7 +34,6 @@ export function catalogToQuery(product: CatalogProduct, grade?: number): ScrapeQ
         : undefined,
     searchTerm,
     cardmarketUrl: product.scrape.cardmarketUrl,
-    tcgplayerProductId: product.scrape.tcgplayerProductId,
     tcgdxCardId: product.scrape.tcgdxCardId,
     meta: product.scrape.cardmarketProductId
       ? { cardmarketProductId: product.scrape.cardmarketProductId }
@@ -60,6 +59,7 @@ export async function scrapeProductSources(
   return results;
 }
 
+/** IT = Cardmarket (min listing EU) · INTL = eBay EU (vendute/in vendita, provenienza UE) */
 export async function scrapeForRegion(
   product: CatalogProduct,
   region: "IT" | "INTL",
@@ -67,26 +67,16 @@ export async function scrapeForRegion(
 ): Promise<ScrapeResult | null> {
   const query = catalogToQuery(product, grade);
 
-  // Mercato IT/EU: sempre Cardmarket min nella lingua del prodotto
-  if (region === "IT" && product.sources.includes("cardmarket")) {
+  if (region === "IT") {
+    if (!product.sources.includes("cardmarket")) return null;
     const scraper = getScraper("cardmarket");
-    if (scraper) return scraper.scrape(query);
+    return scraper ? scraper.scrape(query) : null;
   }
 
-  const sourceMap: Record<string, ScraperSourceId[]> = {
-    IT: ["ebay_it"],
-    INTL: ["tcgplayer", "ebay_us"],
-  };
-  const preferred = sourceMap[region].filter((s) => product.sources.includes(s));
-  let lastFailed: ScrapeResult | null = null;
+  const ebaySources: ScraperSourceId[] = ["ebay_eu", "ebay_it", "ebay_us"];
+  const ebayId = ebaySources.find((s) => product.sources.includes(s));
+  if (!ebayId) return null;
 
-  for (const id of preferred) {
-    const scraper = getScraper(id);
-    if (!scraper) continue;
-    const result = await scraper.scrape(query);
-    if (result.success && result.price != null) return result;
-    lastFailed = result;
-  }
-
-  return lastFailed;
+  const scraper = getScraper(ebayId);
+  return scraper ? scraper.scrape(query) : null;
 }

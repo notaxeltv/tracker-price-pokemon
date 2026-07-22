@@ -5,6 +5,7 @@
 
 export type ScraperSourceId =
   | "cardmarket"
+  | "ebay_eu"
   | "ebay_it"
   | "ebay_us"
   | "tcgplayer"
@@ -53,6 +54,10 @@ export interface ScrapeResult {
   blocked?: boolean;
   /** true = dati da fetcher pubblico (TCGPlayer mpapi, TCGdex) */
   viaFetcher?: boolean;
+  /** Prezzo minimo annunci attivi eBay EU (separato da vendute) */
+  activeListingPrice?: number;
+  activeListingUrl?: string;
+  activeListingLabel?: string;
 }
 
 export interface Scraper {

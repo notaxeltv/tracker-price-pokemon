@@ -45,11 +45,11 @@ export function getSealedTypeLabel(type: string): string {
 }
 
 export function getMarketRegionLabel(region: "IT" | "INTL"): string {
-  return region === "IT" ? "Italia" : "Internazionale";
+  return region === "IT" ? "Cardmarket" : "eBay EU";
 }
 
 export function getMarketRegionShort(region: "IT" | "INTL"): string {
-  return region === "IT" ? "IT 🇮🇹" : "INTL 🌍";
+  return region === "IT" ? "Cardmarket" : "eBay EU";
 }
 
 export function filterHistoryByRange(

@@ -63,16 +63,16 @@ export function StatsCards({ stats, portfolioSummary }: StatsCardsProps) {
     {
       label: "Var. media 7g — Italia",
       value: formatPercent(stats.avgChange7dIT),
-      sub: "Cardmarket IT / eBay IT",
+      sub: "Cardmarket min listing EU",
       icon: BarChart3,
       accent: "from-green-500/20 to-green-600/5",
       iconColor: getChangeColor(stats.avgChange7dIT),
       valueColor: getChangeColor(stats.avgChange7dIT),
     },
     {
-      label: "Var. media 7g — Internazionale",
+      label: "Var. media 7g — eBay EU",
       value: formatPercent(stats.avgChange7dINTL),
-      sub: "TCGPlayer / eBay US",
+      sub: "Vendute / in vendita · provenienza UE",
       icon: Globe,
       accent: "from-orange-500/20 to-orange-600/5",
       iconColor: getChangeColor(stats.avgChange7dINTL),
@@ -207,25 +207,21 @@ export function MarketSourcesBanner() {
           </p>
         </div>
           <div className="flex flex-wrap gap-3 text-xs">
-          <div className="flex items-center gap-2 rounded-xl border border-violet-500/20 bg-violet-500/5 px-3 py-2">
-            <span className="font-medium text-violet-300">🇯🇵 PSA JP</span>
-            <span className="text-zinc-500">eBay · Cardmarket</span>
-          </div>
-          <div className="flex items-center gap-2 rounded-xl border border-amber-500/20 bg-amber-500/5 px-3 py-2">
-            <span className="font-medium text-amber-300">🏆 BGS/CGC EN</span>
-            <span className="text-zinc-500">eBay · Cardmarket</span>
-          </div>
           <div className="flex items-center gap-2 rounded-xl border border-green-500/20 bg-green-500/5 px-3 py-2">
-            <span className="font-medium text-green-400">🇮🇹 Sealed ITA</span>
-            <span className="text-zinc-500">Cardmarket scrape</span>
+            <span className="font-medium text-green-400">Cardmarket</span>
+            <span className="text-zinc-500">min listing EU</span>
+          </div>
+          <div className="flex items-center gap-2 rounded-xl border border-orange-500/20 bg-orange-500/5 px-3 py-2">
+            <span className="font-medium text-orange-300">eBay EU</span>
+            <span className="text-zinc-500">vendute · in vendita · UE</span>
+          </div>
+          <div className="flex items-center gap-2 rounded-xl border border-violet-500/20 bg-violet-500/5 px-3 py-2">
+            <span className="font-medium text-violet-300">Gradate PSA/BGS</span>
+            <span className="text-zinc-500">Cardmarket + eBay EU</span>
           </div>
           <div className="flex items-center gap-2 rounded-xl border border-blue-500/20 bg-blue-500/5 px-3 py-2">
-            <span className="font-medium text-blue-400">🇬🇧 Sealed ENG</span>
-            <span className="text-zinc-500">TCGPlayer live</span>
-          </div>
-          <div className="flex items-center gap-2 rounded-xl border border-pink-500/20 bg-pink-500/5 px-3 py-2">
-            <span className="font-medium text-pink-300">📦 Sealed JP · Raw</span>
-            <span className="text-zinc-500">eBay · TCGPlayer</span>
+            <span className="font-medium text-blue-400">Sealed IT/EN/JP</span>
+            <span className="text-zinc-500">Cardmarket + eBay EU</span>
           </div>
           <div className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/50 px-3 py-2">
             <span className="font-medium text-zinc-300">⏱ Cron</span>

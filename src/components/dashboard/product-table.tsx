@@ -58,7 +58,8 @@ export function SealedTable({
               <th className="px-4 py-3 font-medium">Prodotto</th>
               <th className="px-4 py-3 font-medium">Lingua</th>
               <th className="px-4 py-3 font-medium">Tipo</th>
-              <th className="px-4 py-3 font-medium text-right">Prezzo</th>
+              <th className="px-4 py-3 font-medium text-right">Cardmarket</th>
+              <th className="px-4 py-3 font-medium text-right">eBay EU</th>
               <th className="px-4 py-3 font-medium text-right">Acquisto</th>
               <th className="px-4 py-3 font-medium text-right">7g</th>
               <th className="px-4 py-3 font-medium">Fonte</th>
@@ -67,11 +68,10 @@ export function SealedTable({
           </thead>
           <tbody>
             {products.map((product) => {
-              const quote =
-                product.language === "IT"
-                  ? getSealedMarket(product, "IT")
-                  : getSealedMarket(product, "INTL");
+              const cm = getSealedMarket(product, "IT");
+              const ebay = getSealedMarket(product, "INTL");
               const entry = portfolio[product.id];
+              const marketPrice = cm?.price ?? ebay?.price;
 
               return (
                 <tr
@@ -119,12 +119,15 @@ export function SealedTable({
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <MarketPriceCell quote={quote} compact />
+                    <MarketPriceCell quote={cm} compact />
+                  </td>
+                  <td className="px-4 py-3">
+                    <MarketPriceCell quote={ebay} compact />
                   </td>
                   <td className="px-4 py-3">
                     <PortfolioCostCell
                       entry={entry}
-                      marketPrice={quote?.price}
+                      marketPrice={marketPrice}
                       onEdit={() =>
                         onEditPortfolio(product.id, product.name, product.set)
                       }
@@ -133,22 +136,22 @@ export function SealedTable({
                   <td
                     className={cn(
                       "px-4 py-3 text-right text-sm font-medium",
-                      quote && getChangeColor(quote.change7d)
+                      cm && getChangeColor(cm.change7d)
                     )}
                   >
-                    {quote ? formatPercent(quote.change7d) : "—"}
+                    {cm ? formatPercent(cm.change7d) : ebay ? formatPercent(ebay.change7d) : "—"}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-col gap-1">
-                      <LiveBadge live={quote?.live} blocked={quote?.blocked} />
-                      <SourceLink quote={quote} />
+                      <LiveBadge live={cm?.live || ebay?.live} blocked={cm?.blocked || ebay?.blocked} />
+                      <SourceLink quote={cm ?? ebay} />
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    {quote && (
+                    {(cm ?? ebay) && (
                       <MiniSparkline
-                        data={quote.history}
-                        positive={quote.change7d >= 0}
+                        data={(cm ?? ebay)!.history}
+                        positive={(cm ?? ebay)!.change7d >= 0}
                       />
                     )}
                   </td>
@@ -316,9 +319,9 @@ export function GradedTable({
                                   <div>
                                     <MarketBadge region="INTL" />
                                     <p className="mt-1 text-sm font-semibold text-zinc-100">
-                                      {intl.price.toLocaleString("en-US", {
+                                      {intl.price.toLocaleString("it-IT", {
                                         style: "currency",
-                                        currency: "USD",
+                                        currency: "EUR",
                                       })}
                                     </p>
                                     <p
@@ -343,7 +346,7 @@ export function GradedTable({
               {topIt && (
                 <div className="flex shrink-0 flex-col items-end gap-2">
                   <div className="text-right">
-                    <p className="text-xs text-zinc-500">Prezzo max IT</p>
+                    <p className="text-xs text-zinc-500">Cardmarket max</p>
                     <p className="text-lg font-bold text-zinc-100">
                       {topIt.price.toLocaleString("it-IT", {
                         style: "currency",
@@ -352,10 +355,10 @@ export function GradedTable({
                     </p>
                     {topIntl && (
                       <p className="text-xs text-zinc-500">
-                        INTL:{" "}
-                        {topIntl.price.toLocaleString("en-US", {
+                        eBay EU:{" "}
+                        {topIntl.price.toLocaleString("it-IT", {
                           style: "currency",
-                          currency: "USD",
+                          currency: "EUR",
                         })}
                       </p>
                     )}
@@ -404,8 +407,8 @@ export function RawTable({
               <th className="px-4 py-3 font-medium">Carta</th>
               <th className="px-4 py-3 font-medium">Lingua</th>
               <th className="px-4 py-3 font-medium">#</th>
-              <th className="px-4 py-3 font-medium text-right">Prezzo IT</th>
-              <th className="px-4 py-3 font-medium text-right">Prezzo INTL</th>
+              <th className="px-4 py-3 font-medium text-right">Cardmarket</th>
+              <th className="px-4 py-3 font-medium text-right">eBay EU</th>
               <th className="px-4 py-3 font-medium text-right">Acquisto</th>
               <th className="px-4 py-3 font-medium">Fonte</th>
             </tr>
@@ -492,8 +495,8 @@ export function AccessoryTable({
           <thead>
             <tr className="border-b border-zinc-800 text-xs uppercase tracking-wider text-zinc-500">
               <th className="px-4 py-3 font-medium">Accessorio</th>
-              <th className="px-4 py-3 font-medium text-right">Prezzo IT</th>
-              <th className="px-4 py-3 font-medium text-right">Prezzo INTL</th>
+              <th className="px-4 py-3 font-medium text-right">Cardmarket</th>
+              <th className="px-4 py-3 font-medium text-right">eBay EU</th>
               <th className="px-4 py-3 font-medium text-right">Acquisto</th>
             </tr>
           </thead>

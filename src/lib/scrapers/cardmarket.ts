@@ -221,17 +221,7 @@ export const cardmarketScraper: Scraper = {
       );
     }
 
-    // Fallback TCGdex solo per raw/sealed (min low, non trend)
-    if (
-      !result.success &&
-      !query.grading &&
-      query.kind !== "sealed" &&
-      query.tcgdxCardId
-    ) {
-      const tcg = await scrapeViaTcgdex(query);
-      if (tcg) result = tcg;
-    }
-
+    // Solo prezzi Cardmarket reali (scraping HTML / Playwright)
     if (result.success) {
       setCached(key, result, DEFAULT_SCRAPER_CONFIG.cacheTtlSeconds);
     }

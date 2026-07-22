@@ -9,7 +9,7 @@ src/lib/
 ├── catalog/products.ts         # Catalogo prodotti (tutti i tipi attivi)
 ├── scrapers/
 │   ├── orchestrator.ts         # Coordina scrape per mercato IT/INTL
-│   ├── cardmarket.ts · ebay.ts · tcgplayer.ts
+│   ├── cardmarket.ts · ebay.ts   # Solo Cardmarket + eBay EU
 │   ├── snapshot.ts             # Persistenza JSON + merge history
 │   └── playwright-scraper.ts   # Bypass Cloudflare (locale)
 ├── data-service.server.ts      # Live scrape + lettura snapshot
@@ -23,11 +23,12 @@ data/portfolio.json               # Portfolio utente (gitignored)
 
 | Tipo | Esempi | Sorgenti |
 |------|--------|----------|
-| Sealed ITA/ENG/JP | 151, Prismatic, VSTAR | Cardmarket · TCGPlayer · eBay |
-| Gradate PSA JP | Pikachu 151, Umbreon | eBay IT/US · Cardmarket |
-| Gradate BGS/CGC EN | Charizard Base, Lugia | eBay · Cardmarket |
-| Raw EN | Charizard Base, Pikachu 151 | Cardmarket · eBay · TCGPlayer |
-| Accessori | Sleeves, Toploader | eBay IT/US |
+| Sealed ITA/ENG/JP | 151, Prismatic, VSTAR | Cardmarket · eBay EU |
+| Gradate PSA/BGS/CGC | Charizard 151, Umbreon | Cardmarket · eBay EU |
+| Raw EN/JP | Charizard Base, Pikachu 151 | Cardmarket · eBay EU |
+| Accessori | Sleeves, Toploader | eBay EU |
+
+**Solo due fonti prezzo:** Cardmarket (min listing mercato EU) ed eBay (vendute + in vendita, filtro provenienza Unione Europea `LH_PrefLoc=3`). Nessun TCGPlayer / eBay US.
 
 Aggiungi prodotti in `src/lib/catalog/products.ts`.
 

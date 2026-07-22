@@ -1,13 +1,12 @@
 import type { Scraper, ScraperSourceId } from "./types";
 import { cardmarketScraper } from "./cardmarket";
-import { ebayItScraper, ebayUsScraper } from "./ebay";
-import { tcgplayerScraper } from "./tcgplayer";
+import { ebayEuScraper, ebayItScraper, ebayUsScraper } from "./ebay";
 
 const scrapers: Scraper[] = [
   cardmarketScraper,
+  ebayEuScraper,
   ebayItScraper,
   ebayUsScraper,
-  tcgplayerScraper,
 ];
 
 const byId = new Map<ScraperSourceId, Scraper>(

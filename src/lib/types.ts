@@ -11,10 +11,10 @@ export type SealedProductType =
   | "collection_box"
   | "tin";
 
-/** IT = mercato italiano/EU (Cardmarket) · INTL = mercato ENG/US (TCGPlayer/eBay) */
+/** IT = Cardmarket EU · INTL = eBay EU (provenienza UE) */
 export type MarketRegion = "IT" | "INTL";
 
-export type PriceSource = "cardmarket" | "tcgplayer" | "ebay";
+export type PriceSource = "cardmarket" | "ebay";
 
 export interface PricePoint {
   date: string;
@@ -38,6 +38,10 @@ export interface MarketQuote {
   viaFetcher?: boolean;
   sampleSize?: number;
   scrapedAt?: string;
+  /** Prezzo min annunci eBay EU attivi (separato da vendute) */
+  activeListingPrice?: number;
+  activeListingUrl?: string;
+  activeListingLabel?: string;
 }
 
 export interface GradedPrice {

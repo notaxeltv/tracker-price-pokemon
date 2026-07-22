@@ -5,50 +5,79 @@ import { cacheKey, getCached, setCached } from "./cache";
 import {
   detectBlocked,
   median,
-  parseUsdPrice,
   parseEuroPrice,
   politeFetch,
 } from "./http";
 
-type EbayHost = "ebay_it" | "ebay_us";
+const EBAY_IT = "https://www.ebay.it";
 
-function buildEbayUrl(host: EbayHost, searchTerm: string): string {
-  const base = host === "ebay_it" ? "https://www.ebay.it" : "https://www.ebay.com";
+/** LH_PrefLoc=3 → articoli con provenienza Unione Europea */
+const EU_LOCATION = "3";
+
+type EbayMode = "sold" | "active";
+
+function buildEbayEuUrl(searchTerm: string, mode: EbayMode): string {
   const params = new URLSearchParams({
     _nkw: searchTerm,
-    LH_Sold: "1",
-    LH_Complete: "1",
-    _sop: "13",
+    LH_PrefLoc: EU_LOCATION,
+    _sop: mode === "sold" ? "13" : "15",
     _ipg: "60",
   });
-  return `${base}/sch/i.html?${params}`;
+
+  if (mode === "sold") {
+    params.set("LH_Sold", "1");
+    params.set("LH_Complete", "1");
+  }
+
+  return `${EBAY_IT}/sch/i.html?${params}`;
 }
 
-async function scrapeEbaySold(
-  host: EbayHost,
-  query: ScrapeQuery
+function extractEuroPrices(html: string): number[] {
+  const $ = cheerio.load(html);
+  const prices: number[] = [];
+
+  const pushPrice = (text: string) => {
+    if (text.toLowerCase().includes(" to ")) return;
+    const p = parseEuroPrice(text);
+    if (p && p > 1 && p < 100000) prices.push(p);
+  };
+
+  $(".s-item__price, .s-card__price").each((_, el) => {
+    pushPrice($(el).text().trim());
+  });
+
+  $('[class*="price"]').each((_, el) => {
+    const t = $(el).text();
+    if (t.includes("€")) pushPrice(t);
+  });
+
+  return prices;
+}
+
+async function scrapeEbayEuMode(
+  query: ScrapeQuery,
+  mode: EbayMode
 ): Promise<ScrapeResult> {
-  const source = host;
-  const currency = host === "ebay_it" ? "EUR" : "USD";
-  const label = host === "ebay_it" ? "eBay IT · vendute" : "eBay US · vendute";
+  const label =
+    mode === "sold" ? "eBay EU · vendute" : "eBay EU · in vendita";
 
   if (!query.searchTerm) {
     return {
-      source,
+      source: "ebay_eu",
       success: false,
       price: null,
-      currency,
+      currency: "EUR",
       label,
       scrapedAt: new Date().toISOString(),
       error: "searchTerm mancante",
     };
   }
 
-  const key = cacheKey(source, query.productId, query.searchTerm);
+  const key = cacheKey("ebay_eu", query.productId, `${mode}|${query.searchTerm}`);
   const cached = getCached(key);
   if (cached) return cached;
 
-  const url = buildEbayUrl(host, query.searchTerm);
+  const url = buildEbayEuUrl(query.searchTerm, mode);
   const config = DEFAULT_SCRAPER_CONFIG;
 
   try {
@@ -56,64 +85,51 @@ async function scrapeEbaySold(
     const html = await res.text();
 
     if (!res.ok || detectBlocked(html) || html.includes("Something went wrong")) {
-      const result: ScrapeResult = {
-        source,
+      return {
+        source: "ebay_eu",
         success: false,
         price: null,
-        currency,
+        currency: "EUR",
         label,
         externalUrl: url,
         scrapedAt: new Date().toISOString(),
-        error: "eBay block o errore — prova SCRAPE_USE_PLAYWRIGHT=true in locale",
+        error: "eBay block — usa SCRAPE_USE_PLAYWRIGHT=true in locale",
         blocked: true,
       };
-      return result;
     }
 
-    const $ = cheerio.load(html);
-    const prices: number[] = [];
+    const prices = extractEuroPrices(html);
+    const sample = mode === "sold" ? prices.slice(0, 10) : prices.slice(0, 20);
+    const price =
+      mode === "sold"
+        ? median(sample)
+        : sample.length
+          ? Math.min(...sample)
+          : null;
 
-    $(".s-item__price, .s-card__price").each((_, el) => {
-      const t = $(el).text().trim();
-      if (t.toLowerCase().includes("to ")) return; // range "EUR 10 to 20"
-      const p =
-        currency === "EUR" ? parseEuroPrice(t) : parseUsdPrice(t.replace("$", ""));
-      if (p && p > 1 && p < 100000) prices.push(p);
-    });
-
-    // Nuovo layout eBay
-    $('[class*="price"]').each((_, el) => {
-      const t = $(el).text();
-      if (t.includes("€") || t.includes("$")) {
-        const p =
-          currency === "EUR" ? parseEuroPrice(t) : parseUsdPrice(t);
-        if (p && p > 1 && p < 100000) prices.push(p);
-      }
-    });
-
-    const top = prices.slice(0, 10);
-    const med = median(top);
-
-    const result: ScrapeResult = med
+    const result: ScrapeResult = price
       ? {
-          source,
+          source: "ebay_eu",
           success: true,
-          price: Math.round(med * 100) / 100,
-          currency,
+          price: Math.round(price * 100) / 100,
+          currency: "EUR",
           label,
           externalUrl: url,
-          sampleSize: top.length,
+          sampleSize: sample.length,
           scrapedAt: new Date().toISOString(),
         }
       : {
-          source,
+          source: "ebay_eu",
           success: false,
           price: null,
-          currency,
+          currency: "EUR",
           label,
           externalUrl: url,
           scrapedAt: new Date().toISOString(),
-          error: "Nessuna vendita trovata nel HTML",
+          error:
+            mode === "sold"
+              ? "Nessuna vendita EU trovata"
+              : "Nessun annuncio EU in vendita",
         };
 
     if (result.success) {
@@ -123,27 +139,57 @@ async function scrapeEbaySold(
     return result;
   } catch (e) {
     return {
-      source,
+      source: "ebay_eu",
       success: false,
       price: null,
-      currency,
+      currency: "EUR",
       label,
       scrapedAt: new Date().toISOString(),
-      error: e instanceof Error ? e.message : "Errore scrape eBay",
+      error: e instanceof Error ? e.message : "Errore scrape eBay EU",
     };
   }
 }
 
+async function scrapeEbayEu(query: ScrapeQuery): Promise<ScrapeResult> {
+  const [sold, active] = await Promise.all([
+    scrapeEbayEuMode(query, "sold"),
+    scrapeEbayEuMode(query, "active"),
+  ]);
+
+  const primary = sold.success ? sold : active.success ? active : sold;
+
+  return {
+    ...primary,
+    label: sold.success
+      ? "eBay EU · vendute (UE)"
+      : active.success
+        ? "eBay EU · in vendita (UE)"
+        : "eBay EU · vendute (UE)",
+    activeListingPrice: active.success ? active.price ?? undefined : undefined,
+    activeListingUrl: active.externalUrl,
+    activeListingLabel: active.success ? active.label : undefined,
+  };
+}
+
+/** @deprecated Usare ebay_eu — mantenuto per compatibilità snapshot */
 export const ebayItScraper: Scraper = {
   id: "ebay_it",
   label: "eBay Italia",
   supports: ["graded", "raw", "sealed", "accessory"],
-  scrape: (q) => scrapeEbaySold("ebay_it", q),
+  scrape: (q) => scrapeEbayEu(q),
 };
 
+/** @deprecated Usare ebay_eu */
 export const ebayUsScraper: Scraper = {
   id: "ebay_us",
   label: "eBay US",
   supports: ["graded", "raw", "sealed", "accessory"],
-  scrape: (q) => scrapeEbaySold("ebay_us", q),
+  scrape: (q) => scrapeEbayEu(q),
+};
+
+export const ebayEuScraper: Scraper = {
+  id: "ebay_eu",
+  label: "eBay EU",
+  supports: ["graded", "raw", "sealed", "accessory"],
+  scrape: scrapeEbayEu,
 };

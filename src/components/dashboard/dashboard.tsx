@@ -215,9 +215,8 @@ export function Dashboard() {
               Dashboard Prezzi Pokémon
             </h1>
             <p className="mt-2 max-w-2xl text-zinc-400">
-              Monitora carte <strong className="font-medium text-zinc-300">PSA/BGS/CGC</strong>, prodotti{" "}
-              <strong className="font-medium text-zinc-300">sealed ITA/ENG/JP</strong>,{" "}
-              <strong className="font-medium text-zinc-300">raw</strong> e accessori — scraping senza abbonamenti.
+              Monitora prezzi <strong className="font-medium text-zinc-300">Cardmarket</strong> (min listing EU) e{" "}
+              <strong className="font-medium text-zinc-300">eBay EU</strong> (vendute / in vendita, provenienza UE).
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -279,7 +278,7 @@ export function Dashboard() {
             <PriceChart
               data={sealedIt.history}
               currency="EUR"
-              title={`${selectedSealed.name} · 🇮🇹 ${sealedIt.sourceLabel}`}
+              title={`${selectedSealed.name} · Cardmarket`}
               color="#4ade80"
               timeRange={timeRange}
               onTimeRangeChange={setTimeRange}
@@ -288,8 +287,8 @@ export function Dashboard() {
           {showSealed && selectedSealed && !showDualCharts && filters.market === "INTL" && sealedIntl && (
             <PriceChart
               data={sealedIntl.history}
-              currency="USD"
-              title={`${selectedSealed.name} · 🌍 ${sealedIntl.sourceLabel}`}
+              currency="EUR"
+              title={`${selectedSealed.name} · eBay EU`}
               color="#fb923c"
               timeRange={timeRange}
               onTimeRangeChange={setTimeRange}
@@ -308,7 +307,7 @@ export function Dashboard() {
             <PriceChart
               data={gradedIt.history}
               currency="EUR"
-              title={`${selectedGraded.name} · ${selectedGrade.company} ${selectedGrade.grade} · 🇮🇹`}
+              title={`${selectedGraded.name} · ${selectedGrade.company} ${selectedGrade.grade} · Cardmarket`}
               color="#4ade80"
               timeRange={timeRange}
               onTimeRangeChange={setTimeRange}
@@ -317,8 +316,8 @@ export function Dashboard() {
           {showGraded && selectedGraded && selectedGrade && !showDualCharts && filters.market === "INTL" && gradedIntl && (
             <PriceChart
               data={gradedIntl.history}
-              currency="USD"
-              title={`${selectedGraded.name} · ${selectedGrade.company} ${selectedGrade.grade} · 🌍`}
+              currency="EUR"
+              title={`${selectedGraded.name} · ${selectedGrade.company} ${selectedGrade.grade} · eBay EU`}
               color="#fb923c"
               timeRange={timeRange}
               onTimeRangeChange={setTimeRange}
@@ -398,7 +397,7 @@ export function Dashboard() {
       )}
 
       <footer className="border-t border-zinc-800/80 pt-6 text-center text-xs text-zinc-600">
-        Scraping Cardmarket · eBay · TCGPlayer — snapshot JSON · portfolio in data/portfolio.json ·{" "}
+        Cardmarket · eBay EU — snapshot JSON · portfolio in data/portfolio.json ·{" "}
         {data.dataSource === "snapshot" && "dati da cron locale · "}
         {data.stats.blockedCount > 0 &&
           `${data.stats.blockedCount} sorgenti bloccate — npm run scrape in locale · `}

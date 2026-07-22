@@ -221,11 +221,8 @@ function DualTooltip({
           className="text-sm font-semibold"
           style={{ color: entry.color }}
         >
-          {entry.dataKey === "it" ? "🇮🇹 IT" : "🌍 INTL"}:{" "}
-          {formatPrice(
-            entry.value,
-            entry.dataKey === "it" ? "EUR" : "USD"
-          )}
+          {entry.dataKey === "it" ? "Cardmarket" : "eBay EU"}:{" "}
+          {formatPrice(entry.value, "EUR")}
         </p>
       ))}
     </div>
@@ -259,12 +256,12 @@ export function DualMarketChart({
           <div className="mt-1 flex flex-wrap gap-3 text-xs">
             {itQuote && (
               <span className="text-green-400">
-                🇮🇹 {formatPrice(itQuote.price, "EUR")} · {itQuote.sourceLabel}
+                Cardmarket {formatPrice(itQuote.price, "EUR")} · {itQuote.sourceLabel}
               </span>
             )}
             {intlQuote && (
               <span className="text-orange-400">
-                🌍 {formatPrice(intlQuote.price, "USD")} · {intlQuote.sourceLabel}
+                eBay EU {formatPrice(intlQuote.price, "EUR")} · {intlQuote.sourceLabel}
               </span>
             )}
           </div>

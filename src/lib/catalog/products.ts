@@ -15,11 +15,12 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     language: "EN",
     sealedType: "booster_box",
     imageUrl: "https://assets.tcgdex.net/en/sv/sv03.5/logo",
-    sources: ["tcgplayer"],
+    sources: ["cardmarket", "ebay_eu"],
     scrape: {
-      tcgplayerProductId: 593355,
       cardtraderBlueprintId: 249796,
       cardtraderExpansionId: 3387,
+      cardmarketUrl:
+        "https://www.cardmarket.com/en/Pokemon/Products/Sealed-Products/Booster-Boxes/151",
       searchTerm: "pokemon 151 booster box english sealed",
     },
     tags: ["current"],
@@ -33,8 +34,12 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     language: "EN",
     sealedType: "etb",
     imageUrl: "https://assets.tcgdex.net/en/sv/sv03.5/logo",
-    sources: ["tcgplayer"],
-    scrape: { tcgplayerProductId: 528038 },
+    sources: ["cardmarket", "ebay_eu"],
+    scrape: {
+      cardmarketUrl:
+        "https://www.cardmarket.com/en/Pokemon/Products/Sealed-Products/Trainer-Boxes/151",
+      searchTerm: "pokemon 151 elite trainer box english sealed",
+    },
     tags: ["current"],
   },
   {
@@ -45,8 +50,12 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     setCode: "PRE",
     language: "EN",
     sealedType: "booster_box",
-    sources: ["tcgplayer"],
-    scrape: { tcgplayerProductId: 553001 },
+    sources: ["cardmarket", "ebay_eu"],
+    scrape: {
+      cardmarketUrl:
+        "https://www.cardmarket.com/en/Pokemon/Products/Sealed-Products/Booster-Boxes/Prismatic-Evolutions",
+      searchTerm: "pokemon prismatic evolutions booster box english sealed",
+    },
     tags: ["current"],
   },
   {
@@ -58,8 +67,12 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     language: "EN",
     sealedType: "booster_box",
     imageUrl: "https://assets.tcgdex.net/en/swsh/swsh7/logo",
-    sources: ["tcgplayer"],
-    scrape: { tcgplayerProductId: 624679 },
+    sources: ["cardmarket", "ebay_eu"],
+    scrape: {
+      cardmarketUrl:
+        "https://www.cardmarket.com/en/Pokemon/Products/Sealed-Products/Booster-Boxes/Evolving-Skies",
+      searchTerm: "pokemon evolving skies booster box english sealed",
+    },
     tags: ["current"],
   },
   {
@@ -71,8 +84,12 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     language: "EN",
     sealedType: "etb",
     imageUrl: "https://assets.tcgdex.net/en/swsh/swsh12.5/logo",
-    sources: ["tcgplayer"],
-    scrape: { tcgplayerProductId: 450289 },
+    sources: ["cardmarket", "ebay_eu"],
+    scrape: {
+      cardmarketUrl:
+        "https://www.cardmarket.com/en/Pokemon/Products/Sealed-Products/Trainer-Boxes/Crown-Zenith",
+      searchTerm: "pokemon crown zenith elite trainer box english sealed",
+    },
     tags: ["current"],
   },
 
@@ -86,7 +103,7 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     language: "IT",
     sealedType: "booster_box",
     imageUrl: "https://assets.tcgdex.net/en/sv/sv03.5/logo",
-    sources: ["cardmarket"],
+    sources: ["cardmarket", "ebay_eu"],
     scrape: {
       cardmarketUrl:
         "https://www.cardmarket.com/it/Pokemon/Products/Sealed-Products/Booster-Boxes/151",
@@ -103,7 +120,7 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     language: "IT",
     sealedType: "etb",
     imageUrl: "https://assets.tcgdex.net/en/sv/sv03.5/logo",
-    sources: ["cardmarket"],
+    sources: ["cardmarket", "ebay_eu"],
     scrape: {
       cardmarketUrl:
         "https://www.cardmarket.com/it/Pokemon/Products/Sealed-Products/Trainer-Boxes/151",
@@ -118,7 +135,7 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     setCode: "PRE",
     language: "IT",
     sealedType: "booster_box",
-    sources: ["cardmarket"],
+    sources: ["cardmarket", "ebay_eu"],
     scrape: {
       cardmarketUrl:
         "https://www.cardmarket.com/it/Pokemon/Products/Sealed-Products/Booster-Boxes/Prismatic-Evolutions",
@@ -133,7 +150,7 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     setCode: "ASC",
     language: "IT",
     sealedType: "etb",
-    sources: ["cardmarket"],
+    sources: ["cardmarket", "ebay_eu"],
     scrape: {
       cardmarketUrl:
         "https://www.cardmarket.com/it/Pokemon/Products/Elite-Trainer-Boxes/Ascended-Heroes-Elite-Trainer-Box",
@@ -153,7 +170,7 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     language: "IT",
     sealedType: "etb",
     imageUrl: "https://assets.tcgdex.net/en/sv/sv3/logo",
-    sources: ["cardmarket"],
+    sources: ["cardmarket", "ebay_eu"],
     scrape: {
       cardmarketUrl:
         "https://www.cardmarket.com/it/Pokemon/Products/Sealed-Products/Trainer-Boxes/Obsidian-Flames",
@@ -173,7 +190,7 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     cardNumber: "173/165",
     imageUrl: "https://assets.tcgdex.net/ja/SV/SV2a/173",
     grading: { company: "PSA", grades: [10, 9] },
-    sources: ["ebay_it", "ebay_us", "cardmarket"],
+    sources: ["cardmarket", "ebay_eu"],
     scrape: {
       tcgdxCardId: "SV2a-173",
       cardtraderBlueprintId: 251429,
@@ -193,7 +210,7 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     cardNumber: "205/165",
     imageUrl: "https://assets.tcgdex.net/ja/SV/SV2a/205",
     grading: { company: "PSA", grades: [10, 9] },
-    sources: ["ebay_it", "ebay_us", "cardmarket"],
+    sources: ["cardmarket", "ebay_eu"],
     scrape: {
       tcgdxCardId: "SV2a-205",
       cardtraderBlueprintId: 251471,
@@ -213,7 +230,7 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     cardNumber: "201/165",
     imageUrl: "https://assets.tcgdex.net/ja/SV/SV2a/201",
     grading: { company: "PSA", grades: [10, 9] },
-    sources: ["ebay_it", "ebay_us", "cardmarket"],
+    sources: ["cardmarket", "ebay_eu"],
     scrape: {
       tcgdxCardId: "SV2a-201",
       cardtraderBlueprintId: 251467,
@@ -234,7 +251,7 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     cardNumber: "025/069",
     imageUrl: "https://assets.tcgdex.net/ja/S/S6a/025",
     grading: { company: "PSA", grades: [10] },
-    sources: ["ebay_it", "ebay_us"],
+    sources: ["cardmarket", "ebay_eu"],
     scrape: {
       searchTerm: "pokemon umbreon vmax psa 10 japanese s6a",
     },
@@ -251,7 +268,7 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     cardNumber: "066/060",
     imageUrl: "https://assets.tcgdex.net/ja/SM/SM1M/066",
     grading: { company: "PSA", grades: [10, 9] },
-    sources: ["ebay_it", "ebay_us"],
+    sources: ["cardmarket", "ebay_eu"],
     scrape: {
       searchTerm: "pokemon lillie sr psa 10 japanese sm1m",
     },
@@ -268,7 +285,7 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     cardNumber: "111/172",
     imageUrl: "https://assets.tcgdex.net/ja/S/S12a/111",
     grading: { company: "PSA", grades: [10] },
-    sources: ["ebay_it", "ebay_us"],
+    sources: ["cardmarket", "ebay_eu"],
     scrape: {
       searchTerm: "pokemon giratina vstar psa 10 japanese s12a",
     },
@@ -285,7 +302,7 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     language: "EN",
     cardNumber: "4/102",
     grading: { company: "BGS", grades: [10, 9] },
-    sources: ["ebay_us", "ebay_it", "cardmarket"],
+    sources: ["cardmarket", "ebay_eu"],
     scrape: {
       searchTerm: "pokemon charizard base set bgs 10",
     },
@@ -300,7 +317,7 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     language: "EN",
     cardNumber: "9/111",
     grading: { company: "CGC", grades: [10] },
-    sources: ["ebay_us", "cardmarket"],
+    sources: ["cardmarket", "ebay_eu"],
     scrape: {
       searchTerm: "pokemon lugia neo genesis cgc 10",
     },
@@ -317,7 +334,7 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     language: "JP",
     sealedType: "booster_box",
     imageUrl: "https://assets.tcgdex.net/ja/SV/SV2a/logo",
-    sources: ["ebay_us", "cardmarket"],
+    sources: ["cardmarket", "ebay_eu"],
     scrape: {
       searchTerm: "pokemon 151 booster box japanese sealed sv2a",
       cardmarketUrl:
@@ -334,7 +351,7 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     language: "JP",
     sealedType: "booster_box",
     imageUrl: "https://assets.tcgdex.net/ja/S/S12a/logo",
-    sources: ["ebay_us", "cardmarket"],
+    sources: ["cardmarket", "ebay_eu"],
     scrape: {
       searchTerm: "pokemon vstar universe booster box japanese s12a sealed",
     },
@@ -350,7 +367,7 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     setCode: "BS",
     language: "EN",
     cardNumber: "4/102",
-    sources: ["cardmarket", "ebay_us", "tcgplayer"],
+    sources: ["cardmarket", "ebay_eu"],
     scrape: {
       tcgdxCardId: "base1-4",
       searchTerm: "pokemon charizard base set 4/102 holo raw nm",
@@ -366,7 +383,7 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     language: "EN",
     cardNumber: "173/165",
     imageUrl: "https://assets.tcgdex.net/en/sv/sv03.5/173",
-    sources: ["tcgplayer", "cardmarket", "ebay_us"],
+    sources: ["cardmarket", "ebay_eu"],
     scrape: {
       searchTerm: "pokemon 151 pikachu 173/165 raw english",
     },
@@ -381,7 +398,7 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     set: "Accessori",
     setCode: "ACC",
     language: "ANY",
-    sources: ["ebay_it", "ebay_us"],
+    sources: ["cardmarket", "ebay_eu"],
     scrape: {
       searchTerm: "ultra pro eclipse pokemon sleeves 100",
     },
@@ -394,7 +411,7 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     set: "Accessori",
     setCode: "ACC",
     language: "ANY",
-    sources: ["ebay_it", "ebay_us"],
+    sources: ["cardmarket", "ebay_eu"],
     scrape: {
       searchTerm: "pokemon card toploader 25 pack",
     },

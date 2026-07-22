@@ -11,7 +11,7 @@ import {
   mergeDashboardHistory,
   saveSnapshot,
 } from "./scrapers/snapshot";
-import type { ScrapeResult, ScraperSourceId, CatalogLanguage } from "./scrapers/types";
+import type { ScrapeResult, ScraperSourceId, CatalogLanguage, CatalogProduct } from "./scrapers/types";
 import type {
   AccessoryProduct,
   DashboardData,
@@ -28,15 +28,7 @@ import type {
 } from "./types";
 
 function mapPriceSource(source: ScraperSourceId): PriceSource {
-  switch (source) {
-    case "cardmarket":
-    case "tcgdex":
-      return "cardmarket";
-    case "tcgplayer":
-      return "tcgplayer";
-    default:
-      return "ebay";
-  }
+  return source === "cardmarket" || source === "tcgdex" ? "cardmarket" : "ebay";
 }
 
 function scrapeToQuote(result: ScrapeResult, region: MarketRegion): MarketQuote {
@@ -59,11 +51,25 @@ function scrapeToQuote(result: ScrapeResult, region: MarketRegion): MarketQuote 
     viaFetcher: result.viaFetcher,
     sampleSize: result.sampleSize,
     scrapedAt: result.scrapedAt,
+    activeListingPrice: result.activeListingPrice,
+    activeListingUrl: result.activeListingUrl,
+    activeListingLabel: result.activeListingLabel,
   };
 }
 
-function sealedRegion(language: CatalogLanguage): MarketRegion {
-  return language === "IT" ? "IT" : "INTL";
+async function buildProductMarkets(
+  item: CatalogProduct,
+  grade?: number
+): Promise<MarketQuote[]> {
+  const [cardmarketResult, ebayResult] = await Promise.all([
+    scrapeForRegion(item, "IT", grade),
+    scrapeForRegion(item, "INTL", grade),
+  ]);
+
+  const markets: MarketQuote[] = [];
+  if (cardmarketResult) markets.push(scrapeToQuote(cardmarketResult, "IT"));
+  if (ebayResult) markets.push(scrapeToQuote(ebayResult, "INTL"));
+  return markets;
 }
 
 function gradedLanguage(language: CatalogLanguage): "JP" | "EN" {
@@ -82,11 +88,7 @@ async function buildSealedProducts(): Promise<SealedProduct[]> {
 
   return Promise.all(
     catalog.map(async (item) => {
-      const region = sealedRegion(item.language);
-      const result = await scrapeForRegion(item, region);
-      const markets: MarketQuote[] = result
-        ? [scrapeToQuote(result, region)]
-        : [];
+      const markets = await buildProductMarkets(item);
 
       return {
         id: item.id,
@@ -98,7 +100,6 @@ async function buildSealedProducts(): Promise<SealedProduct[]> {
         language: item.language as "IT" | "EN" | "JP",
         imageUrl: item.imageUrl,
         markets,
-        tcgplayerProductId: item.scrape.tcgplayerProductId,
       };
     })
   );
@@ -114,15 +115,7 @@ async function buildGradedCards(): Promise<GradedCard[]> {
 
       const grades: GradedPrice[] = await Promise.all(
         gradeNums.map(async (gradeNum) => {
-          const [itResult, intlResult] = await Promise.all([
-            scrapeForRegion(item, "IT", gradeNum),
-            scrapeForRegion(item, "INTL", gradeNum),
-          ]);
-
-          const markets: MarketQuote[] = [];
-          if (itResult) markets.push(scrapeToQuote(itResult, "IT"));
-          if (intlResult) markets.push(scrapeToQuote(intlResult, "INTL"));
-
+          const markets = await buildProductMarkets(item, gradeNum);
           return { company, grade: gradeNum, markets };
         })
       );
@@ -149,14 +142,7 @@ async function buildRawCards(): Promise<RawCard[]> {
 
   return Promise.all(
     catalog.map(async (item) => {
-      const [itResult, intlResult] = await Promise.all([
-        scrapeForRegion(item, "IT"),
-        scrapeForRegion(item, "INTL"),
-      ]);
-
-      const markets: MarketQuote[] = [];
-      if (itResult) markets.push(scrapeToQuote(itResult, "IT"));
-      if (intlResult) markets.push(scrapeToQuote(intlResult, "INTL"));
+      const markets = await buildProductMarkets(item);
 
       return {
         id: item.id,
@@ -180,14 +166,7 @@ async function buildAccessoryProducts(): Promise<AccessoryProduct[]> {
 
   return Promise.all(
     catalog.map(async (item) => {
-      const [itResult, intlResult] = await Promise.all([
-        scrapeForRegion(item, "IT"),
-        scrapeForRegion(item, "INTL"),
-      ]);
-
-      const markets: MarketQuote[] = [];
-      if (itResult) markets.push(scrapeToQuote(itResult, "IT"));
-      if (intlResult) markets.push(scrapeToQuote(intlResult, "INTL"));
+      const markets = await buildProductMarkets(item);
 
       return {
         id: item.id,
