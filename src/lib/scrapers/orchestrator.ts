@@ -6,10 +6,22 @@ export function catalogToQuery(product: CatalogProduct, grade?: number): ScrapeQ
   const company = product.grading?.company ?? "PSA";
 
   let searchTerm = product.scrape.searchTerm;
-  if (product.kind === "graded" && g && !searchTerm) {
-    const lang =
-      product.language === "JP" ? "japanese japan jp" : product.language.toLowerCase();
-    searchTerm = `pokemon ${product.name} ${company} ${g} ${lang}`.trim();
+  if (product.kind === "graded" && g) {
+    const langToken =
+      product.language === "JP"
+        ? "japanese"
+        : product.language === "IT"
+          ? "italiano"
+          : product.language.toLowerCase();
+    if (searchTerm) {
+      searchTerm = searchTerm
+        .replace(/\bpsa\s*\d+/i, `${company} ${g}`)
+        .replace(/\bbgs\s*\d+/i, `${company} ${g}`)
+        .replace(/\bcgc\s*\d+/i, `${company} ${g}`);
+    } else {
+      searchTerm =
+        `pokemon ${product.name} ${product.cardNumber ?? ""} ${company} ${g} ${langToken}`.trim();
+    }
   }
 
   return {
@@ -24,6 +36,9 @@ export function catalogToQuery(product: CatalogProduct, grade?: number): ScrapeQ
     cardmarketUrl: product.scrape.cardmarketUrl,
     tcgplayerProductId: product.scrape.tcgplayerProductId,
     tcgdxCardId: product.scrape.tcgdxCardId,
+    meta: product.scrape.cardmarketProductId
+      ? { cardmarketProductId: product.scrape.cardmarketProductId }
+      : undefined,
   };
 }
 
@@ -50,8 +65,16 @@ export async function scrapeForRegion(
   region: "IT" | "INTL",
   grade?: number
 ): Promise<ScrapeResult | null> {
+  const query = catalogToQuery(product, grade);
+
+  // Mercato IT/EU: sempre Cardmarket min nella lingua del prodotto
+  if (region === "IT" && product.sources.includes("cardmarket")) {
+    const scraper = getScraper("cardmarket");
+    if (scraper) return scraper.scrape(query);
+  }
+
   const sourceMap: Record<string, ScraperSourceId[]> = {
-    IT: ["cardmarket", "ebay_it"],
+    IT: ["ebay_it"],
     INTL: ["tcgplayer", "ebay_us"],
   };
   const preferred = sourceMap[region].filter((s) => product.sources.includes(s));
@@ -60,7 +83,6 @@ export async function scrapeForRegion(
   for (const id of preferred) {
     const scraper = getScraper(id);
     if (!scraper) continue;
-    const query = catalogToQuery(product, grade);
     const result = await scraper.scrape(query);
     if (result.success && result.price != null) return result;
     lastFailed = result;

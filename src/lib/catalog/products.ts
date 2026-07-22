@@ -208,7 +208,7 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     sources: ["ebay_it", "ebay_us", "cardmarket"],
     scrape: {
       tcgdxCardId: "SV2a-201",
-      searchTerm: "pokemon 151 charizard ex 201 psa 10 japanese",
+      searchTerm: "charizard ex 201 psa 10 japanese sv2a",
     },
     tags: ["current", "psa", "jp"],
   },

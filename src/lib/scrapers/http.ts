@@ -80,3 +80,8 @@ export function median(values: number[]): number | null {
     ? sorted[mid]
     : (sorted[mid - 1] + sorted[mid]) / 2;
 }
+
+export function minimum(values: number[]): number | null {
+  if (!values.length) return null;
+  return Math.min(...values);
+}

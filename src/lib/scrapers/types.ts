@@ -33,6 +33,8 @@ export interface ScrapeQuery {
   tcgplayerProductId?: number;
   /** ID carta TCGdex (es. SV2a-173) */
   tcgdxCardId?: string;
+  /** ID prodotto Cardmarket (TCGdex pricing.cardmarket.idProduct) */
+  cardmarketProductId?: number;
   /** Extra parametri per scraper futuri */
   meta?: Record<string, string | number | boolean>;
 }
@@ -81,6 +83,7 @@ export interface CatalogProduct {
   scrape: {
     searchTerm?: string;
     cardmarketUrl?: string;
+    cardmarketProductId?: number;
     tcgplayerProductId?: number;
     tcgdxCardId?: string;
   };

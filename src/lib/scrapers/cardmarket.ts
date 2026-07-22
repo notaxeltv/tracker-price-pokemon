@@ -1,22 +1,19 @@
-import * as cheerio from "cheerio";
 import type { Scraper, ScrapeQuery, ScrapeResult } from "./types";
 import { DEFAULT_SCRAPER_CONFIG } from "./types";
 import { cacheKey, getCached, setCached } from "./cache";
 import {
-  detectBlocked,
-  median,
-  parseEuroPrice,
-  politeFetch,
-} from "./http";
+  languageDisplayLabel,
+} from "./cardmarket-language";
+import { resolveMinPriceFromHtml } from "./cardmarket-parse";
+import { detectBlocked, politeFetch } from "./http";
 
 function fail(
-  source: "cardmarket",
   label: string,
   error: string,
   blocked = false
 ): ScrapeResult {
   return {
-    source,
+    source: "cardmarket",
     success: false,
     price: null,
     currency: "EUR",
@@ -31,14 +28,20 @@ function ok(
   price: number,
   url: string,
   sampleSize: number,
+  query: ScrapeQuery,
   viaFetcher = false
 ): ScrapeResult {
+  const lang = languageDisplayLabel(query.language);
+  const label = viaFetcher
+    ? `Cardmarket · min ${lang} (TCGdex)`
+    : `Cardmarket · min ${lang}`;
+
   return {
     source: "cardmarket",
     success: true,
     price: Math.round(price * 100) / 100,
     currency: "EUR",
-    label: viaFetcher ? "TCGdex → Cardmarket" : "Cardmarket · scrape",
+    label,
     externalUrl: url,
     sampleSize,
     scrapedAt: new Date().toISOString(),
@@ -46,15 +49,49 @@ function ok(
   };
 }
 
-async function scrapeCardmarketHtml(url: string): Promise<ScrapeResult> {
+function buildSearchTerm(query: ScrapeQuery): string {
+  if (query.searchTerm) return query.searchTerm;
+  const parts = ["pokemon"];
+  if (query.grading) {
+    parts.push(query.grading.company, String(query.grading.grade));
+  }
+  if (query.language === "JP") parts.push("japanese");
+  if (query.language === "IT") parts.push("italiano");
+  if (query.language === "EN") parts.push("english");
+  return parts.join(" ");
+}
+
+export function buildCardmarketUrl(query: ScrapeQuery): string | null {
+  if (query.cardmarketUrl) return query.cardmarketUrl;
+
+  const idProduct = query.meta?.cardmarketProductId;
+  if (idProduct) {
+    return `https://www.cardmarket.com/it/Pokemon/Products/Singles?idProduct=${idProduct}`;
+  }
+
+  const term = buildSearchTerm(query);
+  if (!term.trim()) return null;
+
+  const params = new URLSearchParams({
+    searchString: term,
+    sellerCountry: "13", // Italia — mercato EU
+  });
+
+  return `https://www.cardmarket.com/it/Pokemon/Products/Singles?${params}`;
+}
+
+async function scrapeCardmarketHtml(
+  url: string,
+  query: ScrapeQuery
+): Promise<ScrapeResult> {
   const config = DEFAULT_SCRAPER_CONFIG;
+  const label = `Cardmarket · min ${languageDisplayLabel(query.language)}`;
   const res = await politeFetch(url, config);
   const html = await res.text();
 
   if (!res.ok || detectBlocked(html)) {
     return fail(
-      "cardmarket",
-      "Cardmarket · scrape",
+      label,
       detectBlocked(html)
         ? "Cloudflare block — usa SCRAPE_USE_PLAYWRIGHT=true in locale"
         : `HTTP ${res.status}`,
@@ -62,101 +99,87 @@ async function scrapeCardmarketHtml(url: string): Promise<ScrapeResult> {
     );
   }
 
-  const $ = cheerio.load(html);
-  const prices: number[] = [];
-
-  // Listing rows — selettori comuni Cardmarket (aggiornabili)
-  $('[data-price], .price-container, .col-price').each((_, el) => {
-    const t = $(el).text();
-    const p = parseEuroPrice(t);
-    if (p && p > 0 && p < 50000) prices.push(p);
-  });
-
-  // Price guide / trend in pagina prodotto
-  $('[class*="price"], [class*="Price"]').each((_, el) => {
-    const t = $(el).text();
-    if (t.includes("€") || t.includes("EUR")) {
-      const p = parseEuroPrice(t);
-      if ( p && p > 1 && p < 50000) prices.push(p);
-    }
-  });
-
-  // JSON-LD Offer
-  $('script[type="application/ld+json"]').each((_, el) => {
-    try {
-      const json = JSON.parse($(el).html() ?? "");
-      const offers = json.offers ?? json.Offer;
-      const list = Array.isArray(offers) ? offers : offers ? [offers] : [];
-      for (const o of list) {
-        const p = parseFloat(o.price ?? o.lowPrice ?? "");
-        if (!Number.isNaN(p) && p > 0) prices.push(p);
-      }
-    } catch {
-      /* ignore */
-    }
-  });
-
-  const med = median(prices);
-  if (med == null) {
+  const resolved = resolveMinPriceFromHtml(html, query);
+  if (!resolved) {
     return fail(
-      "cardmarket",
-      "Cardmarket · scrape",
-      "Nessun prezzo trovato nel HTML — layout cambiato?"
+      label,
+      query.grading
+        ? `Nessun listing ${query.grading.company} ${query.grading.grade} in lingua ${languageDisplayLabel(query.language)}`
+        : `Nessun listing in lingua ${languageDisplayLabel(query.language)}`
     );
   }
 
-  return ok(med, url, prices.length);
+  return ok(resolved.price, url, resolved.sampleSize, query);
+}
+
+interface TcgdexCardmarket {
+  low?: number;
+  trend?: number;
+  avg?: number;
+  idProduct?: number;
 }
 
 async function scrapeViaTcgdex(query: ScrapeQuery): Promise<ScrapeResult | null> {
   if (!query.tcgdxCardId) return null;
-  try {
-    const res = await fetch(
-      `https://api.tcgdex.net/v2/ja/cards/${query.tcgdxCardId}`,
-      { next: { revalidate: 3600 } }
-    );
-    if (!res.ok) {
-      const en = await fetch(
-        `https://api.tcgdex.net/v2/en/cards/${query.tcgdxCardId}`
+
+  const locales = query.language === "JP" ? ["ja", "en"] : ["en", "it"];
+  const label = `Cardmarket · min ${languageDisplayLabel(query.language)}`;
+
+  for (const locale of locales) {
+    try {
+      const res = await fetch(
+        `https://api.tcgdex.net/v2/${locale}/cards/${query.tcgdxCardId}`,
+        { next: { revalidate: 3600 } }
       );
-      if (!en.ok) return null;
-      const card = await en.json();
-      const cm =
-        card.variants_detailed?.find(
-          (v: { pricing?: { cardmarket?: { trend?: number } } }) =>
-            v.pricing?.cardmarket
-        )?.pricing?.cardmarket;
-      if (!cm?.trend) return null;
-      return ok(
-        cm.trend,
-        `https://www.cardmarket.com/it/Pokemon/Cards`,
-        1,
-        true
-      );
+      if (!res.ok) continue;
+
+      const card = await res.json();
+      const cm: TcgdexCardmarket | undefined = card.pricing?.cardmarket;
+      if (!cm) continue;
+
+      // Graded: TCGdex non ha min PSA — non usare fallback raw
+      if (query.grading) continue;
+
+      const price = cm.low ?? cm.avg;
+      if (price == null || price <= 0) continue;
+
+      const url =
+        query.cardmarketUrl ??
+        (cm.idProduct
+          ? `https://www.cardmarket.com/it/Pokemon/Products/Singles?idProduct=${cm.idProduct}`
+          : "https://www.cardmarket.com/it/Pokemon/Products/Singles");
+
+      return ok(price, url, 1, query, true);
+    } catch {
+      continue;
     }
-    const card = await res.json();
-    const cm =
-      card.variants_detailed?.find(
-        (v: { pricing?: { cardmarket?: { trend?: number } } }) =>
-          v.pricing?.cardmarket
-      )?.pricing?.cardmarket;
-    if (!cm?.trend) return null;
-    return ok(cm.trend, query.cardmarketUrl ?? "https://www.cardmarket.com/it/Pokemon", 1, true);
-  } catch {
-    return null;
   }
+
+  return null;
 }
 
-async function scrapeWithPlaywright(url: string): Promise<ScrapeResult | null> {
+async function scrapeWithPlaywright(
+  url: string,
+  query: ScrapeQuery
+): Promise<ScrapeResult | null> {
   if (!DEFAULT_SCRAPER_CONFIG.usePlaywright) return null;
   try {
     const { scrapeCardmarketWithPlaywright } = await import(
       "./playwright-scraper"
     );
-    return scrapeCardmarketWithPlaywright(url);
+    return scrapeCardmarketWithPlaywright(url, query);
   } catch {
     return null;
   }
+}
+
+function cacheExtra(query: ScrapeQuery): string {
+  return [
+    query.cardmarketUrl ?? "",
+    query.language ?? "",
+    query.grading ? `${query.grading.company}-${query.grading.grade}` : "",
+    query.searchTerm ?? "",
+  ].join("|");
 }
 
 export const cardmarketScraper: Scraper = {
@@ -164,30 +187,33 @@ export const cardmarketScraper: Scraper = {
   label: "Cardmarket",
   supports: ["sealed", "graded", "raw", "accessory"],
   async scrape(query: ScrapeQuery): Promise<ScrapeResult> {
-    const key = cacheKey("cardmarket", query.productId, query.cardmarketUrl ?? "");
+    const key = cacheKey("cardmarket", query.productId, cacheExtra(query));
     const cached = getCached(key);
     if (cached) return cached;
 
-    const url =
-      query.cardmarketUrl ??
-      (query.searchTerm
-        ? `https://www.cardmarket.com/it/Pokemon/Products/Singles?searchString=${encodeURIComponent(query.searchTerm)}`
-        : null);
-
+    const url = buildCardmarketUrl(query);
     let result: ScrapeResult;
 
     if (url) {
-      result = await scrapeCardmarketHtml(url);
+      result = await scrapeCardmarketHtml(url, query);
       if (!result.success && DEFAULT_SCRAPER_CONFIG.usePlaywright) {
-        const pw = await scrapeWithPlaywright(url);
+        const pw = await scrapeWithPlaywright(url, query);
         if (pw) result = pw;
       }
     } else {
-      result = fail("cardmarket", "Cardmarket · scrape", "URL o searchTerm mancante");
+      result = fail(
+        `Cardmarket · min ${languageDisplayLabel(query.language)}`,
+        "URL o searchTerm mancante"
+      );
     }
 
-    // Fallback TCGdex per carte (prezzi Cardmarket aggregati, non scrape)
-    if (!result.success && query.kind !== "sealed" && query.tcgdxCardId) {
+    // Fallback TCGdex solo per raw/sealed (min low, non trend)
+    if (
+      !result.success &&
+      !query.grading &&
+      query.kind !== "sealed" &&
+      query.tcgdxCardId
+    ) {
       const tcg = await scrapeViaTcgdex(query);
       if (tcg) result = tcg;
     }
