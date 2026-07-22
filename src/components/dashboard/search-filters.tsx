@@ -1,20 +1,22 @@
 "use client";
 
 import { Search, Globe, ArrowUpDown, Languages } from "lucide-react";
-import type { ProductFilters } from "@/lib/types";
+import type { GradingCompany, ProductFilters } from "@/lib/types";
 
 interface SearchFiltersProps {
   filters: ProductFilters;
   onChange: (filters: Partial<ProductFilters>) => void;
   showSealedLang?: boolean;
-  showPsaFilter?: boolean;
+  showGradedFilters?: boolean;
 }
+
+const GRADING_COMPANIES: GradingCompany[] = ["PSA", "BGS", "CGC", "ACE", "TAG"];
 
 export function SearchFilters({
   filters,
   onChange,
   showSealedLang = false,
-  showPsaFilter = false,
+  showGradedFilters = false,
 }: SearchFiltersProps) {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
@@ -22,7 +24,7 @@ export function SearchFilters({
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
         <input
           type="text"
-          placeholder="Cerca carta JP, sealed ITA/ENG..."
+          placeholder="Cerca PSA/BGS/CGC, sealed, raw..."
           value={filters.search}
           onChange={(e) => onChange({ search: e.target.value })}
           className="w-full rounded-xl border border-zinc-800 bg-zinc-900/80 py-2.5 pl-10 pr-4 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-pokemon-blue focus:outline-none focus:ring-1 focus:ring-pokemon-blue/50"
@@ -43,9 +45,10 @@ export function SearchFilters({
               }
               className="appearance-none rounded-xl border border-zinc-800 bg-zinc-900/80 py-2.5 pl-10 pr-8 text-sm text-zinc-100 focus:border-pokemon-blue focus:outline-none"
             >
-              <option value="all">Sealed: ITA + ENG</option>
+              <option value="all">Sealed: tutte le lingue</option>
               <option value="IT">🇮🇹 Solo italiano</option>
               <option value="EN">🇬🇧 Solo inglese</option>
+              <option value="JP">🇯🇵 Solo giapponese</option>
             </select>
           </div>
         )}
@@ -66,23 +69,44 @@ export function SearchFilters({
           </select>
         </div>
 
-        {showPsaFilter && (
-          <select
-            value={filters.psaGrade ?? "all"}
-            onChange={(e) =>
-              onChange({
-                psaGrade:
-                  e.target.value === "all"
-                    ? undefined
-                    : Number(e.target.value),
-              })
-            }
-            className="rounded-xl border border-zinc-800 bg-zinc-900/80 px-4 py-2.5 text-sm text-zinc-100 focus:border-pokemon-blue focus:outline-none"
-          >
-            <option value="all">PSA: tutti i gradi</option>
-            <option value="10">PSA 10</option>
-            <option value="9">PSA 9</option>
-          </select>
+        {showGradedFilters && (
+          <>
+            <select
+              value={filters.gradingCompany ?? "all"}
+              onChange={(e) =>
+                onChange({
+                  gradingCompany:
+                    e.target.value === "all"
+                      ? undefined
+                      : (e.target.value as GradingCompany),
+                })
+              }
+              className="rounded-xl border border-zinc-800 bg-zinc-900/80 px-4 py-2.5 text-sm text-zinc-100 focus:border-pokemon-blue focus:outline-none"
+            >
+              <option value="all">Grading: tutti</option>
+              {GRADING_COMPANIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+            <select
+              value={filters.grade ?? "all"}
+              onChange={(e) =>
+                onChange({
+                  grade:
+                    e.target.value === "all"
+                      ? undefined
+                      : Number(e.target.value),
+                })
+              }
+              className="rounded-xl border border-zinc-800 bg-zinc-900/80 px-4 py-2.5 text-sm text-zinc-100 focus:border-pokemon-blue focus:outline-none"
+            >
+              <option value="all">Grado: tutti</option>
+              <option value="10">10</option>
+              <option value="9">9</option>
+            </select>
+          </>
         )}
 
         <div className="relative">

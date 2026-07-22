@@ -7,7 +7,7 @@ const TCGPLAYER_PRICE = "https://mpapi.tcgplayer.com/v2/product";
 export const tcgplayerScraper: Scraper = {
   id: "tcgplayer",
   label: "TCGPlayer",
-  supports: ["sealed", "raw"],
+  supports: ["sealed", "raw", "accessory"],
   async scrape(query: ScrapeQuery): Promise<ScrapeResult> {
     const label = "TCGPlayer · mpapi";
     if (!query.tcgplayerProductId) {

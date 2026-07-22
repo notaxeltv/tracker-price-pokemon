@@ -256,13 +256,121 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     setCode: "BS",
     language: "EN",
     cardNumber: "4/102",
-    grading: { company: "BGS", grades: [10] },
-    sources: ["ebay_us", "cardmarket"],
+    grading: { company: "BGS", grades: [10, 9] },
+    sources: ["ebay_us", "ebay_it", "cardmarket"],
     scrape: {
       searchTerm: "pokemon charizard base set bgs 10",
     },
-    enabled: false,
-    tags: ["future", "bgs", "en"],
+    tags: ["bgs", "en"],
+  },
+  {
+    id: "graded-en-lugia-cgc",
+    kind: "graded",
+    name: "Lugia Neo Genesis",
+    set: "Neo Genesis",
+    setCode: "N1",
+    language: "EN",
+    cardNumber: "9/111",
+    grading: { company: "CGC", grades: [10] },
+    sources: ["ebay_us", "cardmarket"],
+    scrape: {
+      searchTerm: "pokemon lugia neo genesis cgc 10",
+    },
+    tags: ["cgc", "en"],
+  },
+
+  // ─── Sealed JP ───────────────────────────────────────────
+  {
+    id: "sealed-151-bb-jp",
+    kind: "sealed",
+    name: "151 Booster Box (JP)",
+    set: "ポケモンカード151",
+    setCode: "SV2a",
+    language: "JP",
+    sealedType: "booster_box",
+    imageUrl: "https://assets.tcgdex.net/ja/SV/SV2a/logo",
+    sources: ["ebay_us", "cardmarket"],
+    scrape: {
+      searchTerm: "pokemon 151 booster box japanese sealed sv2a",
+      cardmarketUrl:
+        "https://www.cardmarket.com/en/Pokemon/Products/Sealed-Products/Booster-Boxes/151-Japanese",
+    },
+    tags: ["jp"],
+  },
+  {
+    id: "sealed-vstar-box-jp",
+    kind: "sealed",
+    name: "VSTAR Universe Booster Box (JP)",
+    set: "VSTARユニバース",
+    setCode: "S12a",
+    language: "JP",
+    sealedType: "booster_box",
+    imageUrl: "https://assets.tcgdex.net/ja/S/S12a/logo",
+    sources: ["ebay_us", "cardmarket"],
+    scrape: {
+      searchTerm: "pokemon vstar universe booster box japanese s12a sealed",
+    },
+    tags: ["jp"],
+  },
+
+  // ─── Raw EN ──────────────────────────────────────────────
+  {
+    id: "raw-en-charizard-base",
+    kind: "raw",
+    name: "Charizard",
+    set: "Base Set",
+    setCode: "BS",
+    language: "EN",
+    cardNumber: "4/102",
+    sources: ["cardmarket", "ebay_us", "tcgplayer"],
+    scrape: {
+      tcgdxCardId: "base1-4",
+      searchTerm: "pokemon charizard base set 4/102 holo raw nm",
+    },
+    tags: ["raw", "en"],
+  },
+  {
+    id: "raw-en-pikachu-151",
+    kind: "raw",
+    name: "Pikachu",
+    set: "Scarlet & Violet — 151",
+    setCode: "MEW",
+    language: "EN",
+    cardNumber: "173/165",
+    imageUrl: "https://assets.tcgdex.net/en/sv/sv03.5/173",
+    sources: ["tcgplayer", "cardmarket", "ebay_us"],
+    scrape: {
+      searchTerm: "pokemon 151 pikachu 173/165 raw english",
+    },
+    tags: ["raw", "en"],
+  },
+
+  // ─── Accessori ───────────────────────────────────────────
+  {
+    id: "accessory-etb-sleeves",
+    kind: "accessory",
+    name: "Ultra Pro Eclipse Sleeves (100ct)",
+    set: "Accessori",
+    setCode: "ACC",
+    language: "ANY",
+    sources: ["ebay_it", "ebay_us"],
+    scrape: {
+      searchTerm: "ultra pro eclipse pokemon sleeves 100",
+    },
+    tags: ["accessory"],
+  },
+  {
+    id: "accessory-toploader",
+    kind: "accessory",
+    name: "Toploader rigidi (25ct)",
+    set: "Accessori",
+    setCode: "ACC",
+    language: "ANY",
+    sources: ["ebay_it", "ebay_us"],
+    scrape: {
+      searchTerm: "pokemon card toploader 25 pack",
+    },
+    tags: ["accessory"],
   },
 ];
 

@@ -18,7 +18,7 @@ import {
 } from "@/lib/utils";
 import { getSpreadPercent } from "@/lib/filters";
 import { getSealedMarket } from "@/lib/market-utils";
-import type { GradedCard, MarketFilter, SealedProduct } from "@/lib/types";
+import type { AccessoryProduct, GradedCard, MarketFilter, RawCard, SealedProduct } from "@/lib/types";
 import { getGradedMarket } from "@/lib/market-utils";
 
 interface SealedTableProps {
@@ -208,7 +208,7 @@ export function GradedTable({
                     {card.nameJa && (
                       <span className="text-sm text-zinc-400">{card.nameJa}</span>
                     )}
-                    <LanguageBadge lang="JP" />
+                    <LanguageBadge lang={card.language} />
                     <span className="text-xs text-zinc-500">#{card.cardNumber}</span>
                   </div>
                   <p className="mt-0.5 text-sm text-zinc-500">
@@ -231,7 +231,7 @@ export function GradedTable({
                         >
                           <div className="mb-2 flex flex-wrap items-center gap-2">
                             <span className="text-xs font-bold text-pokemon-yellow">
-                              PSA {grade.grade}
+                              {grade.company} {grade.grade}
                             </span>
                             {showCompare && it && intl && (
                               <SpreadBadge spreadPercent={spread} />
@@ -329,6 +329,134 @@ export function GradedTable({
           </div>
         );
       })}
+    </div>
+  );
+}
+
+interface RawTableProps {
+  cards: RawCard[];
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+}
+
+export function RawTable({ cards, selectedId, onSelect }: RawTableProps) {
+  if (cards.length === 0) {
+    return (
+      <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-12 text-center text-zinc-500">
+        Nessuna carta raw trovata con i filtri attuali.
+      </div>
+    );
+  }
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/60">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[800px] text-left text-sm">
+          <thead>
+            <tr className="border-b border-zinc-800 text-xs uppercase tracking-wider text-zinc-500">
+              <th className="px-4 py-3 font-medium">Carta</th>
+              <th className="px-4 py-3 font-medium">Lingua</th>
+              <th className="px-4 py-3 font-medium">#</th>
+              <th className="px-4 py-3 font-medium text-right">Prezzo IT</th>
+              <th className="px-4 py-3 font-medium text-right">Prezzo INTL</th>
+              <th className="px-4 py-3 font-medium">Fonte</th>
+            </tr>
+          </thead>
+          <tbody>
+            {cards.map((card) => {
+              const it = card.markets.find((m) => m.region === "IT");
+              const intl = card.markets.find((m) => m.region === "INTL");
+
+              return (
+                <tr
+                  key={card.id}
+                  onClick={() => onSelect(card.id)}
+                  className={cn(
+                    "cursor-pointer border-b border-zinc-800/50 transition-colors hover:bg-zinc-800/40",
+                    selectedId === card.id && "bg-pokemon-blue/10"
+                  )}
+                >
+                  <td className="px-4 py-3">
+                    <p className="font-medium text-zinc-100">{card.name}</p>
+                    <p className="text-xs text-zinc-500">
+                      {card.set} · {card.setCode}
+                    </p>
+                  </td>
+                  <td className="px-4 py-3">
+                    <LanguageBadge lang={card.language} />
+                  </td>
+                  <td className="px-4 py-3 text-zinc-400">{card.cardNumber}</td>
+                  <td className="px-4 py-3">
+                    <MarketPriceCell quote={it} compact />
+                  </td>
+                  <td className="px-4 py-3">
+                    <MarketPriceCell quote={intl} compact />
+                  </td>
+                  <td className="px-4 py-3">
+                    <LiveBadge
+                      live={it?.live || intl?.live}
+                      blocked={it?.blocked || intl?.blocked}
+                    />
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+interface AccessoryTableProps {
+  products: AccessoryProduct[];
+}
+
+export function AccessoryTable({ products }: AccessoryTableProps) {
+  if (products.length === 0) {
+    return (
+      <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-12 text-center text-zinc-500">
+        Nessun accessorio trovato con i filtri attuali.
+      </div>
+    );
+  }
+
+  return (
+    <div className="overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/60">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[700px] text-left text-sm">
+          <thead>
+            <tr className="border-b border-zinc-800 text-xs uppercase tracking-wider text-zinc-500">
+              <th className="px-4 py-3 font-medium">Accessorio</th>
+              <th className="px-4 py-3 font-medium text-right">Prezzo IT</th>
+              <th className="px-4 py-3 font-medium text-right">Prezzo INTL</th>
+            </tr>
+          </thead>
+          <tbody>
+            {products.map((product) => {
+              const it = product.markets.find((m) => m.region === "IT");
+              const intl = product.markets.find((m) => m.region === "INTL");
+
+              return (
+                <tr
+                  key={product.id}
+                  className="border-b border-zinc-800/50 hover:bg-zinc-800/40"
+                >
+                  <td className="px-4 py-3 font-medium text-zinc-100">
+                    {product.name}
+                  </td>
+                  <td className="px-4 py-3">
+                    <MarketPriceCell quote={it} compact />
+                  </td>
+                  <td className="px-4 py-3">
+                    <MarketPriceCell quote={intl} compact />
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

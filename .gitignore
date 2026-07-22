@@ -38,3 +38,6 @@ next-env.d.ts
 
 # vercel
 .vercel
+
+# scrape snapshot (generato da npm run scrape)
+/data/scrape-snapshot.json

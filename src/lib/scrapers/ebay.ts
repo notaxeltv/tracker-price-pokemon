@@ -137,13 +137,13 @@ async function scrapeEbaySold(
 export const ebayItScraper: Scraper = {
   id: "ebay_it",
   label: "eBay Italia",
-  supports: ["graded", "raw", "sealed"],
+  supports: ["graded", "raw", "sealed", "accessory"],
   scrape: (q) => scrapeEbaySold("ebay_it", q),
 };
 
 export const ebayUsScraper: Scraper = {
   id: "ebay_us",
   label: "eBay US",
-  supports: ["graded", "raw", "sealed"],
+  supports: ["graded", "raw", "sealed", "accessory"],
   scrape: (q) => scrapeEbaySold("ebay_us", q),
 };

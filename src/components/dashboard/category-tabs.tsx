@@ -2,19 +2,23 @@
 
 import { cn } from "@/lib/utils";
 import type { ProductCategory } from "@/lib/types";
-import { Package, Gem } from "lucide-react";
+import { Package, Gem, Layers, Puzzle } from "lucide-react";
 
 interface CategoryTabsProps {
   active: ProductCategory | "all";
   onChange: (category: ProductCategory | "all") => void;
   sealedCount: number;
   gradedCount: number;
+  rawCount: number;
+  accessoryCount: number;
 }
 
 const tabs = [
   { id: "all" as const, label: "Tutti", icon: null },
   { id: "sealed" as const, label: "Sealed", icon: Package },
   { id: "graded" as const, label: "Gradate", icon: Gem },
+  { id: "raw" as const, label: "Raw", icon: Layers },
+  { id: "accessory" as const, label: "Accessori", icon: Puzzle },
 ];
 
 export function CategoryTabs({
@@ -22,11 +26,15 @@ export function CategoryTabs({
   onChange,
   sealedCount,
   gradedCount,
+  rawCount,
+  accessoryCount,
 }: CategoryTabsProps) {
   const counts: Record<string, number> = {
-    all: sealedCount + gradedCount,
+    all: sealedCount + gradedCount + rawCount + accessoryCount,
     sealed: sealedCount,
     graded: gradedCount,
+    raw: rawCount,
+    accessory: accessoryCount,
   };
 
   return (

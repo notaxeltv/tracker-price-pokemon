@@ -162,7 +162,7 @@ async function scrapeWithPlaywright(url: string): Promise<ScrapeResult | null> {
 export const cardmarketScraper: Scraper = {
   id: "cardmarket",
   label: "Cardmarket",
-  supports: ["sealed", "graded", "raw"],
+  supports: ["sealed", "graded", "raw", "accessory"],
   async scrape(query: ScrapeQuery): Promise<ScrapeResult> {
     const key = cacheKey("cardmarket", query.productId, query.cardmarketUrl ?? "");
     const cached = getCached(key);

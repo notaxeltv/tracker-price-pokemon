@@ -1,63 +1,63 @@
 # Pokémon Price Tracker
 
-Dashboard per monitorare prezzi **PSA giapponesi** e **sealed ITA/ENG** — **senza abbonamenti API**, via scraping.
+Dashboard per monitorare prezzi Pokémon — **PSA/BGS/CGC**, **sealed ITA/ENG/JP**, **raw**, accessori — **senza abbonamenti API**, via scraping + snapshot JSON.
 
-## Architettura scraper (estensibile)
+## Architettura
 
 ```
 src/lib/
-├── catalog/products.ts    # Catalogo prodotti — aggiungi qui nuovi item
+├── catalog/products.ts         # Catalogo prodotti (tutti i tipi attivi)
 ├── scrapers/
-│   ├── types.ts           # Tipi + ProductKind + GradingCompany
-│   ├── registry.ts        # Registro scraper (plugin-style)
-│   ├── orchestrator.ts    # Coordina scrape per prodotto/mercato
-├── scrapers/
-│   ├── types.ts           # Tipi + ProductKind + GradingCompany
-│   ├── registry.ts        # Registro scraper (plugin-style)
-│   ├── orchestrator.ts    # Coordina scrape per prodotto/mercato
-│   ├── cardmarket.ts      # Scrape Cardmarket IT
-│   ├── ebay.ts            # Scrape eBay IT/US vendute
-│   ├── tcgplayer.ts       # Fetch TCGPlayer mpapi (sealed ENG)
-│   └── playwright-scraper.ts  # Playwright server-only (locale)
-├── data-service.server.ts # Logica scrape lato server
-└── data-service.ts        # Re-export server-only per API routes
+│   ├── orchestrator.ts         # Coordina scrape per mercato IT/INTL
+│   ├── cardmarket.ts · ebay.ts · tcgplayer.ts
+│   ├── snapshot.ts             # Persistenza JSON + merge history
+│   └── playwright-scraper.ts   # Bypass Cloudflare (locale)
+├── data-service.server.ts      # Live scrape + lettura snapshot
+scripts/scrape-cron.ts            # Cron locale → data/scrape-snapshot.json
 ```
 
-### Aggiungere prodotti futuri (BGS, CGC, raw EN, sealed JP…)
+## Catalogo attivo
 
-1. Apri `src/lib/catalog/products.ts`
-2. Aggiungi una voce `CatalogProduct` con `kind`, `language`, `grading`, `sources`
-3. Imposta `enabled: true` (o ometti — default attivo)
-4. Esempio disabilitato già presente: `graded-en-charizard-legacy` (BGS)
+| Tipo | Esempi | Sorgenti |
+|------|--------|----------|
+| Sealed ITA/ENG/JP | 151, Prismatic, VSTAR | Cardmarket · TCGPlayer · eBay |
+| Gradate PSA JP | Pikachu 151, Umbreon | eBay IT/US · Cardmarket |
+| Gradate BGS/CGC EN | Charizard Base, Lugia | eBay · Cardmarket |
+| Raw EN | Charizard Base, Pikachu 151 | Cardmarket · eBay · TCGPlayer |
+| Accessori | Sleeves, Toploader | eBay IT/US |
 
-### Sorgenti prezzo
+Aggiungi prodotti in `src/lib/catalog/products.ts`.
 
-| Prodotto | Sorgente | Metodo |
-|----------|----------|--------|
-| Sealed ENG | TCGPlayer | mpapi pubblico |
-| Sealed ITA | Cardmarket | scrape HTML / Playwright |
-| PSA JP | eBay IT + US | scrape vendute |
-| Fallback carte | TCGdex | trend Cardmarket (non scrape) |
-
-## Avvio
+## Avvio dashboard
 
 ```bash
 npm install
 npm run dev
 ```
 
-## Scraping in locale (Cardmarket + eBay)
+La dashboard legge `data/scrape-snapshot.json` se fresco (`SCRAPE_USE_SNAPSHOT=true`, default).
 
-Cloud/datacenter IP sono spesso **bloccati da Cloudflare**. In locale:
+## Cron locale (passo consigliato)
+
+Cardmarket/eBay sono bloccati su IP cloud. Esegui lo scrape **in locale** e salva lo snapshot:
 
 ```bash
 # .env.local
 SCRAPE_USE_PLAYWRIGHT=true
+SCRAPE_CACHE_TTL=21600
+
+npm run scrape
 ```
 
-Poi riavvia `npm run dev`. Playwright apre un browser headless per bypassare i blocchi.
+Output: `data/scrape-snapshot.json` con prezzi live + storico giornaliero (merge automatico).
 
-Refresh manuale cache:
+**Crontab** (ogni 6 ore):
+
+```cron
+0 */6 * * * cd /path/to/tracker && SCRAPE_USE_PLAYWRIGHT=true npm run scrape >> scrape.log 2>&1
+```
+
+Refresh via API (invalida cache + riscrive snapshot):
 
 ```bash
 curl -X POST http://localhost:3000/api/scrape/refresh
@@ -65,8 +65,8 @@ curl -X POST http://localhost:3000/api/scrape/refresh
 
 ## Variabili ambiente
 
-Vedi `.env.example` — **nessuna API key a pagamento richiesta**.
+Vedi `.env.example` — nessuna API key a pagamento.
 
 ## Stack
 
-Next.js 15 · Cheerio · Playwright (opzionale) · Recharts · Tailwind 4
+Next.js 15 · Cheerio · Playwright (opzionale) · tsx · Recharts · Tailwind 4

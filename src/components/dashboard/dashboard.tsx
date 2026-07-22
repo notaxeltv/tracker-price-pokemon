@@ -5,9 +5,11 @@ import { HeaderBadge, MarketSourcesBanner, StatsCards } from "./stats-cards";
 import { CategoryTabs } from "./category-tabs";
 import { SearchFilters } from "./search-filters";
 import { DualMarketChart, PriceChart } from "./price-chart";
-import { SealedTable, GradedTable } from "./product-table";
+import { SealedTable, GradedTable, RawTable, AccessoryTable } from "./product-table";
 import {
+  filterAccessoryProducts,
   filterGradedCards,
+  filterRawCards,
   filterSealedProducts,
 } from "@/lib/filters";
 import { getGradedMarket, getSealedMarket } from "@/lib/market-utils";
@@ -78,6 +80,16 @@ export function Dashboard() {
     [data, filters]
   );
 
+  const filteredRaw = useMemo(
+    () => (data ? filterRawCards(data.raw ?? [], filters) : []),
+    [data, filters]
+  );
+
+  const filteredAccessory = useMemo(
+    () => (data ? filterAccessoryProducts(data.accessory ?? [], filters) : []),
+    [data, filters]
+  );
+
   const filteredGraded = useMemo(
     () => (data ? filterGradedCards(data.graded, filters) : []),
     [data, filters]
@@ -100,6 +112,8 @@ export function Dashboard() {
   const activeCategory = filters.category;
   const showSealed = activeCategory === "all" || activeCategory === "sealed";
   const showGraded = activeCategory === "all" || activeCategory === "graded";
+  const showRaw = activeCategory === "all" || activeCategory === "raw";
+  const showAccessory = activeCategory === "all" || activeCategory === "accessory";
 
   if (loading && !data) {
     return (
@@ -149,8 +163,9 @@ export function Dashboard() {
               Dashboard Prezzi Pokémon
             </h1>
             <p className="mt-2 max-w-2xl text-zinc-400">
-              Monitora le tue carte <strong className="font-medium text-zinc-300">PSA giapponesi</strong> e i prodotti{" "}
-              <strong className="font-medium text-zinc-300">sealed ITA e ENG</strong>.
+              Monitora carte <strong className="font-medium text-zinc-300">PSA/BGS/CGC</strong>, prodotti{" "}
+              <strong className="font-medium text-zinc-300">sealed ITA/ENG/JP</strong>,{" "}
+              <strong className="font-medium text-zinc-300">raw</strong> e accessori — scraping senza abbonamenti.
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -186,12 +201,14 @@ export function Dashboard() {
           }
           sealedCount={data.sealed.length}
           gradedCount={data.graded.length}
+          rawCount={data.raw?.length ?? 0}
+          accessoryCount={data.accessory?.length ?? 0}
         />
         <SearchFilters
           filters={filters}
           onChange={updateFilters}
           showSealedLang={showSealed}
-          showPsaFilter={showGraded}
+          showGradedFilters={showGraded}
         />
       </section>
 
@@ -276,7 +293,7 @@ export function Dashboard() {
         <section className="mb-8">
           <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-zinc-200">
             <span className="h-2 w-2 rounded-full bg-pokemon-yellow" />
-            Carte PSA Giapponesi
+            Carte gradate (PSA · BGS · CGC)
           </h2>
           <GradedTable
             cards={filteredGraded}
@@ -294,11 +311,36 @@ export function Dashboard() {
         </section>
       )}
 
+      {showRaw && (
+        <section className="mb-8">
+          <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-zinc-200">
+            <span className="h-2 w-2 rounded-full bg-violet-400" />
+            Carte raw
+          </h2>
+          <RawTable
+            cards={filteredRaw}
+            selectedId={selectedSealedId}
+            onSelect={setSelectedSealedId}
+          />
+        </section>
+      )}
+
+      {showAccessory && (
+        <section className="mb-8">
+          <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-zinc-200">
+            <span className="h-2 w-2 rounded-full bg-zinc-400" />
+            Accessori
+          </h2>
+          <AccessoryTable products={filteredAccessory} />
+        </section>
+      )}
+
       <footer className="border-t border-zinc-800/80 pt-6 text-center text-xs text-zinc-600">
-        Scraping Cardmarket · eBay · TCGPlayer — nessun abbonamento API ·{" "}
+        Scraping Cardmarket · eBay · TCGPlayer — snapshot JSON ·{" "}
+        {data.dataSource === "snapshot" && "dati da cron locale · "}
         {data.stats.blockedCount > 0 &&
-          `${data.stats.blockedCount} sorgenti bloccate (Cloudflare) — usa locale + SCRAPE_USE_PLAYWRIGHT=true · `}
-        Catalogo estensibile in src/lib/catalog/products.ts
+          `${data.stats.blockedCount} sorgenti bloccate — npm run scrape in locale · `}
+        Catalogo in src/lib/catalog/products.ts
       </footer>
     </div>
   );
