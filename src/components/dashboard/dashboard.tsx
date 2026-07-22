@@ -1,14 +1,19 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { HeaderBadge, MarketSourcesBanner, StatsCards } from "./stats-cards";
+import { DashboardHeader } from "./dashboard-header";
+import { MainNav } from "./main-nav";
+import { OverviewPanel } from "./overview-panel";
 import { CategoryTabs } from "./category-tabs";
+import { CategoryHub } from "./category-hub";
 import { SearchFilters } from "./search-filters";
 import { DualMarketChart, PriceChart } from "./price-chart";
 import { SealedTable, GradedTable, RawTable, AccessoryTable } from "./product-table";
 import { PortfolioEditPanel, SoldEditPanel } from "./portfolio-panel";
 import { AddProductPanel } from "./add-product-panel";
-import { SnapshotStatusBadge } from "./snapshot-status-badge";
+import { ManageCatalogPanel } from "./manage-catalog-panel";
+import { PortfolioView } from "./portfolio-view";
+import { buildPortfolioRows } from "@/lib/portfolio-resolve";
 import {
   filterAccessoryProducts,
   filterGradedCards,
@@ -17,10 +22,9 @@ import {
 } from "@/lib/filters";
 import { getGradedMarket, getSealedMarket } from "@/lib/market-utils";
 import { computePortfolioSummary } from "@/lib/portfolio-summary";
-import { ManageCatalogPanel } from "./manage-catalog-panel";
-import { PortfolioView } from "./portfolio-view";
-import { buildPortfolioRows } from "@/lib/portfolio-resolve";
 import type {
+  AppView,
+  DashboardCategory,
   DashboardData,
   MarketRegion,
   PortfolioData,
@@ -29,7 +33,7 @@ import type {
   TimeRange,
 } from "@/lib/types";
 import { getPriceAlertStatus, getTotalCost } from "@/lib/portfolio";
-import { RefreshCw, Plus, Settings2 } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import type { ChartReferenceLine } from "./price-chart";
 
 const defaultFilters: ProductFilters = {
@@ -42,6 +46,7 @@ const defaultFilters: ProductFilters = {
 };
 
 export function Dashboard() {
+  const [appView, setAppView] = useState<AppView>("overview");
   const [data, setData] = useState<DashboardData | null>(null);
   const [portfolio, setPortfolio] = useState<PortfolioData>({
     entries: {},
@@ -236,6 +241,10 @@ export function Dashboard() {
     setFilters((prev) => ({ ...prev, ...partial }));
   };
 
+  const setMarketCategory = (category: DashboardCategory) => {
+    updateFilters({ category });
+  };
+
   const filteredSealed = useMemo(
     () =>
       data
@@ -305,12 +314,16 @@ export function Dashboard() {
     filters.market === "all" ||
     filters.market === "compare";
 
-  const activeCategory = filters.category;
-  const showPortfolio = activeCategory === "portfolio";
-  const showSealed = !showPortfolio && (activeCategory === "all" || activeCategory === "sealed");
-  const showGraded = !showPortfolio && (activeCategory === "all" || activeCategory === "graded");
-  const showRaw = !showPortfolio && (activeCategory === "all" || activeCategory === "raw");
-  const showAccessory = !showPortfolio && (activeCategory === "all" || activeCategory === "accessory");
+  const category = filters.category;
+  const isCategoryHub = category === "all";
+  const showSealed = category === "sealed";
+  const showGraded = category === "graded";
+  const showRaw = category === "raw";
+  const showAccessory = category === "accessory";
+  const showCharts =
+    appView === "market" &&
+    !isCategoryHub &&
+    (showSealed || showGraded);
 
   if (loading && !data) {
     return (
@@ -350,265 +363,225 @@ export function Dashboard() {
     ? getGradedMarket(selectedGrade, "INTL")
     : undefined;
 
+  const categoryCounts = {
+    sealed: data.sealed.length,
+    graded: data.graded.length,
+    raw: data.raw?.length ?? 0,
+    accessory: data.accessory?.length ?? 0,
+  };
+
   return (
-    <div className="mx-auto min-h-screen max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <header className="mb-8">
-        <HeaderBadge />
-        <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-zinc-50 sm:text-4xl">
-              Dashboard Prezzi Pokémon
-            </h1>
-            <p className="mt-2 max-w-2xl text-zinc-400">
-              Monitora prezzi <strong className="font-medium text-zinc-300">Cardmarket</strong> (min listing EU) e{" "}
-              <strong className="font-medium text-zinc-300">eBay EU</strong> (vendute / in vendita, provenienza UE).
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <SnapshotStatusBadge data={data} scraping={scraping} />
-            <button
-              onClick={() => setManageCatalogOpen(true)}
-              className="inline-flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/80 px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-zinc-700"
-            >
-              <Settings2 className="h-4 w-4" />
-              Catalogo
-            </button>
-            <button
-              onClick={() => setAddProductOpen(true)}
-              className="inline-flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/80 px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-zinc-700"
-            >
-              <Plus className="h-4 w-4" />
-              Aggiungi prodotto
-            </button>
-            <button
-              onClick={() => loadData({ forceRefresh: true })}
-              disabled={loading || scraping}
-              className="inline-flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/80 px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-zinc-700 disabled:opacity-50"
-            >
-              <RefreshCw
-                className={`h-4 w-4 ${loading || scraping ? "animate-spin" : ""}`}
-              />
-              {scraping ? "Scraping…" : "Aggiorna prezzi"}
-            </button>
-          </div>
-          {scrapeMessage && (
-            <p className="mt-2 text-xs text-pokemon-yellow">{scrapeMessage}</p>
-          )}
-        </div>
-      </header>
+    <div className="mx-auto min-h-screen max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+      <DashboardHeader
+        data={data}
+        scraping={scraping}
+        loading={loading}
+        scrapeMessage={scrapeMessage}
+        onRefresh={() => loadData({ forceRefresh: true })}
+        onAddProduct={() => setAddProductOpen(true)}
+        onManageCatalog={() => setManageCatalogOpen(true)}
+      />
 
       <section className="mb-6">
-        <MarketSourcesBanner />
+        <MainNav
+          active={appView}
+          onChange={setAppView}
+          portfolioCount={portfolioRows.length}
+          alertCount={activeAlerts.length}
+        />
       </section>
 
-      <section className="mb-8">
-        <StatsCards stats={data.stats} portfolioSummary={portfolioSummary} />
-      </section>
-
-      {activeAlerts.length > 0 && (
-        <section className="mb-6 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3">
+      {activeAlerts.length > 0 && appView !== "portfolio" && (
+        <section className="mb-6 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3">
           <p className="text-sm font-medium text-amber-200">
             {activeAlerts.length} alert prezzo attivi
           </p>
-          <ul className="mt-2 space-y-1 text-xs text-amber-100/90">
-            {activeAlerts.slice(0, 5).map((row) => {
-              const status = getPriceAlertStatus(row.entry, row.marketPrice);
-              return (
-                <li key={row.key}>
-                  {row.title} —{" "}
-                  {status === "above" ? "sopra target" : "sotto soglia"} (
-                  {row.marketPrice != null
-                    ? `${row.marketPrice.toLocaleString("it-IT", { style: "currency", currency: "EUR" })}`
-                    : "—"}
-                  )
-                </li>
-              );
-            })}
-          </ul>
+          <button
+            type="button"
+            onClick={() => setAppView("portfolio")}
+            className="mt-1 text-xs text-amber-100/90 underline underline-offset-2"
+          >
+            Vai al Portfolio
+          </button>
         </section>
       )}
 
-      <section className="mb-6 space-y-4">
-        <CategoryTabs
-          active={filters.category}
-          onChange={(category) => updateFilters({ category })}
-          sealedCount={data.sealed.length}
-          gradedCount={data.graded.length}
-          rawCount={data.raw?.length ?? 0}
-          accessoryCount={data.accessory?.length ?? 0}
-          portfolioCount={portfolioRows.length}
+      {appView === "overview" && (
+        <OverviewPanel
+          data={data}
+          portfolio={portfolio}
+          portfolioSummary={portfolioSummary}
+          alertCount={activeAlerts.length}
+          onNavigate={setAppView}
         />
-        {!showPortfolio && (
-          <SearchFilters
-            filters={filters}
-            onChange={updateFilters}
-            showSealedLang={showSealed}
-            showGradedFilters={showGraded}
-          />
-        )}
-      </section>
-
-      {showPortfolio && (
-        <section className="mb-8">
-          <PortfolioView
-            data={data}
-            portfolio={portfolio}
-            onEdit={openPortfolioEdit}
-            onSold={openSoldEdit}
-          />
-        </section>
       )}
 
-      {(showSealed || showGraded) && !showPortfolio && (
-        <section className="mb-8 grid gap-6 lg:grid-cols-2">
-          {showSealed && selectedSealed && showDualCharts && (
-            <DualMarketChart
-              itQuote={sealedIt}
-              intlQuote={sealedIntl}
-              title={selectedSealed.name}
-              timeRange={timeRange}
-              onTimeRangeChange={setTimeRange}
-              referenceLines={sealedChartRefs}
-            />
-          )}
-          {showSealed && selectedSealed && !showDualCharts && chartRegion("IT") && sealedIt && (
-            <PriceChart
-              data={sealedIt.history}
-              currency="EUR"
-              title={`${selectedSealed.name} · Cardmarket`}
-              color="#4ade80"
-              timeRange={timeRange}
-              onTimeRangeChange={setTimeRange}
-              referenceLines={sealedChartRefs}
-            />
-          )}
-          {showSealed && selectedSealed && !showDualCharts && filters.market === "INTL" && sealedIntl && (
-            <PriceChart
-              data={sealedIntl.history}
-              currency="EUR"
-              title={`${selectedSealed.name} · eBay EU`}
-              color="#fb923c"
-              timeRange={timeRange}
-              onTimeRangeChange={setTimeRange}
-              referenceLines={sealedChartRefs}
-            />
-          )}
-          {showGraded && selectedGraded && selectedGrade && showDualCharts && (
-            <DualMarketChart
-              itQuote={gradedIt}
-              intlQuote={gradedIntl}
-              title={`${selectedGraded.name} · ${selectedGrade.company} ${selectedGrade.grade}`}
-              timeRange={timeRange}
-              onTimeRangeChange={setTimeRange}
-              referenceLines={gradedChartRefs}
-            />
-          )}
-          {showGraded && selectedGraded && selectedGrade && !showDualCharts && filters.market === "IT" && gradedIt && (
-            <PriceChart
-              data={gradedIt.history}
-              currency="EUR"
-              title={`${selectedGraded.name} · ${selectedGrade.company} ${selectedGrade.grade} · Cardmarket`}
-              color="#4ade80"
-              timeRange={timeRange}
-              onTimeRangeChange={setTimeRange}
-              referenceLines={gradedChartRefs}
-            />
-          )}
-          {showGraded && selectedGraded && selectedGrade && !showDualCharts && filters.market === "INTL" && gradedIntl && (
-            <PriceChart
-              data={gradedIntl.history}
-              currency="EUR"
-              title={`${selectedGraded.name} · ${selectedGrade.company} ${selectedGrade.grade} · eBay EU`}
-              color="#fb923c"
-              timeRange={timeRange}
-              onTimeRangeChange={setTimeRange}
-              referenceLines={gradedChartRefs}
-            />
-          )}
-        </section>
+      {appView === "portfolio" && (
+        <PortfolioView
+          data={data}
+          portfolio={portfolio}
+          onEdit={openPortfolioEdit}
+          onSold={openSoldEdit}
+        />
       )}
 
-      {showSealed && !showPortfolio && (
-        <section className="mb-8">
-          <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-zinc-200">
-            <span className="h-2 w-2 rounded-full bg-pokemon-blue" />
-            Sealed ITA & ENG
-          </h2>
-          <SealedTable
-            products={filteredSealed}
-            selectedId={selectedSealedId}
-            onSelect={setSelectedSealedId}
-            portfolio={portfolio.entries}
-            onEditPortfolio={openPortfolioEdit}
-            onSoldPortfolio={openSoldEdit}
+      {appView === "market" && (
+        <div className="space-y-5">
+          <CategoryTabs
+            active={category}
+            onChange={setMarketCategory}
+            sealedCount={categoryCounts.sealed}
+            gradedCount={categoryCounts.graded}
+            rawCount={categoryCounts.raw}
+            accessoryCount={categoryCounts.accessory}
           />
-        </section>
+
+          {!isCategoryHub && (
+            <SearchFilters
+              filters={filters}
+              onChange={updateFilters}
+              showSealedLang={showSealed}
+              showGradedFilters={showGraded}
+            />
+          )}
+
+          {isCategoryHub && (
+            <CategoryHub counts={categoryCounts} onSelect={setMarketCategory} />
+          )}
+
+          {showCharts && (
+            <section className="grid gap-6 lg:grid-cols-2">
+              {showSealed && selectedSealed && showDualCharts && (
+                <DualMarketChart
+                  itQuote={sealedIt}
+                  intlQuote={sealedIntl}
+                  title={selectedSealed.name}
+                  timeRange={timeRange}
+                  onTimeRangeChange={setTimeRange}
+                  referenceLines={sealedChartRefs}
+                />
+              )}
+              {showSealed && selectedSealed && !showDualCharts && chartRegion("IT") && sealedIt && (
+                <PriceChart
+                  data={sealedIt.history}
+                  currency="EUR"
+                  title={`${selectedSealed.name} · Cardmarket`}
+                  color="#4ade80"
+                  timeRange={timeRange}
+                  onTimeRangeChange={setTimeRange}
+                  referenceLines={sealedChartRefs}
+                />
+              )}
+              {showSealed && selectedSealed && !showDualCharts && filters.market === "INTL" && sealedIntl && (
+                <PriceChart
+                  data={sealedIntl.history}
+                  currency="EUR"
+                  title={`${selectedSealed.name} · eBay EU`}
+                  color="#fb923c"
+                  timeRange={timeRange}
+                  onTimeRangeChange={setTimeRange}
+                  referenceLines={sealedChartRefs}
+                />
+              )}
+              {showGraded && selectedGraded && selectedGrade && showDualCharts && (
+                <DualMarketChart
+                  itQuote={gradedIt}
+                  intlQuote={gradedIntl}
+                  title={`${selectedGraded.name} · ${selectedGrade.company} ${selectedGrade.grade}`}
+                  timeRange={timeRange}
+                  onTimeRangeChange={setTimeRange}
+                  referenceLines={gradedChartRefs}
+                />
+              )}
+              {showGraded && selectedGraded && selectedGrade && !showDualCharts && filters.market === "IT" && gradedIt && (
+                <PriceChart
+                  data={gradedIt.history}
+                  currency="EUR"
+                  title={`${selectedGraded.name} · ${selectedGrade.company} ${selectedGrade.grade} · Cardmarket`}
+                  color="#4ade80"
+                  timeRange={timeRange}
+                  onTimeRangeChange={setTimeRange}
+                  referenceLines={gradedChartRefs}
+                />
+              )}
+              {showGraded && selectedGraded && selectedGrade && !showDualCharts && filters.market === "INTL" && gradedIntl && (
+                <PriceChart
+                  data={gradedIntl.history}
+                  currency="EUR"
+                  title={`${selectedGraded.name} · ${selectedGrade.company} ${selectedGrade.grade} · eBay EU`}
+                  color="#fb923c"
+                  timeRange={timeRange}
+                  onTimeRangeChange={setTimeRange}
+                  referenceLines={gradedChartRefs}
+                />
+              )}
+            </section>
+          )}
+
+          {showSealed && (
+            <section>
+              <SealedTable
+                products={filteredSealed}
+                selectedId={selectedSealedId}
+                onSelect={setSelectedSealedId}
+                portfolio={portfolio.entries}
+                onEditPortfolio={openPortfolioEdit}
+                onSoldPortfolio={openSoldEdit}
+              />
+            </section>
+          )}
+
+          {showGraded && (
+            <section>
+              <GradedTable
+                cards={filteredGraded}
+                selectedId={selectedGradedId}
+                onSelect={(id) => {
+                  setSelectedGradedId(id);
+                  const card = data.graded.find((c) => c.id === id);
+                  const grade = card?.grades[0];
+                  if (grade) {
+                    setSelectedGradeKey(`${grade.company}-${grade.grade}`);
+                  }
+                }}
+                marketFilter={filters.market}
+                portfolio={portfolio.entries}
+                onEditPortfolio={openPortfolioEdit}
+                onSoldPortfolio={openSoldEdit}
+              />
+            </section>
+          )}
+
+          {showRaw && (
+            <section>
+              <RawTable
+                cards={filteredRaw}
+                selectedId={selectedRawId}
+                onSelect={setSelectedRawId}
+                portfolio={portfolio.entries}
+                onEditPortfolio={openPortfolioEdit}
+                onSoldPortfolio={openSoldEdit}
+              />
+            </section>
+          )}
+
+          {showAccessory && (
+            <section>
+              <AccessoryTable
+                products={filteredAccessory}
+                portfolio={portfolio.entries}
+                onEditPortfolio={openPortfolioEdit}
+                onSoldPortfolio={openSoldEdit}
+              />
+            </section>
+          )}
+        </div>
       )}
 
-      {showGraded && !showPortfolio && (
-        <section className="mb-8">
-          <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-zinc-200">
-            <span className="h-2 w-2 rounded-full bg-pokemon-yellow" />
-            Carte gradate (PSA · BGS · CGC)
-          </h2>
-          <GradedTable
-            cards={filteredGraded}
-            selectedId={selectedGradedId}
-            onSelect={(id) => {
-              setSelectedGradedId(id);
-              const card = data.graded.find((c) => c.id === id);
-              const grade = card?.grades[0];
-              if (grade) {
-                setSelectedGradeKey(`${grade.company}-${grade.grade}`);
-              }
-            }}
-            marketFilter={filters.market}
-            portfolio={portfolio.entries}
-            onEditPortfolio={openPortfolioEdit}
-            onSoldPortfolio={openSoldEdit}
-          />
-        </section>
-      )}
-
-      {showRaw && !showPortfolio && (
-        <section className="mb-8">
-          <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-zinc-200">
-            <span className="h-2 w-2 rounded-full bg-violet-400" />
-            Carte raw
-          </h2>
-          <RawTable
-            cards={filteredRaw}
-            selectedId={selectedRawId}
-            onSelect={setSelectedRawId}
-            portfolio={portfolio.entries}
-            onEditPortfolio={openPortfolioEdit}
-            onSoldPortfolio={openSoldEdit}
-          />
-        </section>
-      )}
-
-      {showAccessory && !showPortfolio && (
-        <section className="mb-8">
-          <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-zinc-200">
-            <span className="h-2 w-2 rounded-full bg-zinc-400" />
-            Accessori
-          </h2>
-          <AccessoryTable
-            products={filteredAccessory}
-            portfolio={portfolio.entries}
-            onEditPortfolio={openPortfolioEdit}
-            onSoldPortfolio={openSoldEdit}
-          />
-        </section>
-      )}
-
-      <footer className="border-t border-zinc-800/80 pt-6 text-center text-xs text-zinc-600">
-        Cardmarket · eBay EU — snapshot JSON · portfolio in data/portfolio.json ·
-        catalogo utente in data/user-catalog.json ·{" "}
-        {data.dataSource === "snapshot" && "dati da cron locale · "}
+      <footer className="mt-10 border-t border-zinc-800/80 pt-4 text-center text-xs text-zinc-600">
+        Cardmarket · eBay EU · snapshot locale
         {data.stats.blockedCount > 0 &&
-          `${data.stats.blockedCount} sorgenti bloccate — npm run scrape in locale · `}
-        Catalogo built-in + user-catalog.json
+          ` · ${data.stats.blockedCount} sorgenti bloccate`}
       </footer>
 
       <PortfolioEditPanel

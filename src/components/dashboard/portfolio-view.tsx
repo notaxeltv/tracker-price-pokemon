@@ -40,8 +40,7 @@ export function PortfolioView({
         <FolderOpen className="mx-auto mb-3 h-10 w-10 text-zinc-600" />
         <p className="text-zinc-400">Nessuna voce nel portfolio.</p>
         <p className="mt-1 text-sm text-zinc-500">
-          Registra un acquisto dalla tabella prodotti oppure attiva il filtro
-          &quot;Solo portfolio&quot;.
+          Vai su Mercato, seleziona una categoria e clicca Acquisto su un prodotto.
         </p>
       </div>
     );
@@ -55,15 +54,8 @@ export function PortfolioView({
     <section className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="flex items-center gap-2 text-lg font-semibold text-zinc-200">
-            <span className="h-2 w-2 rounded-full bg-violet-400" />
-            Il tuo portfolio
-            <span className="text-sm font-normal text-zinc-500">
-              ({rows.length} voci)
-            </span>
-          </h2>
           {alertCount > 0 && (
-            <p className="mt-1 text-sm text-amber-400">
+            <p className="text-sm text-amber-400">
               {alertCount} alert prezzo attivi
             </p>
           )}
