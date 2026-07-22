@@ -9,7 +9,7 @@ import { SealedTable, GradedTable } from "./product-table";
 import {
   filterGradedCards,
   filterSealedProducts,
-} from "@/lib/data-service";
+} from "@/lib/filters";
 import { getGradedMarket, getSealedMarket } from "@/lib/market-utils";
 import type {
   DashboardData,
@@ -295,9 +295,10 @@ export function Dashboard() {
       )}
 
       <footer className="border-t border-zinc-800/80 pt-6 text-center text-xs text-zinc-600">
-        {data.dataSource === "live" && "Dati live · "}
-        {data.dataSource === "mixed" && "Dati misti (live + stime) · "}
-        Sealed ENG: TCGPlayer · Sealed ITA / PSA JP: stime · Pro: PkmnPrices per Cardmarket + eBay JP
+        Scraping Cardmarket · eBay · TCGPlayer — nessun abbonamento API ·{" "}
+        {data.stats.blockedCount > 0 &&
+          `${data.stats.blockedCount} sorgenti bloccate (Cloudflare) — usa locale + SCRAPE_USE_PLAYWRIGHT=true · `}
+        Catalogo estensibile in src/lib/catalog/products.ts
       </footer>
     </div>
   );

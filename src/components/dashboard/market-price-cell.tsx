@@ -14,6 +14,14 @@ export function MarketPriceCell({ quote, compact }: MarketPriceCellProps) {
     return <span className="text-zinc-600">—</span>;
   }
 
+  if (!quote.live && quote.scrapeError && quote.price === 0) {
+    return (
+      <div className="text-right text-xs text-red-400/80" title={quote.scrapeError}>
+        Scrape fallito
+      </div>
+    );
+  }
+
   return (
     <div className={cn("text-right", compact ? "space-y-0" : "space-y-0.5")}>
       <p className="font-semibold text-zinc-100">
@@ -73,7 +81,23 @@ interface SpreadBadgeProps {
   spreadPercent: number;
 }
 
-export function LiveBadge({ live }: { live?: boolean }) {
+export function LiveBadge({
+  live,
+  blocked,
+}: {
+  live?: boolean;
+  blocked?: boolean;
+}) {
+  if (blocked) {
+    return (
+      <span
+        className="rounded-md bg-red-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-red-400"
+        title="Scrape bloccato — avvia in locale con SCRAPE_USE_PLAYWRIGHT=true"
+      >
+        Blocked
+      </span>
+    );
+  }
   if (live) {
     return (
       <span className="rounded-md bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-400">

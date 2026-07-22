@@ -16,7 +16,7 @@ import {
   getChangeColor,
   getSealedTypeLabel,
 } from "@/lib/utils";
-import { getSpreadPercent } from "@/lib/data-service";
+import { getSpreadPercent } from "@/lib/filters";
 import { getSealedMarket } from "@/lib/market-utils";
 import type { GradedCard, MarketFilter, SealedProduct } from "@/lib/types";
 import { getGradedMarket } from "@/lib/market-utils";
@@ -119,7 +119,7 @@ export function SealedTable({
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex flex-col gap-1">
-                      <LiveBadge live={quote?.live} />
+                      <LiveBadge live={quote?.live} blocked={quote?.blocked} />
                       <SourceLink quote={quote} />
                     </div>
                   </td>
@@ -238,6 +238,7 @@ export function GradedTable({
                             )}
                             <LiveBadge
                               live={it?.live || intl?.live}
+                              blocked={it?.blocked || intl?.blocked}
                             />
                           </div>
                           <div className="grid gap-3 sm:grid-cols-2">

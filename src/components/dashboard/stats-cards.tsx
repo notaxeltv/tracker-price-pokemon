@@ -129,18 +129,22 @@ export function MarketSourcesBanner() {
             Carte PSA giapponesi · Sealed italiano (Cardmarket) · Sealed inglese (TCGPlayer live)
           </p>
         </div>
-        <div className="flex flex-wrap gap-3 text-xs">
+          <div className="flex flex-wrap gap-3 text-xs">
           <div className="flex items-center gap-2 rounded-xl border border-violet-500/20 bg-violet-500/5 px-3 py-2">
             <span className="font-medium text-violet-300">🇯🇵 PSA JP</span>
-            <span className="text-zinc-500">eBay · PkmnPrices Pro</span>
+            <span className="text-zinc-500">eBay scrape IT/US</span>
           </div>
           <div className="flex items-center gap-2 rounded-xl border border-green-500/20 bg-green-500/5 px-3 py-2">
             <span className="font-medium text-green-400">🇮🇹 Sealed ITA</span>
-            <span className="text-zinc-500">Cardmarket</span>
+            <span className="text-zinc-500">Cardmarket scrape</span>
           </div>
           <div className="flex items-center gap-2 rounded-xl border border-blue-500/20 bg-blue-500/5 px-3 py-2">
             <span className="font-medium text-blue-400">🇬🇧 Sealed ENG</span>
-            <span className="text-zinc-500">TCGPlayer live</span>
+            <span className="text-zinc-500">TCGPlayer + eBay</span>
+          </div>
+          <div className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/50 px-3 py-2">
+            <span className="font-medium text-zinc-300">🔌 Estensibile</span>
+            <span className="text-zinc-500">BGS · CGC · raw · JP sealed</span>
           </div>
         </div>
       </div>

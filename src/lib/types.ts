@@ -1,7 +1,7 @@
 export type ProductCategory = "sealed" | "graded";
 
-/** Solo PSA per carte gradate JP dell'utente */
-export type GradingCompany = "PSA";
+/** Solo PSA attivo; BGS/CGC pronti nel catalogo */
+export type GradingCompany = "PSA" | "BGS" | "CGC";
 
 export type ProductLanguage = "JP" | "IT" | "EN";
 
@@ -34,6 +34,11 @@ export interface MarketQuote {
   history: PricePoint[];
   externalUrl?: string;
   live?: boolean;
+  blocked?: boolean;
+  scrapeError?: string;
+  viaFetcher?: boolean;
+  sampleSize?: number;
+  scrapedAt?: string;
 }
 
 export interface GradedPrice {
@@ -85,6 +90,7 @@ export interface DashboardStats {
   topGainer: { name: string; change: number; region: MarketRegion } | null;
   topLoser: { name: string; change: number; region: MarketRegion } | null;
   liveCount: number;
+  blockedCount: number;
 }
 
 export interface DashboardData {
@@ -92,7 +98,7 @@ export interface DashboardData {
   sealed: SealedProduct[];
   graded: GradedCard[];
   lastUpdated: string;
-  dataSource: "live" | "mixed" | "demo";
+  dataSource: "live" | "mixed" | "demo" | "scrape_blocked";
 }
 
 export type TimeRange = "7d" | "30d" | "90d" | "1y";

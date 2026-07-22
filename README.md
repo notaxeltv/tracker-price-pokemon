@@ -1,104 +1,72 @@
 # Pokémon Price Tracker
 
-Dashboard web per monitorare i prezzi di **prodotti sealed** (booster box, ETB, bundle) e **carte gradate** (PSA, BGS, CGC) del Pokémon TCG sui mercati EU e US.
+Dashboard per monitorare prezzi **PSA giapponesi** e **sealed ITA/ENG** — **senza abbonamenti API**, via scraping.
 
-![Next.js](https://img.shields.io/badge/Next.js-15-black)
-![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-38bdf8)
+## Architettura scraper (estensibile)
 
-## Funzionalità
+```
+src/lib/
+├── catalog/products.ts    # Catalogo prodotti — aggiungi qui nuovi item
+├── scrapers/
+│   ├── types.ts           # Tipi + ProductKind + GradingCompany
+│   ├── registry.ts        # Registro scraper (plugin-style)
+│   ├── orchestrator.ts    # Coordina scrape per prodotto/mercato
+├── scrapers/
+│   ├── types.ts           # Tipi + ProductKind + GradingCompany
+│   ├── registry.ts        # Registro scraper (plugin-style)
+│   ├── orchestrator.ts    # Coordina scrape per prodotto/mercato
+│   ├── cardmarket.ts      # Scrape Cardmarket IT
+│   ├── ebay.ts            # Scrape eBay IT/US vendute
+│   ├── tcgplayer.ts       # Fetch TCGPlayer mpapi (sealed ENG)
+│   └── playwright-scraper.ts  # Playwright server-only (locale)
+├── data-service.server.ts # Logica scrape lato server
+└── data-service.ts        # Re-export server-only per API routes
+```
 
-- **Overview statistiche**: prodotti monitorati, variazione media 7g, top gainers/losers
-- **Prodotti sealed**: tabella con prezzi, variazioni 24h/7g/30g e sparkline
-- **Carte gradate**: prezzi per PSA, BGS e CGC con breakdown per grado
-- **Grafici storici**: trend prezzi con intervalli 7G, 30G, 90G, 1A
-- **Filtri**: ricerca, mercato (EU/US), grading company, ordinamento
-- **API REST**: endpoint `/api/dashboard` per integrazioni esterne
+### Aggiungere prodotti futuri (BGS, CGC, raw EN, sealed JP…)
 
-## Avvio rapido
+1. Apri `src/lib/catalog/products.ts`
+2. Aggiungi una voce `CatalogProduct` con `kind`, `language`, `grading`, `sources`
+3. Imposta `enabled: true` (o ometti — default attivo)
+4. Esempio disabilitato già presente: `graded-en-charizard-legacy` (BGS)
+
+### Sorgenti prezzo
+
+| Prodotto | Sorgente | Metodo |
+|----------|----------|--------|
+| Sealed ENG | TCGPlayer | mpapi pubblico |
+| Sealed ITA | Cardmarket | scrape HTML / Playwright |
+| PSA JP | eBay IT + US | scrape vendute |
+| Fallback carte | TCGdex | trend Cardmarket (non scrape) |
+
+## Avvio
 
 ```bash
 npm install
 npm run dev
 ```
 
-Apri [http://localhost:3000](http://localhost:3000).
+## Scraping in locale (Cardmarket + eBay)
 
-## Build produzione
+Cloud/datacenter IP sono spesso **bloccati da Cloudflare**. In locale:
 
 ```bash
-npm run build
-npm start
+# .env.local
+SCRAPE_USE_PLAYWRIGHT=true
 ```
 
-## Mercati supportati
+Poi riavvia `npm run dev`. Playwright apre un browser headless per bypassare i blocchi.
 
-| Mercato | Fonti (riferimento) | Valuta | Note |
-|---------|----------------------|--------|------|
-| **🇮🇹 Italia / EU** | Cardmarket, eBay IT | EUR | Prezzi consultabili su Cardmarket; **nessuna API key pubblica** |
-| **🌍 Internazionale** | TCGPlayer, eBay US | USD | API disponibili via aggregatori |
+Refresh manuale cache:
 
-La dashboard mostra un **confronto side-by-side** con spread percentuale e grafici duali (verde = IT/EU, arancione = INTL).
-
-## Cardmarket e API: cosa sapere
-
-**Cardmarket non rilascia chiavi API** in modalità self-service. L’accesso programmatico ufficiale (OAuth 1.0a) è riservato a partner/tool registrati, con processo di approvazione.
-
-Per automatizzare i prezzi **senza API Cardmarket diretta**, le opzioni realistiche sono:
-
-| Strategia | Costo | Sealed | Gradate | EUR (Cardmarket) | USD | Note |
-|-----------|-------|--------|---------|------------------|-----|------|
-| **[TCGdex](https://tcgdex.dev/markets-prices)** | **Gratis**, no API key | ❌ | ❌ | ✅ carte raw | ✅ | Unica opzione live davvero gratuita |
-| **[PkmnPrices](https://www.pkmnprices.com/docs) Free** | $0 | ❌ | ❌ | ❌ | ⚠️ solo carte EN | 100 crediti/giorno, no sealed/EU/eBay |
-| **[PkmnPrices](https://www.pkmnprices.com/docs) Pro** | ~$15/mo | ✅ | ✅ | ✅ | ✅ | Copre tutto ciò che serve |
-| **[PokeTrace](https://poketrace.com/docs) Pro** | a pagamento | ✅ | ✅ | ✅ | ✅ | Free: accesso limitato, no EU/gradate |
-| **Consultazione manuale** | Gratis | ✅ | ✅ | [cardmarket.com/it](https://www.cardmarket.com/it/Pokemon) | [tcgplayer.com](https://www.tcgplayer.com) | — |
-
-> **Attenzione piano Free PkmnPrices:** niente sealed, niente prezzi EU (Cardmarket), niente listing TCGPlayer/Cardmarket, niente eBay vendute, solo carte inglesi. Per la dashboard IT + internazionale serve almeno **Pro**.
-
-## Integrazione API esterne
-
-La dashboard usa attualmente **dati demo**. Strategia consigliata per prezzi live:
-
-| Componente | Fonte | Piano |
-|------------|-------|-------|
-| Carte raw IT + INTL | **TCGdex** (gratis) | Nessuna key |
-| Sealed + gradate + storico | **PkmnPrices Pro** o **PokeTrace Pro** | A pagamento |
-
-```env
-# Gratis — carte singole live (Cardmarket EUR + TCGPlayer USD)
-TCGDEX_LANG=it
-
-# A pagamento — sealed, gradate, storico completo
-PKMNPRICES_API_KEY=your_pro_key
-# oppure
-POKETRACE_API_KEY=your_pro_key
+```bash
+curl -X POST http://localhost:3000/api/scrape/refresh
 ```
 
-## Struttura progetto
+## Variabili ambiente
 
-```
-src/
-├── app/
-│   ├── api/dashboard/route.ts   # API dati dashboard
-│   ├── layout.tsx
-│   └── page.tsx
-├── components/dashboard/        # UI componenti
-└── lib/
-    ├── types.ts                 # Tipi TypeScript
-    ├── mock-data.ts             # Dati demo
-    ├── data-service.ts          # Logica fetch e filtri
-    └── utils.ts                 # Formattazione e helper
-```
+Vedi `.env.example` — **nessuna API key a pagamento richiesta**.
 
 ## Stack
 
-- **Next.js 15** (App Router)
-- **React 19**
-- **Tailwind CSS 4**
-- **Recharts** per i grafici
-- **Lucide React** per le icone
-
-## Licenza
-
-MIT
+Next.js 15 · Cheerio · Playwright (opzionale) · Recharts · Tailwind 4
