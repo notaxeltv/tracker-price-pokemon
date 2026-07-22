@@ -1,6 +1,7 @@
 "use client";
 
 import { cn, formatPercent, formatPrice, getChangeColor } from "@/lib/utils";
+import { metricCardClass } from "@/lib/design";
 import { getDisplayGainLoss } from "@/lib/portfolio";
 import type { DashboardData, PortfolioData, PortfolioSummary } from "@/lib/types";
 import type { AppView } from "@/lib/types";
@@ -13,6 +14,7 @@ import {
   TrendingUp,
   Wallet,
 } from "lucide-react";
+import type { AccentTone } from "@/lib/design";
 
 interface OverviewPanelProps {
   data: DashboardData;
@@ -81,26 +83,26 @@ export function OverviewPanel({
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <section className="rounded-2xl border border-zinc-800/80 bg-zinc-900/50 p-5">
+        <section className="card-padded">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-semibold text-zinc-100">Mercato EU — 7 giorni</h2>
+            <h2 className="heading-section">Mercato EU — 7 giorni</h2>
             <button
               type="button"
               onClick={() => onNavigate("market")}
-              className="inline-flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-200"
+              className="text-link"
             >
               Apri mercato
               <ArrowRight className="h-3.5 w-3.5" />
             </button>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="rounded-xl border border-green-500/20 bg-green-500/5 p-3">
+            <div className="stat-box-it">
               <p className="text-xs text-zinc-500">Cardmarket</p>
               <p className={cn("mt-1 text-xl font-semibold", getChangeColor(data.stats.avgChange7dIT))}>
                 {formatPercent(data.stats.avgChange7dIT)}
               </p>
             </div>
-            <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 p-3">
+            <div className="stat-box-intl">
               <p className="text-xs text-zinc-500">eBay EU</p>
               <p className={cn("mt-1 text-xl font-semibold", getChangeColor(data.stats.avgChange7dINTL))}>
                 {formatPercent(data.stats.avgChange7dINTL)}
@@ -123,13 +125,13 @@ export function OverviewPanel({
           )}
         </section>
 
-        <section className="rounded-2xl border border-zinc-800/80 bg-zinc-900/50 p-5">
+        <section className="card-padded">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-semibold text-zinc-100">Le tue voci</h2>
+            <h2 className="heading-section">Le tue voci</h2>
             <button
               type="button"
               onClick={() => onNavigate("portfolio")}
-              className="inline-flex items-center gap-1 text-xs text-zinc-400 hover:text-zinc-200"
+              className="text-link"
             >
               Vedi tutto
               <ArrowRight className="h-3.5 w-3.5" />
@@ -146,7 +148,7 @@ export function OverviewPanel({
                 return (
                   <li
                     key={row.key}
-                    className="flex items-center justify-between gap-3 rounded-xl border border-zinc-800 bg-zinc-800/30 px-3 py-2.5"
+                    className="flex items-center justify-between gap-3 rounded-xl border border-border bg-zinc-800/30 px-3 py-2.5"
                   >
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium text-zinc-200">
@@ -190,25 +192,11 @@ function MetricCard({
   value: string;
   sub: string;
   icon: typeof Wallet;
-  accent: "violet" | "emerald" | "red" | "blue" | "amber" | "zinc";
+  accent: AccentTone;
   valueClass?: string;
 }) {
-  const accents = {
-    violet: "from-violet-500/15 to-violet-600/5 border-violet-500/20",
-    emerald: "from-emerald-500/15 to-emerald-600/5 border-emerald-500/20",
-    red: "from-red-500/15 to-red-600/5 border-red-500/20",
-    blue: "from-blue-500/15 to-blue-600/5 border-blue-500/20",
-    amber: "from-amber-500/15 to-amber-600/5 border-amber-500/20",
-    zinc: "from-zinc-800/40 to-zinc-900/20 border-zinc-800",
-  };
-
   return (
-    <div
-      className={cn(
-        "rounded-2xl border bg-gradient-to-br p-4",
-        accents[accent]
-      )}
-    >
+    <div className={metricCardClass(accent)}>
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <p className="text-xs font-medium text-zinc-500">{label}</p>

@@ -18,6 +18,8 @@ import {
 } from "./portfolio-panel";
 import type { DashboardData, PortfolioData } from "@/lib/types";
 import { Download, FileSpreadsheet, FolderOpen } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { EmptyState, TableShell } from "@/components/ui/card";
 
 interface PortfolioViewProps {
   data: DashboardData;
@@ -36,13 +38,13 @@ export function PortfolioView({
 
   if (rows.length === 0) {
     return (
-      <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-12 text-center">
+      <EmptyState>
         <FolderOpen className="mx-auto mb-3 h-10 w-10 text-zinc-600" />
         <p className="text-zinc-400">Nessuna voce nel portfolio.</p>
         <p className="mt-1 text-sm text-zinc-500">
           Vai su Mercato, seleziona una categoria e clicca Acquisto su un prodotto.
         </p>
-      </div>
+      </EmptyState>
     );
   }
 
@@ -61,30 +63,28 @@ export function PortfolioView({
           )}
         </div>
         <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
+          <Button
+            variant="secondary"
             onClick={() => downloadPortfolioExport(data, portfolio, "csv")}
-            className="inline-flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/80 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-700"
           >
             <FileSpreadsheet className="h-4 w-4" />
             Export CSV
-          </button>
-          <button
-            type="button"
+          </Button>
+          <Button
+            variant="secondary"
             onClick={() => downloadPortfolioExport(data, portfolio, "json")}
-            className="inline-flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/80 px-3 py-2 text-sm text-zinc-300 hover:bg-zinc-700"
           >
             <Download className="h-4 w-4" />
             Export JSON
-          </button>
+          </Button>
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/60">
+      <TableShell>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[980px] text-left text-sm">
             <thead>
-              <tr className="border-b border-zinc-800 text-xs uppercase tracking-wider text-zinc-500">
+              <tr className="table-head">
                 <th className="px-4 py-3 font-medium">Prodotto</th>
                 <th className="px-4 py-3 font-medium text-right">Qty</th>
                 <th className="px-4 py-3 font-medium text-right">Investito</th>
@@ -105,10 +105,7 @@ export function PortfolioView({
                     : null;
 
                 return (
-                  <tr
-                    key={row.key}
-                    className="border-b border-zinc-800/50 hover:bg-zinc-800/30"
-                  >
+                  <tr key={row.key} className="table-row">
                     <td className="px-4 py-3">
                       <p className="font-medium text-zinc-100">{row.title}</p>
                       {row.subtitle && (
@@ -163,7 +160,7 @@ export function PortfolioView({
                     <td className="px-4 py-3">
                       <span
                         className={cn(
-                          "rounded-md px-2 py-0.5 text-xs font-medium",
+                          "badge",
                           isSold(row.entry)
                             ? "bg-emerald-500/10 text-emerald-300"
                             : "bg-violet-500/10 text-violet-300"
@@ -174,21 +171,20 @@ export function PortfolioView({
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex justify-end gap-2">
-                        <button
-                          type="button"
+                        <Button
+                          variant="ghost"
+                          className="px-2.5 py-1 text-xs"
                           onClick={() => onEdit(row.key, row.title, row.subtitle)}
-                          className="rounded-lg border border-zinc-700 px-2.5 py-1 text-xs text-zinc-300 hover:bg-zinc-800"
                         >
                           Acquisto
-                        </button>
+                        </Button>
                         {!isSold(row.entry) && total != null && (
-                          <button
-                            type="button"
+                          <Button
+                            variant="success"
                             onClick={() => onSold(row.key, row.title, row.subtitle)}
-                            className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs text-emerald-300 hover:bg-emerald-500/20"
                           >
                             Vendi
-                          </button>
+                          </Button>
                         )}
                       </div>
                     </td>
@@ -198,7 +194,7 @@ export function PortfolioView({
             </tbody>
           </table>
         </div>
-      </div>
+      </TableShell>
     </section>
   );
 }

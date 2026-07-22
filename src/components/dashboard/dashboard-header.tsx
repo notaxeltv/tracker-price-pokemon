@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { SnapshotStatusBadge } from "./snapshot-status-badge";
 import type { DashboardData } from "@/lib/types";
 import { MoreHorizontal, Plus, RefreshCw, Settings2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface DashboardHeaderProps {
   data: DashboardData;
@@ -42,10 +43,8 @@ export function DashboardHeader({
     <header className="mb-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-50 sm:text-3xl">
-            Pokémon Price Tracker
-          </h1>
-          <p className="mt-1 text-sm text-zinc-500">
+          <h1 className="heading-page">Pokémon Price Tracker</h1>
+          <p className="text-subtle mt-1">
             Cardmarket EU · eBay EU · portfolio personale
           </p>
           <div className="mt-3">
@@ -54,36 +53,33 @@ export function DashboardHeader({
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
-          <button
-            type="button"
+          <Button
             onClick={onRefresh}
             disabled={loading || scraping}
-            className="inline-flex items-center gap-2 rounded-xl bg-pokemon-yellow px-4 py-2.5 text-sm font-semibold text-zinc-900 transition-opacity hover:opacity-90 disabled:opacity-50"
           >
             <RefreshCw
               className={`h-4 w-4 ${loading || scraping ? "animate-spin" : ""}`}
             />
             {scraping ? "Aggiornamento…" : "Aggiorna prezzi"}
-          </button>
+          </Button>
 
           <div className="relative" ref={menuRef}>
-            <button
-              type="button"
+            <Button
+              variant="icon"
               onClick={() => setMenuOpen((v) => !v)}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-zinc-700 bg-zinc-800/80 text-zinc-300 hover:bg-zinc-700"
               aria-label="Altre azioni"
             >
               <MoreHorizontal className="h-5 w-5" />
-            </button>
+            </Button>
             {menuOpen && (
-              <div className="absolute right-0 z-20 mt-2 w-52 overflow-hidden rounded-xl border border-zinc-700 bg-zinc-900 py-1 shadow-xl">
+              <div className="dropdown-menu">
                 <button
                   type="button"
                   onClick={() => {
                     onAddProduct();
                     setMenuOpen(false);
                   }}
-                  className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-zinc-200 hover:bg-zinc-800"
+                  className="dropdown-item"
                 >
                   <Plus className="h-4 w-4" />
                   Aggiungi prodotto
@@ -94,7 +90,7 @@ export function DashboardHeader({
                     onManageCatalog();
                     setMenuOpen(false);
                   }}
-                  className="flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-zinc-200 hover:bg-zinc-800"
+                  className="dropdown-item"
                 >
                   <Settings2 className="h-4 w-4" />
                   Gestisci catalogo

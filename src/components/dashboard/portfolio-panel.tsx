@@ -189,7 +189,7 @@ export function PortfolioEditPanel({
               placeholder="es. 740,00"
               value={purchasePrice}
               onChange={(e) => setPurchasePrice(e.target.value)}
-              className="w-full rounded-xl border border-zinc-700 bg-zinc-800/80 px-3 py-2.5 text-sm text-zinc-100 outline-none ring-pokemon-yellow/40 placeholder:text-zinc-600 focus:border-pokemon-yellow/50 focus:ring-2"
+              className="input"
             />
           </label>
 
@@ -201,7 +201,7 @@ export function PortfolioEditPanel({
               type="date"
               value={purchaseDate}
               onChange={(e) => setPurchaseDate(e.target.value)}
-              className="w-full rounded-xl border border-zinc-700 bg-zinc-800/80 px-3 py-2.5 text-sm text-zinc-100 outline-none focus:border-pokemon-yellow/50 focus:ring-2"
+              className="input"
             />
           </label>
 
@@ -215,7 +215,7 @@ export function PortfolioEditPanel({
               step={1}
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
-              className="w-full rounded-xl border border-zinc-700 bg-zinc-800/80 px-3 py-2.5 text-sm text-zinc-100 outline-none focus:border-pokemon-yellow/50 focus:ring-2"
+              className="input"
             />
           </label>
 
@@ -228,7 +228,7 @@ export function PortfolioEditPanel({
               placeholder="Es. acquistato da collezionista, con certificato…"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full resize-none rounded-xl border border-zinc-700 bg-zinc-800/80 px-3 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-pokemon-yellow/50 focus:ring-2"
+              className="textarea"
             />
           </label>
 
@@ -260,7 +260,7 @@ export function PortfolioEditPanel({
                 placeholder="Lascia vuoto se già incluso nel prezzo"
                 value={plexiglassCost}
                 onChange={(e) => setPlexiglassCost(e.target.value)}
-                className="w-full rounded-xl border border-zinc-700 bg-zinc-800/80 px-3 py-2.5 text-sm text-zinc-100 outline-none ring-pokemon-yellow/40 placeholder:text-zinc-600 focus:border-pokemon-yellow/50 focus:ring-2"
+                className="input"
               />
             </label>
           )}
@@ -470,7 +470,7 @@ export function SoldEditPanel({
               placeholder="es. 850,00"
               value={soldPrice}
               onChange={(e) => setSoldPrice(e.target.value)}
-              className="w-full rounded-xl border border-zinc-700 bg-zinc-800/80 px-3 py-2.5 text-sm text-zinc-100 outline-none focus:border-emerald-500/50 focus:ring-2"
+              className="input focus:border-emerald-500/50 focus:ring-emerald-500/40"
             />
           </label>
 
@@ -482,7 +482,7 @@ export function SoldEditPanel({
               type="date"
               value={soldDate}
               onChange={(e) => setSoldDate(e.target.value)}
-              className="w-full rounded-xl border border-zinc-700 bg-zinc-800/80 px-3 py-2.5 text-sm text-zinc-100 outline-none focus:border-emerald-500/50 focus:ring-2"
+              className="input focus:border-emerald-500/50 focus:ring-emerald-500/40"
             />
           </label>
 

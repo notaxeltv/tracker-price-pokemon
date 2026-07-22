@@ -27,7 +27,7 @@ export function SearchFilters({
           placeholder="Cerca PSA/BGS/CGC, sealed, raw..."
           value={filters.search}
           onChange={(e) => onChange({ search: e.target.value })}
-          className="w-full rounded-xl border border-zinc-800 bg-zinc-900/80 py-2.5 pl-10 pr-4 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-pokemon-blue focus:outline-none focus:ring-1 focus:ring-pokemon-blue/50"
+          className="input-search w-full"
         />
       </div>
 
@@ -43,7 +43,7 @@ export function SearchFilters({
                     .value as ProductFilters["sealedLanguage"],
                 })
               }
-              className="appearance-none rounded-xl border border-zinc-800 bg-zinc-900/80 py-2.5 pl-10 pr-8 text-sm text-zinc-100 focus:border-pokemon-blue focus:outline-none"
+              className="select"
             >
               <option value="all">Sealed: tutte le lingue</option>
               <option value="IT">🇮🇹 Solo italiano</option>
@@ -60,7 +60,7 @@ export function SearchFilters({
             onChange={(e) =>
               onChange({ market: e.target.value as ProductFilters["market"] })
             }
-            className="appearance-none rounded-xl border border-zinc-800 bg-zinc-900/80 py-2.5 pl-10 pr-8 text-sm text-zinc-100 focus:border-pokemon-blue focus:outline-none"
+            className="select"
           >
             <option value="all">Tutti i mercati</option>
             <option value="compare">Confronto Cardmarket / eBay EU</option>
@@ -81,7 +81,7 @@ export function SearchFilters({
                       : (e.target.value as GradingCompany),
                 })
               }
-              className="rounded-xl border border-zinc-800 bg-zinc-900/80 px-4 py-2.5 text-sm text-zinc-100 focus:border-pokemon-blue focus:outline-none"
+              className="select px-4 pl-4"
             >
               <option value="all">Grading: tutti</option>
               {GRADING_COMPANIES.map((c) => (
@@ -100,7 +100,7 @@ export function SearchFilters({
                       : Number(e.target.value),
                 })
               }
-              className="rounded-xl border border-zinc-800 bg-zinc-900/80 px-4 py-2.5 text-sm text-zinc-100 focus:border-pokemon-blue focus:outline-none"
+              className="select px-4 pl-4"
             >
               <option value="all">Grado: tutti</option>
               <option value="10">10</option>
@@ -120,7 +120,7 @@ export function SearchFilters({
               ];
               onChange({ sortField: field, sortDirection: direction });
             }}
-            className="appearance-none rounded-xl border border-zinc-800 bg-zinc-900/80 py-2.5 pl-10 pr-8 text-sm text-zinc-100 focus:border-pokemon-blue focus:outline-none"
+            className="select"
           >
             <option value="price-desc">Prezzo ↓</option>
             <option value="price-asc">Prezzo ↑</option>
@@ -132,7 +132,7 @@ export function SearchFilters({
           </select>
         </div>
 
-        <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900/80 px-3 py-2.5 text-sm text-zinc-300">
+        <label className="btn-ghost cursor-pointer px-3 py-2.5">
           <input
             type="checkbox"
             checked={Boolean(filters.portfolioOnly)}

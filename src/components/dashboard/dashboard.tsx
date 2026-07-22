@@ -343,7 +343,7 @@ export function Dashboard() {
           <p className="text-red-400">{error ?? "Errore sconosciuto"}</p>
           <button
             onClick={() => loadData({ forceRefresh: true })}
-            className="mt-4 rounded-xl bg-pokemon-yellow px-4 py-2 text-sm font-medium text-zinc-900"
+            className="btn-primary mt-4"
           >
             Riprova
           </button>
@@ -371,7 +371,7 @@ export function Dashboard() {
   };
 
   return (
-    <div className="mx-auto min-h-screen max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+    <div className="app-shell">
       <DashboardHeader
         data={data}
         scraping={scraping}
@@ -392,7 +392,7 @@ export function Dashboard() {
       </section>
 
       {activeAlerts.length > 0 && appView !== "portfolio" && (
-        <section className="mb-6 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3">
+        <section className="alert-banner mb-6">
           <p className="text-sm font-medium text-amber-200">
             {activeAlerts.length} alert prezzo attivi
           </p>
@@ -578,7 +578,7 @@ export function Dashboard() {
         </div>
       )}
 
-      <footer className="mt-10 border-t border-zinc-800/80 pt-4 text-center text-xs text-zinc-600">
+      <footer className="app-footer">
         Cardmarket · eBay EU · snapshot locale
         {data.stats.blockedCount > 0 &&
           ` · ${data.stats.blockedCount} sorgenti bloccate`}

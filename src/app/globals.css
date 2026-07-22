@@ -1,10 +1,39 @@
 @import "tailwindcss";
 
 @theme {
+  /* Brand Pokémon */
   --color-pokemon-yellow: #ffcb05;
   --color-pokemon-blue: #3b4cca;
   --color-pokemon-red: #ff0000;
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+
+  /* Superfici */
+  --color-surface: #0a0a0f;
+  --color-surface-raised: #18181b;
+  --color-surface-card: color-mix(in oklab, #18181b 60%, transparent);
+  --color-surface-input: color-mix(in oklab, #18181b 80%, transparent);
+
+  /* Bordi */
+  --color-border: color-mix(in oklab, #27272a 80%, transparent);
+  --color-border-strong: #3f3f46;
+
+  /* Mercati */
+  --color-market-it: #4ade80;
+  --color-market-intl: #fb923c;
+
+  /* Tipografia */
+  --font-sans: var(--font-inter, "Inter"), ui-sans-serif, system-ui, sans-serif;
+
+  /* Raggi */
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1rem;
+
+  /* Ombre */
+  --shadow-card: 0 4px 24px -4px rgb(0 0 0 / 0.4);
+  --shadow-glow-yellow: 0 0 24px -4px rgb(255 203 5 / 0.15);
+  --shadow-glow-violet: 0 0 24px -4px rgb(139 92 246 / 0.15);
 }
 
 * {
@@ -21,7 +50,7 @@ body {
   background:
     radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59, 76, 202, 0.25), transparent),
     radial-gradient(ellipse 60% 40% at 100% 100%, rgba(255, 203, 5, 0.08), transparent),
-    #0a0a0f;
+    var(--color-surface);
   color: #f4f4f5;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -43,4 +72,242 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #52525b;
+}
+
+@layer components {
+  .app-shell {
+    @apply mx-auto min-h-screen max-w-6xl px-4 py-6 sm:px-6 lg:px-8;
+  }
+
+  .heading-page {
+    @apply text-2xl font-bold tracking-tight text-zinc-50 sm:text-3xl;
+  }
+
+  .heading-section {
+    @apply font-semibold text-zinc-100;
+  }
+
+  .text-subtle {
+    @apply text-sm text-zinc-500;
+  }
+
+  .text-link {
+    @apply inline-flex items-center gap-1 text-xs text-zinc-400 transition-colors hover:text-zinc-200;
+  }
+
+  .card {
+    @apply rounded-2xl border border-border bg-surface-card backdrop-blur-sm;
+  }
+
+  .card-padded {
+    @apply rounded-2xl border border-border bg-surface-card p-5 backdrop-blur-sm;
+  }
+
+  .card-metric {
+    @apply rounded-2xl border bg-gradient-to-br p-4;
+  }
+
+  .panel-empty {
+    @apply rounded-2xl border border-border bg-surface-card p-12 text-center backdrop-blur-sm;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-pokemon-yellow px-4 py-2.5 text-sm font-semibold text-zinc-900 transition-all hover:opacity-90 disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-border-strong bg-surface-raised/80 px-3 py-2 text-sm font-medium text-zinc-300 transition-all hover:bg-zinc-700 disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-surface-card px-3 py-2 text-sm font-medium text-zinc-300 transition-all hover:border-border-strong hover:bg-zinc-800 disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-icon {
+    @apply inline-flex h-10 w-10 items-center justify-center gap-2 rounded-xl border border-border-strong bg-surface-raised/80 text-sm font-medium text-zinc-300 transition-all hover:bg-zinc-700 disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-success {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-300 transition-all hover:bg-emerald-500/20 disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-danger-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg p-1.5 text-sm font-medium text-zinc-400 transition-all hover:bg-zinc-800 hover:text-zinc-200 disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-tab-active {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-pokemon-yellow px-3.5 py-2 text-sm font-medium text-zinc-900 shadow-md shadow-yellow-500/15 transition-all disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-tab-inactive {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-surface-card px-3.5 py-2 text-sm font-medium text-zinc-400 transition-all hover:border-border-strong hover:text-zinc-200 disabled:pointer-events-none disabled:opacity-50;
+  }
+
+  .btn-range-active {
+    @apply rounded-lg bg-zinc-700 px-2.5 py-1 text-xs font-medium text-zinc-100 transition-colors;
+  }
+
+  .btn-range-inactive {
+    @apply rounded-lg px-2.5 py-1 text-xs font-medium text-zinc-500 transition-colors hover:text-zinc-300;
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-border-strong bg-surface-input px-3 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-pokemon-yellow/50 focus:ring-2 focus:ring-pokemon-yellow/40;
+  }
+
+  .textarea {
+    @apply w-full resize-none rounded-xl border border-border-strong bg-surface-input px-3 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-pokemon-yellow/50 focus:ring-2 focus:ring-pokemon-yellow/40;
+  }
+
+  .input-search {
+    @apply w-full rounded-xl border border-border-strong bg-surface-input py-2.5 pl-10 pr-4 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-pokemon-blue focus:ring-2 focus:ring-pokemon-blue/50;
+  }
+
+  .select {
+    @apply appearance-none rounded-xl border border-border bg-surface-input py-2.5 pl-10 pr-8 text-sm text-zinc-100 focus:border-pokemon-blue focus:outline-none;
+  }
+
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-zinc-300;
+  }
+
+  .label-sm {
+    @apply mb-1 block text-sm text-zinc-400;
+  }
+
+  .badge {
+    @apply inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium;
+  }
+
+  .badge-count {
+    @apply rounded-full bg-zinc-800 px-2 py-0.5 text-xs text-zinc-400;
+  }
+
+  .badge-count-active {
+    @apply rounded-full bg-zinc-900/20 px-1.5 py-0.5 text-[11px] text-zinc-900;
+  }
+
+  .nav-card-active {
+    @apply flex flex-1 items-center gap-3 rounded-2xl border border-pokemon-yellow/40 bg-pokemon-yellow/10 px-4 py-3 text-left shadow-lg shadow-yellow-500/10 transition-all;
+  }
+
+  .nav-card-active-violet {
+    @apply flex flex-1 items-center gap-3 rounded-2xl border border-violet-500/40 bg-violet-500/10 px-4 py-3 text-left shadow-lg shadow-violet-500/10 transition-all;
+  }
+
+  .nav-card-inactive {
+    @apply flex flex-1 items-center gap-3 rounded-2xl border border-border bg-surface-card px-4 py-3 text-left transition-all hover:border-border-strong hover:bg-zinc-900/70;
+  }
+
+  .nav-icon {
+    @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-xl;
+  }
+
+  .table-shell {
+    @apply overflow-hidden rounded-2xl border border-border bg-surface-card backdrop-blur-sm;
+  }
+
+  .table-head {
+    @apply border-b border-border text-xs uppercase tracking-wider text-zinc-500;
+  }
+
+  .table-row {
+    @apply border-b border-zinc-800/50 transition-colors hover:bg-zinc-800/30;
+  }
+
+  .table-row-selected {
+    @apply bg-pokemon-blue/10;
+  }
+
+  .modal-overlay {
+    @apply fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 sm:items-center;
+  }
+
+  .modal-overlay-top {
+    @apply fixed inset-0 z-[60] flex items-end justify-center bg-black/60 p-4 sm:items-center;
+  }
+
+  .modal-panel-lg {
+    @apply relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-border-strong bg-surface-raised p-5 shadow-2xl;
+  }
+
+  .modal-panel-md {
+    @apply relative w-full max-w-md rounded-2xl border border-border-strong bg-surface-raised p-5 shadow-2xl;
+  }
+
+  .alert-banner {
+    @apply rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3;
+  }
+
+  .dropdown-menu {
+    @apply absolute right-0 z-20 mt-2 w-52 overflow-hidden rounded-xl border border-border-strong bg-surface-raised py-1 shadow-xl;
+  }
+
+  .dropdown-item {
+    @apply flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-zinc-200 hover:bg-zinc-800;
+  }
+
+  .chart-card {
+    @apply h-[320px] rounded-2xl border border-border bg-surface-card p-4 backdrop-blur-sm;
+  }
+
+  .chart-card-compact {
+    @apply h-[220px] rounded-2xl border border-border bg-surface-card p-4 backdrop-blur-sm;
+  }
+
+  .app-footer {
+    @apply mt-10 border-t border-border pt-4 text-center text-xs text-zinc-600;
+  }
+
+  .accent-violet {
+    @apply border-violet-500/20 from-violet-500/15 to-violet-600/5;
+  }
+
+  .accent-emerald {
+    @apply border-emerald-500/20 from-emerald-500/15 to-emerald-600/5;
+  }
+
+  .accent-red {
+    @apply border-red-500/20 from-red-500/15 to-red-600/5;
+  }
+
+  .accent-blue {
+    @apply border-blue-500/20 from-blue-500/15 to-blue-600/5;
+  }
+
+  .accent-amber {
+    @apply border-amber-500/20 from-amber-500/15 to-amber-600/5;
+  }
+
+  .accent-zinc {
+    @apply border-border from-zinc-800/40 to-zinc-900/20;
+  }
+
+  .stat-box-it {
+    @apply rounded-xl border border-green-500/20 bg-green-500/5 p-3;
+  }
+
+  .stat-box-intl {
+    @apply rounded-xl border border-orange-500/20 bg-orange-500/5 p-3;
+  }
+
+  .category-card-sealed {
+    @apply flex items-start gap-4 rounded-2xl border border-blue-500/30 bg-blue-500/5 p-5 text-left transition-colors hover:bg-blue-500/10;
+  }
+
+  .category-card-graded {
+    @apply flex items-start gap-4 rounded-2xl border border-yellow-500/30 bg-yellow-500/5 p-5 text-left transition-colors hover:bg-yellow-500/10;
+  }
+
+  .category-card-raw {
+    @apply flex items-start gap-4 rounded-2xl border border-violet-500/30 bg-violet-500/5 p-5 text-left transition-colors hover:bg-violet-500/10;
+  }
+
+  .category-card-accessory {
+    @apply flex items-start gap-4 rounded-2xl border border-zinc-500/30 bg-zinc-500/5 p-5 text-left transition-colors hover:bg-zinc-500/10;
+  }
 }
