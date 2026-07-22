@@ -294,8 +294,7 @@ export function Dashboard() {
       )}
 
       <footer className="border-t border-zinc-800/80 pt-6 text-center text-xs text-zinc-600">
-        Dati demo · IT: Cardmarket / eBay IT · INTL: TCGPlayer / eBay US ·
-        Integrabile via API key (PkmnPrices, PokeTrace)
+        Dati demo · Cardmarket: nessuna API pubblica · Live via PkmnPrices / PokeTrace / TCGdex
       </footer>
     </div>
   );

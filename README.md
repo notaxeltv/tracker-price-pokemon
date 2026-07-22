@@ -31,23 +31,42 @@ npm run build
 npm start
 ```
 
+## Mercati supportati
+
+| Mercato | Fonti (riferimento) | Valuta | Note |
+|---------|----------------------|--------|------|
+| **🇮🇹 Italia / EU** | Cardmarket, eBay IT | EUR | Prezzi consultabili su Cardmarket; **nessuna API key pubblica** |
+| **🌍 Internazionale** | TCGPlayer, eBay US | USD | API disponibili via aggregatori |
+
+La dashboard mostra un **confronto side-by-side** con spread percentuale e grafici duali (verde = IT/EU, arancione = INTL).
+
+## Cardmarket e API: cosa sapere
+
+**Cardmarket non rilascia chiavi API** in modalità self-service. L’accesso programmatico ufficiale (OAuth 1.0a) è riservato a partner/tool registrati, con processo di approvazione.
+
+Per automatizzare i prezzi **senza API Cardmarket diretta**, le opzioni realistiche sono:
+
+| Strategia | Costo | Sealed | Gradate | EUR (Cardmarket) | USD |
+|-----------|-------|--------|---------|------------------|-----|
+| **[PkmnPrices](https://www.pkmnprices.com/docs)** | Free tier | ✅ | ✅ | ✅ aggregato | ✅ |
+| **[PokeTrace](https://poketrace.com/docs)** | Free tier | ✅ | ✅ | ✅ aggregato | ✅ |
+| **[TCGdex](https://tcgdex.dev/markets-prices)** | Gratuito, **no API key** | ❌ | ❌ | ✅ carte raw | ✅ |
+| **Consultazione manuale** | Gratis | ✅ | ✅ | [cardmarket.com/it](https://www.cardmarket.com/it/Pokemon) | [tcgplayer.com](https://www.tcgplayer.com) |
+
+> **TCGdex** è l’unica opzione gratuita senza registrazione: include prezzi Cardmarket (trend, avg7, avg30) nelle risposte carta, ma **non copre sealed né gradate**.
+
 ## Integrazione API esterne
 
-La dashboard usa attualmente dati demo realistici. Per collegare fonti live, configura le variabili in `.env`:
+La dashboard usa attualmente **dati demo**. Per collegare fonti live:
 
 ```env
+# Aggregatori (consigliati per IT + internazionale)
 PKMNPRICES_API_KEY=your_key
-TCG_PRICE_LOOKUP_API_KEY=your_key
-RAPIDAPI_KEY=your_key
+POKETRACE_API_KEY=your_key
+
+# Gratuito, solo carte singole raw
+TCGDEX_LANG=it
 ```
-
-Provider compatibili:
-
-| Provider | Sealed | Gradate | Storico |
-|----------|--------|---------|---------|
-| [PkmnPrices](https://www.pkmnprices.com/docs) | ✅ | ✅ | ✅ |
-| [PokeTrace](https://poketrace.com) | ✅ | ✅ | ✅ |
-| [TCG Price Lookup](https://tcgpricelookup.com/tcg-api) | — | ✅ | ✅ |
 
 ## Struttura progetto
 

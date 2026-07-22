@@ -126,17 +126,18 @@ export function MarketSourcesBanner() {
         <div>
           <p className="text-sm font-medium text-zinc-200">Fonti prezzo per mercato</p>
           <p className="mt-1 text-xs text-zinc-500">
-            Confronto side-by-side tra mercato italiano ed internazionale
+            Cardmarket non ha API pubbliche — i prezzi EUR arrivano via aggregatori
+            (PkmnPrices, PokeTrace) o consultazione manuale
           </p>
         </div>
         <div className="flex flex-wrap gap-3 text-xs">
           <div className="flex items-center gap-2 rounded-xl border border-green-500/20 bg-green-500/5 px-3 py-2">
-            <span className="font-medium text-green-400">🇮🇹 Italia</span>
-            <span className="text-zinc-500">Cardmarket IT · eBay IT vendute</span>
+            <span className="font-medium text-green-400">🇮🇹 Italia / EU</span>
+            <span className="text-zinc-500">Cardmarket · eBay IT</span>
           </div>
           <div className="flex items-center gap-2 rounded-xl border border-orange-500/20 bg-orange-500/5 px-3 py-2">
             <span className="font-medium text-orange-400">🌍 Internazionale</span>
-            <span className="text-zinc-500">TCGPlayer · eBay US vendute</span>
+            <span className="text-zinc-500">TCGPlayer · eBay US</span>
           </div>
         </div>
       </div>
