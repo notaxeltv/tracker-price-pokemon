@@ -11,6 +11,11 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "assets.tcgdex.net",
       },
+      {
+        protocol: "https",
+        hostname: "cardtrader.com",
+        pathname: "/uploads/**",
+      },
     ],
   },
 };

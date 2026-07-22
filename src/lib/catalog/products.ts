@@ -18,6 +18,8 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     sources: ["tcgplayer"],
     scrape: {
       tcgplayerProductId: 593355,
+      cardtraderBlueprintId: 249796,
+      cardtraderExpansionId: 3387,
       searchTerm: "pokemon 151 booster box english sealed",
     },
     tags: ["current"],
@@ -135,6 +137,8 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     scrape: {
       cardmarketUrl:
         "https://www.cardmarket.com/it/Pokemon/Products/Elite-Trainer-Boxes/Ascended-Heroes-Elite-Trainer-Box",
+      cardtraderBlueprintId: 359471,
+      cardtraderExpansionId: 4400,
       searchTerm:
         "pokemon ascesa eroica set allenatore fuoriclasse italiano sigillato",
     },
@@ -172,6 +176,8 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     sources: ["ebay_it", "ebay_us", "cardmarket"],
     scrape: {
       tcgdxCardId: "SV2a-173",
+      cardtraderBlueprintId: 251429,
+      cardtraderExpansionId: 3387,
       searchTerm: "pokemon 151 pikachu 173 psa 10 japanese",
     },
     tags: ["current", "psa", "jp"],
@@ -190,6 +196,8 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     sources: ["ebay_it", "ebay_us", "cardmarket"],
     scrape: {
       tcgdxCardId: "SV2a-205",
+      cardtraderBlueprintId: 251471,
+      cardtraderExpansionId: 3387,
       searchTerm: "pokemon 151 mew ex 205 psa 10 japanese",
     },
     tags: ["current", "psa", "jp"],
@@ -208,6 +216,9 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     sources: ["ebay_it", "ebay_us", "cardmarket"],
     scrape: {
       tcgdxCardId: "SV2a-201",
+      cardtraderBlueprintId: 251467,
+      cardtraderExpansionId: 3387,
+      tcgplayerProductId: 566544,
       searchTerm: "charizard ex 201/165 PSA 10 japanese sv2a",
     },
     tags: ["current", "psa", "jp"],

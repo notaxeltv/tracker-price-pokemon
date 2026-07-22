@@ -369,6 +369,17 @@ function countQuotes(data: {
   );
 }
 
+async function enrichImagesIfConfigured(
+  data: DashboardData
+): Promise<DashboardData> {
+  if (!process.env.CARDTRADER_API_TOKEN?.trim()) return data;
+
+  const { enrichDashboardImages } = await import(
+    "./providers/cardtrader/enrich-images"
+  );
+  return enrichDashboardImages(data);
+}
+
 async function assembleDashboard(
   dataSourceOverride?: DashboardData["dataSource"]
 ): Promise<DashboardData> {
@@ -382,7 +393,7 @@ async function assembleDashboard(
   const tallies = countLiveAndBlocked({ sealed, graded, raw, accessory });
   const totalQuotes = countQuotes({ sealed, graded, raw, accessory });
 
-  return {
+  const data: DashboardData = {
     stats: computeStats(
       sealed,
       graded,
@@ -400,6 +411,8 @@ async function assembleDashboard(
       dataSourceOverride ??
       resolveDataSource(tallies.liveCount, tallies.blockedCount, totalQuotes),
   };
+
+  return enrichImagesIfConfigured(data);
 }
 
 /** Scrape live — usato dal cron locale */
@@ -415,7 +428,7 @@ export async function fetchDashboardData(): Promise<DashboardData> {
   if (useSnapshot) {
     const snap = await loadSnapshot();
     if (snap && isSnapshotFresh(snap, maxAge)) {
-      return { ...snap, dataSource: "snapshot" };
+      return enrichImagesIfConfigured({ ...snap, dataSource: "snapshot" });
     }
   }
 

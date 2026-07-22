@@ -13,6 +13,7 @@ src/lib/
 │   ├── snapshot.ts             # Persistenza JSON + merge history
 │   └── playwright-scraper.ts   # Bypass Cloudflare (locale)
 ├── data-service.server.ts      # Live scrape + lettura snapshot
+├── providers/cardtrader/       # Solo immagini (mai prezzi)
 scripts/scrape-cron.ts            # Cron locale → data/scrape-snapshot.json
 ```
 
@@ -65,7 +66,18 @@ curl -X POST http://localhost:3000/api/scrape/refresh
 
 ## Variabili ambiente
 
-Vedi `.env.example` — nessuna API key a pagamento.
+Vedi `.env.example` — nessuna API key a pagamento per i prezzi.
+
+### CardTrader (opzionale — solo immagini)
+
+Imposta `CARDTRADER_API_TOKEN` in `.env.local` per caricare le immagini ufficiali di carte e prodotti sigillati da CardTrader. **Non viene usato per i prezzi** (restano scraping Cardmarket/eBay/TCGPlayer).
+
+```bash
+# .env.local
+CARDTRADER_API_TOKEN=your_jwt_token
+```
+
+Nel catalogo (`products.ts`) puoi mappare `cardtraderBlueprintId` e `cardtraderExpansionId` per ogni prodotto.
 
 ## Stack
 

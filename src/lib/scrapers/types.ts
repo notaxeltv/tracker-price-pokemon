@@ -86,6 +86,10 @@ export interface CatalogProduct {
     cardmarketProductId?: number;
     tcgplayerProductId?: number;
     tcgdxCardId?: string;
+    /** CardTrader — solo immagini (blueprint API) */
+    cardtraderBlueprintId?: number;
+    cardtraderExpansionId?: number;
+    cardtraderNameIncludes?: string[];
   };
   /** Disabilita senza rimuovere dal catalogo */
   enabled?: boolean;
