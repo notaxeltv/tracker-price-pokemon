@@ -27,13 +27,17 @@ export function metricCardClass(accent: AccentTone, extra?: string): string {
 
 export type CategoryCardVariant = "sealed" | "graded" | "raw" | "accessory";
 
-const categoryCardClasses: Record<CategoryCardVariant, string> = {
-  sealed: "category-card-sealed",
-  graded: "category-card-graded",
-  raw: "category-card-raw",
-  accessory: "category-card-accessory",
+const categoryIconClasses: Record<CategoryCardVariant, string> = {
+  sealed: "text-pokemon-blue",
+  graded: "text-brand-light",
+  raw: "text-zinc-400",
+  accessory: "text-zinc-500",
 };
 
-export function categoryCardClass(variant: CategoryCardVariant): string {
-  return categoryCardClasses[variant];
+export function categoryCardClass(): string {
+  return "category-card";
+}
+
+export function categoryIconClass(variant: CategoryCardVariant): string {
+  return categoryIconClasses[variant];
 }

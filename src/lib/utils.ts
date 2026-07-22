@@ -28,9 +28,9 @@ export function formatDate(date: string): string {
 }
 
 export function getChangeColor(value: number): string {
-  if (value > 0) return "text-emerald-400";
-  if (value < 0) return "text-red-400";
-  return "text-zinc-400";
+  if (value > 0) return "text-market-it";
+  if (value < 0) return "text-pokemon-red/90";
+  return "text-zinc-500";
 }
 
 export function getSealedTypeLabel(type: string): string {

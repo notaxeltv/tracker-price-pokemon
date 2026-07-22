@@ -57,7 +57,7 @@ export function PortfolioView({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           {alertCount > 0 && (
-            <p className="text-sm text-amber-400">
+            <p className="text-sm text-brand-light">
               {alertCount} alert prezzo attivi
             </p>
           )}
@@ -162,8 +162,8 @@ export function PortfolioView({
                         className={cn(
                           "badge",
                           isSold(row.entry)
-                            ? "bg-emerald-500/10 text-emerald-300"
-                            : "bg-violet-500/10 text-violet-300"
+                            ? "bg-market-it/10 text-market-it"
+                            : "bg-surface-input text-zinc-400"
                         )}
                       >
                         {isSold(row.entry) ? "Venduto" : "In portfolio"}

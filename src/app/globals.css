@@ -1,24 +1,28 @@
 @import "tailwindcss";
 
 @theme {
-  /* Brand Pokémon */
-  --color-pokemon-yellow: #ffcb05;
-  --color-pokemon-blue: #3b4cca;
-  --color-pokemon-red: #ff0000;
+  /* Brand — oro attenuato, meno neon */
+  --color-pokemon-yellow: #c9a84c;
+  --color-pokemon-blue: #6b7fd7;
+  --color-pokemon-red: #e05c5c;
 
-  /* Superfici */
-  --color-surface: #0a0a0f;
-  --color-surface-raised: #18181b;
-  --color-surface-card: color-mix(in oklab, #18181b 60%, transparent);
-  --color-surface-input: color-mix(in oklab, #18181b 80%, transparent);
+  --color-brand: #c9a84c;
+  --color-brand-light: #e2c878;
+  --color-brand-dark: #a6883a;
+
+  /* Superfici — slate caldo */
+  --color-surface: #0e1016;
+  --color-surface-raised: #161922;
+  --color-surface-card: #141820;
+  --color-surface-input: #1a1f2b;
 
   /* Bordi */
-  --color-border: color-mix(in oklab, #27272a 80%, transparent);
-  --color-border-strong: #3f3f46;
+  --color-border: #252a36;
+  --color-border-strong: #343b4a;
 
   /* Mercati */
-  --color-market-it: #4ade80;
-  --color-market-intl: #fb923c;
+  --color-market-it: #6db892;
+  --color-market-intl: #d4926a;
 
   /* Tipografia */
   --font-sans: var(--font-inter, "Inter"), ui-sans-serif, system-ui, sans-serif;
@@ -29,11 +33,6 @@
   --radius-lg: 1rem;
   --radius-xl: 1.25rem;
   --radius-2xl: 1rem;
-
-  /* Ombre */
-  --shadow-card: 0 4px 24px -4px rgb(0 0 0 / 0.4);
-  --shadow-glow-yellow: 0 0 24px -4px rgb(255 203 5 / 0.15);
-  --shadow-glow-violet: 0 0 24px -4px rgb(139 92 246 / 0.15);
 }
 
 * {
@@ -48,10 +47,10 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
-    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59, 76, 202, 0.25), transparent),
-    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(255, 203, 5, 0.08), transparent),
+    radial-gradient(ellipse 70% 45% at 50% -15%, rgba(107, 127, 215, 0.07), transparent),
+    radial-gradient(ellipse 50% 35% at 100% 100%, rgba(201, 168, 76, 0.04), transparent),
     var(--color-surface);
-  color: #f4f4f5;
+  color: #e4e4e7;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
@@ -66,12 +65,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #3f3f46;
+  background: #343b4a;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #52525b;
+  background: #454d5e;
 }
 
 @layer components {
@@ -80,11 +79,11 @@ body {
   }
 
   .heading-page {
-    @apply text-2xl font-bold tracking-tight text-zinc-50 sm:text-3xl;
+    @apply text-2xl font-bold tracking-tight text-zinc-100 sm:text-3xl;
   }
 
   .heading-section {
-    @apply font-semibold text-zinc-100;
+    @apply font-semibold text-zinc-200;
   }
 
   .text-subtle {
@@ -92,83 +91,79 @@ body {
   }
 
   .text-link {
-    @apply inline-flex items-center gap-1 text-xs text-zinc-400 transition-colors hover:text-zinc-200;
+    @apply inline-flex items-center gap-1 text-xs text-zinc-500 transition-colors hover:text-zinc-300;
   }
 
   .card {
-    @apply rounded-2xl border border-border bg-surface-card backdrop-blur-sm;
+    @apply rounded-2xl border border-border bg-surface-card;
   }
 
   .card-padded {
-    @apply rounded-2xl border border-border bg-surface-card p-5 backdrop-blur-sm;
+    @apply rounded-2xl border border-border bg-surface-card p-5;
   }
 
   .card-metric {
-    @apply rounded-2xl border bg-gradient-to-br p-4;
+    @apply rounded-2xl border border-border bg-surface-card p-4;
   }
 
   .panel-empty {
-    @apply rounded-2xl border border-border bg-surface-card p-12 text-center backdrop-blur-sm;
-  }
-
-  .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50;
+    @apply rounded-2xl border border-border bg-surface-card p-12 text-center;
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-pokemon-yellow px-4 py-2.5 text-sm font-semibold text-zinc-900 transition-all hover:opacity-90 disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-surface transition-all hover:bg-brand-light disabled:pointer-events-none disabled:opacity-50;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-border-strong bg-surface-raised/80 px-3 py-2 text-sm font-medium text-zinc-300 transition-all hover:bg-zinc-700 disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-border-strong bg-surface-raised px-3 py-2 text-sm font-medium text-zinc-300 transition-all hover:bg-surface-input disabled:pointer-events-none disabled:opacity-50;
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-surface-card px-3 py-2 text-sm font-medium text-zinc-300 transition-all hover:border-border-strong hover:bg-zinc-800 disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-surface-card px-3 py-2 text-sm font-medium text-zinc-400 transition-all hover:border-border-strong hover:bg-surface-raised hover:text-zinc-200 disabled:pointer-events-none disabled:opacity-50;
   }
 
   .btn-icon {
-    @apply inline-flex h-10 w-10 items-center justify-center gap-2 rounded-xl border border-border-strong bg-surface-raised/80 text-sm font-medium text-zinc-300 transition-all hover:bg-zinc-700 disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex h-10 w-10 items-center justify-center gap-2 rounded-xl border border-border-strong bg-surface-raised text-sm font-medium text-zinc-400 transition-all hover:bg-surface-input hover:text-zinc-200 disabled:pointer-events-none disabled:opacity-50;
   }
 
   .btn-success {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-300 transition-all hover:bg-emerald-500/20 disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-market-it/30 bg-market-it/10 px-2.5 py-1 text-xs font-medium text-market-it transition-all hover:bg-market-it/15 disabled:pointer-events-none disabled:opacity-50;
   }
 
   .btn-danger-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg p-1.5 text-sm font-medium text-zinc-400 transition-all hover:bg-zinc-800 hover:text-zinc-200 disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg p-1.5 text-sm font-medium text-zinc-500 transition-all hover:bg-surface-input hover:text-zinc-300 disabled:pointer-events-none disabled:opacity-50;
   }
 
   .btn-tab-active {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-pokemon-yellow px-3.5 py-2 text-sm font-medium text-zinc-900 shadow-md shadow-yellow-500/15 transition-all disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-brand/35 bg-brand/10 px-3.5 py-2 text-sm font-medium text-brand-light transition-all disabled:pointer-events-none disabled:opacity-50;
   }
 
   .btn-tab-inactive {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-surface-card px-3.5 py-2 text-sm font-medium text-zinc-400 transition-all hover:border-border-strong hover:text-zinc-200 disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-surface-card px-3.5 py-2 text-sm font-medium text-zinc-500 transition-all hover:border-border-strong hover:text-zinc-300 disabled:pointer-events-none disabled:opacity-50;
   }
 
   .btn-range-active {
-    @apply rounded-lg bg-zinc-700 px-2.5 py-1 text-xs font-medium text-zinc-100 transition-colors;
+    @apply rounded-lg bg-surface-input px-2.5 py-1 text-xs font-medium text-zinc-200 transition-colors;
   }
 
   .btn-range-inactive {
-    @apply rounded-lg px-2.5 py-1 text-xs font-medium text-zinc-500 transition-colors hover:text-zinc-300;
+    @apply rounded-lg px-2.5 py-1 text-xs font-medium text-zinc-600 transition-colors hover:text-zinc-400;
   }
 
   .input {
-    @apply w-full rounded-xl border border-border-strong bg-surface-input px-3 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-pokemon-yellow/50 focus:ring-2 focus:ring-pokemon-yellow/40;
+    @apply w-full rounded-xl border border-border-strong bg-surface-input px-3 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-brand/40 focus:ring-2 focus:ring-brand/20;
   }
 
   .textarea {
-    @apply w-full resize-none rounded-xl border border-border-strong bg-surface-input px-3 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-pokemon-yellow/50 focus:ring-2 focus:ring-pokemon-yellow/40;
+    @apply w-full resize-none rounded-xl border border-border-strong bg-surface-input px-3 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-brand/40 focus:ring-2 focus:ring-brand/20;
   }
 
   .input-search {
-    @apply w-full rounded-xl border border-border-strong bg-surface-input py-2.5 pl-10 pr-4 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-pokemon-blue focus:ring-2 focus:ring-pokemon-blue/50;
+    @apply w-full rounded-xl border border-border-strong bg-surface-input py-2.5 pl-10 pr-4 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-pokemon-blue/50 focus:ring-2 focus:ring-pokemon-blue/20;
   }
 
   .select {
-    @apply appearance-none rounded-xl border border-border bg-surface-input py-2.5 pl-10 pr-8 text-sm text-zinc-100 focus:border-pokemon-blue focus:outline-none;
+    @apply appearance-none rounded-xl border border-border bg-surface-input py-2.5 pl-10 pr-8 text-sm text-zinc-100 focus:border-pokemon-blue/50 focus:outline-none;
   }
 
   .label {
@@ -176,7 +171,7 @@ body {
   }
 
   .label-sm {
-    @apply mb-1 block text-sm text-zinc-400;
+    @apply mb-1 block text-sm text-zinc-500;
   }
 
   .badge {
@@ -184,51 +179,55 @@ body {
   }
 
   .badge-count {
-    @apply rounded-full bg-zinc-800 px-2 py-0.5 text-xs text-zinc-400;
+    @apply rounded-full bg-surface-input px-2 py-0.5 text-xs text-zinc-500;
   }
 
   .badge-count-active {
-    @apply rounded-full bg-zinc-900/20 px-1.5 py-0.5 text-[11px] text-zinc-900;
+    @apply rounded-full bg-brand/15 px-1.5 py-0.5 text-[11px] text-brand-light;
   }
 
   .nav-card-active {
-    @apply flex flex-1 items-center gap-3 rounded-2xl border border-pokemon-yellow/40 bg-pokemon-yellow/10 px-4 py-3 text-left shadow-lg shadow-yellow-500/10 transition-all;
-  }
-
-  .nav-card-active-violet {
-    @apply flex flex-1 items-center gap-3 rounded-2xl border border-violet-500/40 bg-violet-500/10 px-4 py-3 text-left shadow-lg shadow-violet-500/10 transition-all;
+    @apply flex flex-1 items-center gap-3 rounded-2xl border border-brand/30 bg-brand/8 px-4 py-3 text-left transition-all;
   }
 
   .nav-card-inactive {
-    @apply flex flex-1 items-center gap-3 rounded-2xl border border-border bg-surface-card px-4 py-3 text-left transition-all hover:border-border-strong hover:bg-zinc-900/70;
+    @apply flex flex-1 items-center gap-3 rounded-2xl border border-border bg-surface-card px-4 py-3 text-left transition-all hover:border-border-strong hover:bg-surface-raised;
   }
 
   .nav-icon {
     @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-xl;
   }
 
+  .nav-icon-active {
+    @apply bg-brand/12 text-brand-light;
+  }
+
+  .nav-icon-inactive {
+    @apply bg-surface-input text-zinc-500;
+  }
+
   .table-shell {
-    @apply overflow-hidden rounded-2xl border border-border bg-surface-card backdrop-blur-sm;
+    @apply overflow-hidden rounded-2xl border border-border bg-surface-card;
   }
 
   .table-head {
-    @apply border-b border-border text-xs uppercase tracking-wider text-zinc-500;
+    @apply border-b border-border text-xs uppercase tracking-wider text-zinc-600;
   }
 
   .table-row {
-    @apply border-b border-zinc-800/50 transition-colors hover:bg-zinc-800/30;
+    @apply border-b border-border/60 transition-colors hover:bg-surface-raised/60;
   }
 
   .table-row-selected {
-    @apply bg-pokemon-blue/10;
+    @apply bg-pokemon-blue/8;
   }
 
   .modal-overlay {
-    @apply fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 sm:items-center;
+    @apply fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-4 sm:items-center;
   }
 
   .modal-overlay-top {
-    @apply fixed inset-0 z-[60] flex items-end justify-center bg-black/60 p-4 sm:items-center;
+    @apply fixed inset-0 z-[60] flex items-end justify-center bg-black/70 p-4 sm:items-center;
   }
 
   .modal-panel-lg {
@@ -240,7 +239,7 @@ body {
   }
 
   .alert-banner {
-    @apply rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3;
+    @apply rounded-xl border border-brand/25 bg-brand/8 px-4 py-3;
   }
 
   .dropdown-menu {
@@ -248,66 +247,75 @@ body {
   }
 
   .dropdown-item {
-    @apply flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-zinc-200 hover:bg-zinc-800;
+    @apply flex w-full items-center gap-2 px-4 py-2.5 text-left text-sm text-zinc-300 hover:bg-surface-input;
   }
 
   .chart-card {
-    @apply h-[320px] rounded-2xl border border-border bg-surface-card p-4 backdrop-blur-sm;
+    @apply h-[320px] rounded-2xl border border-border bg-surface-card p-4;
   }
 
   .chart-card-compact {
-    @apply h-[220px] rounded-2xl border border-border bg-surface-card p-4 backdrop-blur-sm;
+    @apply h-[220px] rounded-2xl border border-border bg-surface-card p-4;
   }
 
   .app-footer {
     @apply mt-10 border-t border-border pt-4 text-center text-xs text-zinc-600;
   }
 
+  /* Metriche — accento solo sul bordo sinistro */
   .accent-violet {
-    @apply border-violet-500/20 from-violet-500/15 to-violet-600/5;
+    @apply border-l-2 border-l-zinc-500/50;
   }
 
   .accent-emerald {
-    @apply border-emerald-500/20 from-emerald-500/15 to-emerald-600/5;
+    @apply border-l-2 border-l-market-it/60;
   }
 
   .accent-red {
-    @apply border-red-500/20 from-red-500/15 to-red-600/5;
+    @apply border-l-2 border-l-pokemon-red/60;
   }
 
   .accent-blue {
-    @apply border-blue-500/20 from-blue-500/15 to-blue-600/5;
+    @apply border-l-2 border-l-pokemon-blue/50;
   }
 
   .accent-amber {
-    @apply border-amber-500/20 from-amber-500/15 to-amber-600/5;
+    @apply border-l-2 border-l-brand/50;
   }
 
   .accent-zinc {
-    @apply border-border from-zinc-800/40 to-zinc-900/20;
+    @apply border-l-2 border-l-border-strong;
   }
 
   .stat-box-it {
-    @apply rounded-xl border border-green-500/20 bg-green-500/5 p-3;
+    @apply rounded-xl border border-border bg-surface-raised p-3;
   }
 
   .stat-box-intl {
-    @apply rounded-xl border border-orange-500/20 bg-orange-500/5 p-3;
+    @apply rounded-xl border border-border bg-surface-raised p-3;
   }
 
-  .category-card-sealed {
-    @apply flex items-start gap-4 rounded-2xl border border-blue-500/30 bg-blue-500/5 p-5 text-left transition-colors hover:bg-blue-500/10;
+  .category-card {
+    @apply flex items-start gap-4 rounded-2xl border border-border bg-surface-card p-5 text-left transition-colors hover:border-border-strong hover:bg-surface-raised;
   }
 
-  .category-card-graded {
-    @apply flex items-start gap-4 rounded-2xl border border-yellow-500/30 bg-yellow-500/5 p-5 text-left transition-colors hover:bg-yellow-500/10;
+  .category-icon-wrap {
+    @apply flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-surface-input;
   }
 
-  .category-card-raw {
-    @apply flex items-start gap-4 rounded-2xl border border-violet-500/30 bg-violet-500/5 p-5 text-left transition-colors hover:bg-violet-500/10;
+  .status-badge-neutral {
+    @apply border-border bg-surface-input text-zinc-400;
   }
 
-  .category-card-accessory {
-    @apply flex items-start gap-4 rounded-2xl border border-zinc-500/30 bg-zinc-500/5 p-5 text-left transition-colors hover:bg-zinc-500/10;
+  .status-badge-warn {
+    @apply border-brand/25 bg-brand/8 text-brand-light;
+  }
+
+  .status-badge-error {
+    @apply border-pokemon-red/25 bg-pokemon-red/8 text-red-300/90;
+  }
+
+  .status-badge-ok {
+    @apply border-market-it/25 bg-market-it/8 text-market-it;
   }
 }

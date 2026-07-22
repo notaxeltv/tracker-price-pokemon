@@ -61,22 +61,12 @@ export function MainNav({
             key={view.id}
             type="button"
             onClick={() => onChange(view.id)}
-            className={cn(
-              isActive
-                ? isPortfolio
-                  ? "nav-card-active-violet"
-                  : "nav-card-active"
-                : "nav-card-inactive"
-            )}
+            className={cn(isActive ? "nav-card-active" : "nav-card-inactive")}
           >
             <div
               className={cn(
                 "nav-icon",
-                isActive
-                  ? isPortfolio
-                    ? "bg-violet-500/20 text-violet-300"
-                    : "bg-pokemon-yellow/20 text-pokemon-yellow"
-                  : "bg-zinc-800 text-zinc-400"
+                isActive ? "nav-icon-active" : "nav-icon-inactive"
               )}
             >
               <Icon className="h-4 w-4" />
@@ -86,7 +76,7 @@ export function MainNav({
                 <span
                   className={cn(
                     "font-semibold",
-                    isActive ? "text-zinc-100" : "text-zinc-300"
+                    isActive ? "text-zinc-100" : "text-zinc-400"
                   )}
                 >
                   {view.label}
@@ -95,7 +85,7 @@ export function MainNav({
                   <span className="badge-count">{badge}</span>
                 )}
               </div>
-              <p className="text-xs text-zinc-500">{view.description}</p>
+              <p className="text-xs text-zinc-600">{view.description}</p>
             </div>
           </button>
         );

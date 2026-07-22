@@ -101,7 +101,7 @@ export function DashboardHeader({
         </div>
       </div>
       {scrapeMessage && (
-        <p className="mt-3 text-xs text-pokemon-yellow">{scrapeMessage}</p>
+        <p className="mt-3 text-xs text-brand-light">{scrapeMessage}</p>
       )}
     </header>
   );

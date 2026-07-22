@@ -329,7 +329,7 @@ export function Dashboard() {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="flex flex-col items-center gap-3 text-zinc-400">
-          <RefreshCw className="h-8 w-8 animate-spin text-pokemon-yellow" />
+          <RefreshCw className="h-8 w-8 animate-spin text-brand-light" />
           <p>Caricamento dashboard...</p>
         </div>
       </div>
@@ -393,13 +393,13 @@ export function Dashboard() {
 
       {activeAlerts.length > 0 && appView !== "portfolio" && (
         <section className="alert-banner mb-6">
-          <p className="text-sm font-medium text-amber-200">
+          <p className="text-sm text-brand-light">
             {activeAlerts.length} alert prezzo attivi
           </p>
           <button
             type="button"
             onClick={() => setAppView("portfolio")}
-            className="mt-1 text-xs text-amber-100/90 underline underline-offset-2"
+            className="mt-1 text-xs text-zinc-500 underline underline-offset-2 hover:text-zinc-300"
           >
             Vai al Portfolio
           </button>

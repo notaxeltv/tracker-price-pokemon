@@ -97,13 +97,13 @@ export function OverviewPanel({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="stat-box-it">
-              <p className="text-xs text-zinc-500">Cardmarket</p>
+              <p className="text-xs text-market-it">Cardmarket</p>
               <p className={cn("mt-1 text-xl font-semibold", getChangeColor(data.stats.avgChange7dIT))}>
                 {formatPercent(data.stats.avgChange7dIT)}
               </p>
             </div>
             <div className="stat-box-intl">
-              <p className="text-xs text-zinc-500">eBay EU</p>
+              <p className="text-xs text-market-intl">eBay EU</p>
               <p className={cn("mt-1 text-xl font-semibold", getChangeColor(data.stats.avgChange7dINTL))}>
                 {formatPercent(data.stats.avgChange7dINTL)}
               </p>
@@ -112,12 +112,12 @@ export function OverviewPanel({
           {(data.stats.topGainer || data.stats.topLoser) && (
             <div className="mt-3 space-y-2 text-xs">
               {data.stats.topGainer && (
-                <p className="text-emerald-400">
+                <p className="text-market-it">
                   ↑ {data.stats.topGainer.name} · {formatPercent(data.stats.topGainer.change)}
                 </p>
               )}
               {data.stats.topLoser && (
-                <p className="text-red-400">
+                <p className="text-pokemon-red/90">
                   ↓ {data.stats.topLoser.name} · {formatPercent(data.stats.topLoser.change)}
                 </p>
               )}
@@ -162,7 +162,7 @@ export function OverviewPanel({
                       <span
                         className={cn(
                           "shrink-0 text-sm font-medium",
-                          pl.amount >= 0 ? "text-emerald-400" : "text-red-400"
+                          pl.amount >= 0 ? "text-market-it" : "text-pokemon-red/90"
                         )}
                       >
                         {pl.amount >= 0 ? "+" : ""}

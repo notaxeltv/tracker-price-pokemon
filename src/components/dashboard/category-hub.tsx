@@ -1,6 +1,7 @@
 "use client";
 
-import { categoryCardClass } from "@/lib/design";
+import { categoryCardClass, categoryIconClass } from "@/lib/design";
+import { cn } from "@/lib/utils";
 import type { DashboardCategory, ProductCategory } from "@/lib/types";
 import { Gem, Layers, Package, Puzzle } from "lucide-react";
 
@@ -56,17 +57,17 @@ export function CategoryHub({ counts, onSelect }: CategoryHubProps) {
             key={cat.id}
             type="button"
             onClick={() => onSelect(cat.id)}
-            className={categoryCardClass(cat.variant)}
+            className={categoryCardClass()}
           >
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-zinc-900/60">
-              <Icon className="h-5 w-5 text-zinc-300" />
+            <div className="category-icon-wrap">
+              <Icon className={cn("h-5 w-5", categoryIconClass(cat.variant))} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-zinc-100">{cat.label}</span>
+                <span className="font-semibold text-zinc-200">{cat.label}</span>
                 <span className="badge-count">{counts[cat.id]}</span>
               </div>
-              <p className="mt-1 text-sm text-zinc-500">{cat.description}</p>
+              <p className="mt-1 text-sm text-zinc-600">{cat.description}</p>
             </div>
           </button>
         );

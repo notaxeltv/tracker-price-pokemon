@@ -137,9 +137,9 @@ export function SearchFilters({
             type="checkbox"
             checked={Boolean(filters.portfolioOnly)}
             onChange={(e) => onChange({ portfolioOnly: e.target.checked })}
-            className="h-4 w-4 rounded border-zinc-600 bg-zinc-800 text-pokemon-yellow focus:ring-pokemon-yellow/40"
+            className="h-4 w-4 rounded border-border-strong bg-surface-input text-brand focus:ring-brand/30"
           />
-          <Wallet className="h-4 w-4 text-violet-400" />
+          <Wallet className="h-4 w-4 text-zinc-500" />
           Solo portfolio
         </label>
       </div>
