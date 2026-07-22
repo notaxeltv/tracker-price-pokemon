@@ -2,34 +2,81 @@ import type {
   DashboardData,
   DashboardStats,
   GradedCard,
+  MarketRegion,
   ProductFilters,
   SealedProduct,
 } from "./types";
 import { GRADED_CARDS, SEALED_PRODUCTS } from "./mock-data";
+import {
+  getAllMarketQuotesFromGraded,
+  getGradedMarket,
+  getMarketQuote,
+  getMaxChange7dForRegion,
+  getMaxPriceForRegion,
+  getPrimaryMarketQuote,
+  getSealedMarket,
+} from "./market-utils";
 
 function computeStats(
   sealed: SealedProduct[],
   graded: GradedCard[]
 ): DashboardStats {
-  const allChanges = [
-    ...sealed.map((p) => ({ name: p.name, change: p.change7d })),
+  const itChanges = [
+    ...sealed.map((p) => {
+      const m = getSealedMarket(p, "IT");
+      return m ? { name: p.name, change: m.change7d, region: "IT" as const } : null;
+    }),
     ...graded.flatMap((c) =>
-      c.grades.map((g) => ({
-        name: `${c.name} ${g.company} ${g.grade}`,
-        change: g.change7d,
-      }))
+      c.grades.map((g) => {
+        const m = getGradedMarket(g, "IT");
+        return m
+          ? {
+              name: `${c.name} ${g.company} ${g.grade}`,
+              change: m.change7d,
+              region: "IT" as const,
+            }
+          : null;
+      })
     ),
-  ];
+  ].filter(Boolean) as { name: string; change: number; region: MarketRegion }[];
 
+  const intlChanges = [
+    ...sealed.map((p) => {
+      const m = getSealedMarket(p, "INTL");
+      return m
+        ? { name: p.name, change: m.change7d, region: "INTL" as const }
+        : null;
+    }),
+    ...graded.flatMap((c) =>
+      c.grades.map((g) => {
+        const m = getGradedMarket(g, "INTL");
+        return m
+          ? {
+              name: `${c.name} ${g.company} ${g.grade}`,
+              change: m.change7d,
+              region: "INTL" as const,
+            }
+          : null;
+      })
+    ),
+  ].filter(Boolean) as { name: string; change: number; region: MarketRegion }[];
+
+  const allChanges = [...itChanges, ...intlChanges];
   const sorted = [...allChanges].sort((a, b) => b.change - a.change);
-  const avgChange7d =
-    allChanges.reduce((sum, item) => sum + item.change, 0) / allChanges.length;
+
+  const avg = (items: typeof allChanges) =>
+    items.length
+      ? Math.round(
+          (items.reduce((sum, i) => sum + i.change, 0) / items.length) * 10
+        ) / 10
+      : 0;
 
   return {
     totalProducts: sealed.length + graded.length,
     sealedCount: sealed.length,
     gradedCount: graded.length,
-    avgChange7d: Math.round(avgChange7d * 10) / 10,
+    avgChange7dIT: avg(itChanges),
+    avgChange7dINTL: avg(intlChanges),
     topGainer: sorted[0] ?? null,
     topLoser: sorted[sorted.length - 1] ?? null,
   };
@@ -45,6 +92,11 @@ export async function fetchDashboardData(): Promise<DashboardData> {
     graded,
     lastUpdated: new Date().toISOString(),
   };
+}
+
+function sortRegion(filters: ProductFilters): MarketRegion {
+  if (filters.market === "INTL") return "INTL";
+  return "IT";
 }
 
 export function filterSealedProducts(
@@ -63,24 +115,25 @@ export function filterSealedProducts(
     );
   }
 
-  if (filters.market !== "all") {
-    result = result.filter((p) => p.market === filters.market);
-  }
+  const region = sortRegion(filters);
 
   result.sort((a, b) => {
+    const ma = getSealedMarket(a, region) ?? getPrimaryMarketQuote(a.markets);
+    const mb = getSealedMarket(b, region) ?? getPrimaryMarketQuote(b.markets);
+
     let cmp = 0;
     switch (filters.sortField) {
       case "name":
         cmp = a.name.localeCompare(b.name);
         break;
       case "price":
-        cmp = a.price - b.price;
+        cmp = ma.price - mb.price;
         break;
       case "change7d":
-        cmp = a.change7d - b.change7d;
+        cmp = ma.change7d - mb.change7d;
         break;
       case "change30d":
-        cmp = a.change30d - b.change30d;
+        cmp = ma.change30d - mb.change30d;
         break;
     }
     return filters.sortDirection === "asc" ? cmp : -cmp;
@@ -105,23 +158,25 @@ export function filterGradedCards(
     );
   }
 
-  if (filters.market !== "all") {
-    result = result.filter((c) => c.market === filters.market);
-  }
-
   if (filters.gradingCompany) {
     result = result.filter((c) =>
       c.grades.some((g) => g.company === filters.gradingCompany)
     );
   }
 
+  const region = sortRegion(filters);
+
   result.sort((a, b) => {
-    const priceA = Math.max(...a.grades.map((g) => g.price));
-    const priceB = Math.max(...b.grades.map((g) => g.price));
-    const change7dA = Math.max(...a.grades.map((g) => g.change7d));
-    const change7dB = Math.max(...b.grades.map((g) => g.change7d));
-    const change30dA = Math.max(...a.grades.map((g) => g.change30d));
-    const change30dB = Math.max(...b.grades.map((g) => g.change30d));
+    const priceA = getMaxPriceForRegion(a, region);
+    const priceB = getMaxPriceForRegion(b, region);
+    const change7dA = getMaxChange7dForRegion(a, region);
+    const change7dB = getMaxChange7dForRegion(b, region);
+    const change30dA = Math.max(
+      ...a.grades.map((g) => getGradedMarket(g, region)?.change30d ?? -Infinity)
+    );
+    const change30dB = Math.max(
+      ...b.grades.map((g) => getGradedMarket(g, region)?.change30d ?? -Infinity)
+    );
 
     let cmp = 0;
     switch (filters.sortField) {
@@ -142,4 +197,14 @@ export function filterGradedCards(
   });
 
   return result;
+}
+
+export function getSpreadPercent(
+  itPrice: number,
+  intlPriceUsd: number,
+  eurUsdRate = 0.92
+): number {
+  const intlInEur = intlPriceUsd * eurUsdRate;
+  if (itPrice === 0) return 0;
+  return Math.round(((itPrice - intlInEur) / itPrice) * 1000) / 10;
 }

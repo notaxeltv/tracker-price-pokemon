@@ -1,3 +1,5 @@
+import type { MarketQuote, MarketRegion, PriceSource } from "./types";
+
 function generateHistory(
   basePrice: number,
   days: number,
@@ -32,6 +34,117 @@ function gradedHistory(
   return generateHistory(basePrice, days, basePrice * 0.08, trend);
 }
 
+function marketQuote(
+  region: MarketRegion,
+  source: PriceSource,
+  sourceLabel: string,
+  price: number,
+  currency: "EUR" | "USD",
+  change24h: number,
+  change7d: number,
+  change30d: number,
+  trend: number,
+  externalUrl?: string
+): MarketQuote {
+  return {
+    region,
+    source,
+    sourceLabel,
+    price,
+    currency,
+    change24h,
+    change7d,
+    change30d,
+    history: generateHistory(price, 365, price * 0.05, trend),
+    externalUrl,
+  };
+}
+
+function itSealed(
+  price: number,
+  change24h: number,
+  change7d: number,
+  change30d: number,
+  trend: number,
+  slug: string
+): MarketQuote {
+  return marketQuote(
+    "IT",
+    "cardmarket",
+    "Cardmarket IT",
+    price,
+    "EUR",
+    change24h,
+    change7d,
+    change30d,
+    trend,
+    `https://www.cardmarket.com/it/Pokemon/Products/${slug}`
+  );
+}
+
+function intlSealedTcg(
+  price: number,
+  change24h: number,
+  change7d: number,
+  change30d: number,
+  trend: number
+): MarketQuote {
+  return marketQuote(
+    "INTL",
+    "tcgplayer",
+    "TCGPlayer",
+    price,
+    "USD",
+    change24h,
+    change7d,
+    change30d,
+    trend,
+    "https://www.tcgplayer.com/search/pokemon/product"
+  );
+}
+
+function itGradedEbay(
+  price: number,
+  change24h: number,
+  change7d: number,
+  change30d: number,
+  trend: number
+): MarketQuote {
+  return marketQuote(
+    "IT",
+    "ebay",
+    "eBay IT (vendute)",
+    price,
+    "EUR",
+    change24h,
+    change7d,
+    change30d,
+    trend,
+    "https://www.ebay.it/sch/i.html?_nkw=pokemon+psa"
+  );
+}
+
+function intlGradedEbay(
+  price: number,
+  change24h: number,
+  change7d: number,
+  change30d: number,
+  trend: number
+): MarketQuote {
+  return marketQuote(
+    "INTL",
+    "ebay",
+    "eBay US (vendute)",
+    price,
+    "USD",
+    change24h,
+    change7d,
+    change30d,
+    trend,
+    "https://www.ebay.com/sch/i.html?_nkw=pokemon+psa"
+  );
+}
+
 export const SEALED_PRODUCTS = [
   {
     id: "sealed-151-bb",
@@ -41,13 +154,10 @@ export const SEALED_PRODUCTS = [
     setCode: "MEW",
     type: "booster_box" as const,
     imageUrl: "https://images.pokemontcg.io/sv3pt5/logo.png",
-    price: 289.99,
-    currency: "EUR" as const,
-    change24h: 1.2,
-    change7d: 4.8,
-    change30d: 12.3,
-    history: generateHistory(289.99, 365, 15, 0.12),
-    market: "EU" as const,
+    markets: [
+      itSealed(289.99, 1.2, 4.8, 12.3, 0.123, "Booster-Boxes/151"),
+      intlSealedTcg(312.0, 2.0, 5.5, 14.0, 0.14),
+    ],
   },
   {
     id: "sealed-151-etb",
@@ -57,61 +167,10 @@ export const SEALED_PRODUCTS = [
     setCode: "MEW",
     type: "etb" as const,
     imageUrl: "https://images.pokemontcg.io/sv3pt5/logo.png",
-    price: 74.5,
-    currency: "EUR" as const,
-    change24h: -0.5,
-    change7d: 2.1,
-    change30d: 8.7,
-    history: generateHistory(74.5, 365, 4, 0.087),
-    market: "EU" as const,
-  },
-  {
-    id: "sealed-paldea-bb",
-    category: "sealed" as const,
-    name: "Paldea Evolved Booster Box",
-    set: "Scarlet & Violet — Paldea Evolved",
-    setCode: "PAL",
-    type: "booster_box" as const,
-    imageUrl: "https://images.pokemontcg.io/sv2/logo.png",
-    price: 118.0,
-    currency: "EUR" as const,
-    change24h: 0.0,
-    change7d: -1.4,
-    change30d: -3.2,
-    history: generateHistory(118, 365, 6, -0.032),
-    market: "EU" as const,
-  },
-  {
-    id: "sealed-obsidian-etb",
-    category: "sealed" as const,
-    name: "Obsidian Flames Elite Trainer Box",
-    set: "Scarlet & Violet — Obsidian Flames",
-    setCode: "OBF",
-    type: "etb" as const,
-    imageUrl: "https://images.pokemontcg.io/sv3/logo.png",
-    price: 52.9,
-    currency: "EUR" as const,
-    change24h: 0.3,
-    change7d: 1.8,
-    change30d: 5.5,
-    history: generateHistory(52.9, 365, 3, 0.055),
-    market: "EU" as const,
-  },
-  {
-    id: "sealed-crown-etb",
-    category: "sealed" as const,
-    name: "Crown Zenith Elite Trainer Box",
-    set: "Sword & Shield — Crown Zenith",
-    setCode: "CRZ",
-    type: "etb" as const,
-    imageUrl: "https://images.pokemontcg.io/swsh12pt5/logo.png",
-    price: 89.0,
-    currency: "EUR" as const,
-    change24h: -0.8,
-    change7d: 3.2,
-    change30d: 15.6,
-    history: generateHistory(89, 365, 5, 0.156),
-    market: "EU" as const,
+    markets: [
+      itSealed(74.5, -0.5, 2.1, 8.7, 0.087, "Elite-Trainer-Boxes/151"),
+      intlSealedTcg(89.99, 0.8, 3.4, 10.2, 0.102),
+    ],
   },
   {
     id: "sealed-evolving-bb",
@@ -121,13 +180,10 @@ export const SEALED_PRODUCTS = [
     setCode: "EVS",
     type: "booster_box" as const,
     imageUrl: "https://images.pokemontcg.io/swsh7/logo.png",
-    price: 620.0,
-    currency: "EUR" as const,
-    change24h: 2.1,
-    change7d: 6.4,
-    change30d: 9.8,
-    history: generateHistory(620, 365, 25, 0.098),
-    market: "EU" as const,
+    markets: [
+      itSealed(620.0, 2.1, 6.4, 9.8, 0.098, "Booster-Boxes/Evolving-Skies"),
+      intlSealedTcg(745.0, 1.8, 5.9, 8.5, 0.085),
+    ],
   },
   {
     id: "sealed-prismatic-bb",
@@ -136,28 +192,36 @@ export const SEALED_PRODUCTS = [
     set: "Scarlet & Violet — Prismatic Evolutions",
     setCode: "PRE",
     type: "booster_box" as const,
-    price: 195.0,
-    currency: "USD" as const,
-    change24h: 3.5,
-    change7d: 8.2,
-    change30d: 22.1,
-    history: generateHistory(195, 365, 12, 0.221),
-    market: "US" as const,
+    markets: [
+      itSealed(178.0, 2.8, 7.5, 20.5, 0.205, "Booster-Boxes/Prismatic-Evolutions"),
+      intlSealedTcg(195.0, 3.5, 8.2, 22.1, 0.221),
+    ],
   },
   {
-    id: "sealed-surging-bb",
+    id: "sealed-crown-etb",
     category: "sealed" as const,
-    name: "Surging Sparks Booster Box",
-    set: "Scarlet & Violet — Surging Sparks",
-    setCode: "SSP",
+    name: "Crown Zenith Elite Trainer Box",
+    set: "Sword & Shield — Crown Zenith",
+    setCode: "CRZ",
+    type: "etb" as const,
+    imageUrl: "https://images.pokemontcg.io/swsh12pt5/logo.png",
+    markets: [
+      itSealed(89.0, -0.8, 3.2, 15.6, 0.156, "Elite-Trainer-Boxes/Crown-Zenith"),
+      intlSealedTcg(98.5, -0.3, 2.8, 13.2, 0.132),
+    ],
+  },
+  {
+    id: "sealed-paldea-bb",
+    category: "sealed" as const,
+    name: "Paldea Evolved Booster Box",
+    set: "Scarlet & Violet — Paldea Evolved",
+    setCode: "PAL",
     type: "booster_box" as const,
-    price: 142.0,
-    currency: "USD" as const,
-    change24h: -1.1,
-    change7d: -2.3,
-    change30d: 1.5,
-    history: generateHistory(142, 365, 8, 0.015),
-    market: "US" as const,
+    imageUrl: "https://images.pokemontcg.io/sv2/logo.png",
+    markets: [
+      itSealed(118.0, 0.0, -1.4, -3.2, -0.032, "Booster-Boxes/Paldea-Evolved"),
+      intlSealedTcg(125.0, 0.2, -0.8, -2.1, -0.021),
+    ],
   },
 ];
 
@@ -174,71 +238,28 @@ export const GRADED_CARDS = [
       {
         company: "PSA" as const,
         grade: 10,
-        price: 425.0,
-        change24h: 1.5,
-        change7d: 5.2,
-        change30d: 18.4,
-        history: gradedHistory(425, 365, 0.184),
+        markets: [
+          itGradedEbay(425.0, 1.5, 5.2, 18.4, 0.184),
+          intlGradedEbay(468.0, 1.8, 5.8, 19.2, 0.192),
+        ],
       },
       {
         company: "PSA" as const,
         grade: 9,
-        price: 185.0,
-        change24h: 0.8,
-        change7d: 3.1,
-        change30d: 9.2,
-        history: gradedHistory(185, 365, 0.092),
+        markets: [
+          itGradedEbay(185.0, 0.8, 3.1, 9.2, 0.092),
+          intlGradedEbay(198.0, 1.0, 3.5, 10.0, 0.1),
+        ],
       },
       {
         company: "BGS" as const,
         grade: 10,
-        price: 510.0,
-        change24h: 2.0,
-        change7d: 6.8,
-        change30d: 21.0,
-        history: gradedHistory(510, 365, 0.21),
-      },
-      {
-        company: "CGC" as const,
-        grade: 10,
-        price: 340.0,
-        change24h: 1.2,
-        change7d: 4.5,
-        change30d: 14.8,
-        history: gradedHistory(340, 365, 0.148),
+        markets: [
+          itGradedEbay(510.0, 2.0, 6.8, 21.0, 0.21),
+          intlGradedEbay(545.0, 2.2, 7.1, 22.5, 0.225),
+        ],
       },
     ],
-    market: "EU" as const,
-  },
-  {
-    id: "graded-pikachu-151",
-    category: "graded" as const,
-    name: "Pikachu",
-    set: "Scarlet & Violet — 151",
-    setCode: "MEW",
-    cardNumber: "173/165",
-    imageUrl: "https://images.pokemontcg.io/sv3pt5/173_hires.png",
-    grades: [
-      {
-        company: "PSA" as const,
-        grade: 10,
-        price: 95.0,
-        change24h: -0.5,
-        change7d: 2.8,
-        change30d: 11.5,
-        history: gradedHistory(95, 365, 0.115),
-      },
-      {
-        company: "PSA" as const,
-        grade: 9,
-        price: 42.0,
-        change24h: 0.0,
-        change7d: 1.5,
-        change30d: 5.8,
-        history: gradedHistory(42, 365, 0.058),
-      },
-    ],
-    market: "EU" as const,
   },
   {
     id: "graded-umbreon-vmax",
@@ -252,92 +273,20 @@ export const GRADED_CARDS = [
       {
         company: "PSA" as const,
         grade: 10,
-        price: 1850.0,
-        change24h: 0.9,
-        change7d: 4.1,
-        change30d: 7.3,
-        history: gradedHistory(1850, 365, 0.073),
+        markets: [
+          itGradedEbay(1680.0, 0.7, 3.5, 6.8, 0.068),
+          intlGradedEbay(1850.0, 0.9, 4.1, 7.3, 0.073),
+        ],
       },
       {
         company: "BGS" as const,
         grade: 10,
-        price: 2200.0,
-        change24h: 1.1,
-        change7d: 5.0,
-        change30d: 8.5,
-        history: gradedHistory(2200, 365, 0.085),
-      },
-      {
-        company: "CGC" as const,
-        grade: 10,
-        price: 1450.0,
-        change24h: 0.6,
-        change7d: 3.8,
-        change30d: 6.2,
-        history: gradedHistory(1450, 365, 0.062),
+        markets: [
+          itGradedEbay(2050.0, 0.9, 4.2, 7.5, 0.075),
+          intlGradedEbay(2200.0, 1.1, 5.0, 8.5, 0.085),
+        ],
       },
     ],
-    market: "US" as const,
-  },
-  {
-    id: "graded-giratina-vstar",
-    category: "graded" as const,
-    name: "Giratina VSTAR (Alt Art)",
-    set: "Sword & Shield — Lost Origin",
-    setCode: "LOR",
-    cardNumber: "186/196",
-    imageUrl: "https://images.pokemontcg.io/swsh11/186_hires.png",
-    grades: [
-      {
-        company: "PSA" as const,
-        grade: 10,
-        price: 380.0,
-        change24h: -1.2,
-        change7d: -3.5,
-        change30d: -8.2,
-        history: gradedHistory(380, 365, -0.082),
-      },
-      {
-        company: "PSA" as const,
-        grade: 9,
-        price: 165.0,
-        change24h: -0.8,
-        change7d: -2.1,
-        change30d: -5.4,
-        history: gradedHistory(165, 365, -0.054),
-      },
-    ],
-    market: "EU" as const,
-  },
-  {
-    id: "graded-lugia-v",
-    category: "graded" as const,
-    name: "Lugia V (Alt Art)",
-    set: "Sword & Shield — Silver Tempest",
-    setCode: "SIT",
-    cardNumber: "186/195",
-    imageUrl: "https://images.pokemontcg.io/swsh12/186_hires.png",
-    grades: [
-      {
-        company: "PSA" as const,
-        grade: 10,
-        price: 520.0,
-        change24h: 0.4,
-        change7d: 2.9,
-        change30d: 10.1,
-        history: gradedHistory(520, 365, 0.101),
-      },
-      {
-        company: "BGS" as const,
-        grade: 9.5,
-        price: 580.0,
-        change24h: 0.7,
-        change7d: 3.2,
-        change30d: 11.8,
-        history: gradedHistory(580, 365, 0.118),
-      },
-    ],
-    market: "US" as const,
   },
   {
     id: "graded-mew-ex",
@@ -351,22 +300,79 @@ export const GRADED_CARDS = [
       {
         company: "PSA" as const,
         grade: 10,
-        price: 275.0,
-        change24h: 2.3,
-        change7d: 7.5,
-        change30d: 19.8,
-        history: gradedHistory(275, 365, 0.198),
+        markets: [
+          itGradedEbay(275.0, 2.3, 7.5, 19.8, 0.198),
+          intlGradedEbay(298.0, 2.6, 8.0, 20.5, 0.205),
+        ],
       },
       {
         company: "CGC" as const,
         grade: 10,
-        price: 210.0,
-        change24h: 1.8,
-        change7d: 6.2,
-        change30d: 16.5,
-        history: gradedHistory(210, 365, 0.165),
+        markets: [
+          itGradedEbay(210.0, 1.8, 6.2, 16.5, 0.165),
+          intlGradedEbay(225.0, 2.0, 6.8, 17.2, 0.172),
+        ],
       },
     ],
-    market: "EU" as const,
+  },
+  {
+    id: "graded-pikachu-151",
+    category: "graded" as const,
+    name: "Pikachu",
+    set: "Scarlet & Violet — 151",
+    setCode: "MEW",
+    cardNumber: "173/165",
+    imageUrl: "https://images.pokemontcg.io/sv3pt5/173_hires.png",
+    grades: [
+      {
+        company: "PSA" as const,
+        grade: 10,
+        markets: [
+          itGradedEbay(95.0, -0.5, 2.8, 11.5, 0.115),
+          intlGradedEbay(105.0, -0.2, 3.2, 12.0, 0.12),
+        ],
+      },
+    ],
+  },
+  {
+    id: "graded-giratina-vstar",
+    category: "graded" as const,
+    name: "Giratina VSTAR (Alt Art)",
+    set: "Sword & Shield — Lost Origin",
+    setCode: "LOR",
+    cardNumber: "186/196",
+    imageUrl: "https://images.pokemontcg.io/swsh11/186_hires.png",
+    grades: [
+      {
+        company: "PSA" as const,
+        grade: 10,
+        markets: [
+          itGradedEbay(380.0, -1.2, -3.5, -8.2, -0.082),
+          intlGradedEbay(395.0, -1.0, -3.0, -7.5, -0.075),
+        ],
+      },
+    ],
+  },
+  {
+    id: "graded-lugia-v",
+    category: "graded" as const,
+    name: "Lugia V (Alt Art)",
+    set: "Sword & Shield — Silver Tempest",
+    setCode: "SIT",
+    cardNumber: "186/195",
+    imageUrl: "https://images.pokemontcg.io/swsh12/186_hires.png",
+    grades: [
+      {
+        company: "PSA" as const,
+        grade: 10,
+        markets: [
+          itGradedEbay(485.0, 0.3, 2.5, 9.5, 0.095),
+          intlGradedEbay(520.0, 0.4, 2.9, 10.1, 0.101),
+        ],
+      },
+    ],
   },
 ];
+
+// Re-export for backward compat in scripts if needed
+export { generateHistory, gradedHistory };

@@ -9,19 +9,33 @@ export type SealedProductType =
   | "collection_box"
   | "tin";
 
+/** Mercato italiano (Cardmarket IT) vs internazionale (TCGPlayer / eBay) */
+export type MarketRegion = "IT" | "INTL";
+
+export type PriceSource = "cardmarket" | "tcgplayer" | "ebay";
+
 export interface PricePoint {
   date: string;
   price: number;
 }
 
-export interface GradedPrice {
-  company: GradingCompany;
-  grade: number;
+export interface MarketQuote {
+  region: MarketRegion;
+  source: PriceSource;
+  sourceLabel: string;
   price: number;
+  currency: "EUR" | "USD";
   change24h: number;
   change7d: number;
   change30d: number;
   history: PricePoint[];
+  externalUrl?: string;
+}
+
+export interface GradedPrice {
+  company: GradingCompany;
+  grade: number;
+  markets: MarketQuote[];
 }
 
 export interface SealedProduct {
@@ -32,13 +46,7 @@ export interface SealedProduct {
   setCode: string;
   type: SealedProductType;
   imageUrl?: string;
-  price: number;
-  currency: "EUR" | "USD";
-  change24h: number;
-  change7d: number;
-  change30d: number;
-  history: PricePoint[];
-  market: "EU" | "US";
+  markets: MarketQuote[];
 }
 
 export interface GradedCard {
@@ -50,7 +58,6 @@ export interface GradedCard {
   cardNumber: string;
   imageUrl?: string;
   grades: GradedPrice[];
-  market: "EU" | "US";
 }
 
 export type Product = SealedProduct | GradedCard;
@@ -59,9 +66,10 @@ export interface DashboardStats {
   totalProducts: number;
   sealedCount: number;
   gradedCount: number;
-  avgChange7d: number;
-  topGainer: { name: string; change: number } | null;
-  topLoser: { name: string; change: number } | null;
+  avgChange7dIT: number;
+  avgChange7dINTL: number;
+  topGainer: { name: string; change: number; region: MarketRegion } | null;
+  topLoser: { name: string; change: number; region: MarketRegion } | null;
 }
 
 export interface DashboardData {
@@ -76,10 +84,12 @@ export type TimeRange = "7d" | "30d" | "90d" | "1y";
 export type SortField = "name" | "price" | "change7d" | "change30d";
 export type SortDirection = "asc" | "desc";
 
+export type MarketFilter = "all" | "IT" | "INTL" | "compare";
+
 export interface ProductFilters {
   category: ProductCategory | "all";
   search: string;
-  market: "all" | "EU" | "US";
+  market: MarketFilter;
   gradingCompany?: GradingCompany;
   sortField: SortField;
   sortDirection: SortDirection;

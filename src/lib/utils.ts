@@ -44,6 +44,14 @@ export function getSealedTypeLabel(type: string): string {
   return labels[type] ?? type;
 }
 
+export function getMarketRegionLabel(region: "IT" | "INTL"): string {
+  return region === "IT" ? "Italia" : "Internazionale";
+}
+
+export function getMarketRegionShort(region: "IT" | "INTL"): string {
+  return region === "IT" ? "IT 🇮🇹" : "INTL 🌍";
+}
+
 export function filterHistoryByRange(
   history: { date: string; price: number }[],
   range: "7d" | "30d" | "90d" | "1y"

@@ -1,13 +1,13 @@
 "use client";
 
-import { cn, formatPercent, getChangeColor } from "@/lib/utils";
+import { cn, formatPercent, getChangeColor, getMarketRegionLabel } from "@/lib/utils";
 import type { DashboardStats } from "@/lib/types";
 import {
   Package,
-  Award,
   TrendingUp,
   TrendingDown,
   BarChart3,
+  Globe,
 } from "lucide-react";
 
 interface StatsCardsProps {
@@ -25,19 +25,28 @@ export function StatsCards({ stats }: StatsCardsProps) {
       iconColor: "text-blue-400",
     },
     {
-      label: "Variazione media 7g",
-      value: formatPercent(stats.avgChange7d),
-      sub: "Su tutti i prodotti",
+      label: "Var. media 7g — Italia",
+      value: formatPercent(stats.avgChange7dIT),
+      sub: "Cardmarket IT / eBay IT",
       icon: BarChart3,
-      accent: "from-yellow-500/20 to-yellow-600/5",
-      iconColor: getChangeColor(stats.avgChange7d),
-      valueColor: getChangeColor(stats.avgChange7d),
+      accent: "from-green-500/20 to-green-600/5",
+      iconColor: getChangeColor(stats.avgChange7dIT),
+      valueColor: getChangeColor(stats.avgChange7dIT),
+    },
+    {
+      label: "Var. media 7g — Internazionale",
+      value: formatPercent(stats.avgChange7dINTL),
+      sub: "TCGPlayer / eBay US",
+      icon: Globe,
+      accent: "from-orange-500/20 to-orange-600/5",
+      iconColor: getChangeColor(stats.avgChange7dINTL),
+      valueColor: getChangeColor(stats.avgChange7dINTL),
     },
     {
       label: "Top gainers 7g",
       value: stats.topGainer?.name ?? "—",
       sub: stats.topGainer
-        ? formatPercent(stats.topGainer.change)
+        ? `${formatPercent(stats.topGainer.change)} · ${getMarketRegionLabel(stats.topGainer.region)}`
         : "Nessun dato",
       icon: TrendingUp,
       accent: "from-emerald-500/20 to-emerald-600/5",
@@ -48,7 +57,9 @@ export function StatsCards({ stats }: StatsCardsProps) {
     {
       label: "Top losers 7g",
       value: stats.topLoser?.name ?? "—",
-      sub: stats.topLoser ? formatPercent(stats.topLoser.change) : "Nessun dato",
+      sub: stats.topLoser
+        ? `${formatPercent(stats.topLoser.change)} · ${getMarketRegionLabel(stats.topLoser.region)}`
+        : "Nessun dato",
       icon: TrendingDown,
       accent: "from-red-500/20 to-red-600/5",
       iconColor: "text-red-400",
@@ -58,7 +69,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
       {cards.map((card) => (
         <div
           key={card.label}
@@ -73,14 +84,14 @@ export function StatsCards({ stats }: StatsCardsProps) {
               <p
                 className={cn(
                   "mt-1 font-semibold tracking-tight text-zinc-50",
-                  card.compact ? "truncate text-lg" : "text-2xl",
+                  card.compact ? "truncate text-base" : "text-2xl",
                   card.valueColor
                 )}
                 title={card.value}
               >
                 {card.value}
               </p>
-              <p className={cn("mt-1 text-sm", card.valueColor ?? "text-zinc-500")}>
+              <p className={cn("mt-1 text-xs", card.valueColor ?? "text-zinc-500")}>
                 {card.sub}
               </p>
             </div>
@@ -102,8 +113,33 @@ export function StatsCards({ stats }: StatsCardsProps) {
 export function HeaderBadge() {
   return (
     <div className="inline-flex items-center gap-2 rounded-full border border-yellow-500/30 bg-yellow-500/10 px-3 py-1 text-xs font-medium text-yellow-400">
-      <Award className="h-3.5 w-3.5" />
-      Pokémon TCG Price Tracker
+      <Globe className="h-3.5 w-3.5" />
+      Pokémon TCG · Italia & Internazionale
+    </div>
+  );
+}
+
+export function MarketSourcesBanner() {
+  return (
+    <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm font-medium text-zinc-200">Fonti prezzo per mercato</p>
+          <p className="mt-1 text-xs text-zinc-500">
+            Confronto side-by-side tra mercato italiano ed internazionale
+          </p>
+        </div>
+        <div className="flex flex-wrap gap-3 text-xs">
+          <div className="flex items-center gap-2 rounded-xl border border-green-500/20 bg-green-500/5 px-3 py-2">
+            <span className="font-medium text-green-400">🇮🇹 Italia</span>
+            <span className="text-zinc-500">Cardmarket IT · eBay IT vendute</span>
+          </div>
+          <div className="flex items-center gap-2 rounded-xl border border-orange-500/20 bg-orange-500/5 px-3 py-2">
+            <span className="font-medium text-orange-400">🌍 Internazionale</span>
+            <span className="text-zinc-500">TCGPlayer · eBay US vendute</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

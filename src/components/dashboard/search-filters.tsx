@@ -38,8 +38,9 @@ export function SearchFilters({
             className="appearance-none rounded-xl border border-zinc-800 bg-zinc-900/80 py-2.5 pl-10 pr-8 text-sm text-zinc-100 focus:border-pokemon-blue focus:outline-none"
           >
             <option value="all">Tutti i mercati</option>
-            <option value="EU">Europa (EUR)</option>
-            <option value="US">USA (USD)</option>
+            <option value="compare">Confronto IT / INTL</option>
+            <option value="IT">🇮🇹 Italia (EUR)</option>
+            <option value="INTL">🌍 Internazionale (USD)</option>
           </select>
         </div>
 

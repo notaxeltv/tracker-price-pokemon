@@ -1,28 +1,30 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { HeaderBadge, StatsCards } from "./stats-cards";
+import { HeaderBadge, MarketSourcesBanner, StatsCards } from "./stats-cards";
 import { CategoryTabs } from "./category-tabs";
 import { SearchFilters } from "./search-filters";
-import { PriceChart } from "./price-chart";
+import { DualMarketChart, PriceChart } from "./price-chart";
 import { SealedTable, GradedTable } from "./product-table";
 import {
   filterGradedCards,
   filterSealedProducts,
 } from "@/lib/data-service";
+import { getGradedMarket, getSealedMarket } from "@/lib/market-utils";
 import type {
   DashboardData,
+  MarketRegion,
   ProductCategory,
   ProductFilters,
   TimeRange,
 } from "@/lib/types";
-import { formatDate, formatPrice } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 import { RefreshCw, Clock } from "lucide-react";
 
 const defaultFilters: ProductFilters = {
   category: "all",
   search: "",
-  market: "all",
+  market: "compare",
   sortField: "change7d",
   sortDirection: "desc",
 };
@@ -34,6 +36,7 @@ export function Dashboard() {
   const [filters, setFilters] = useState<ProductFilters>(defaultFilters);
   const [selectedSealedId, setSelectedSealedId] = useState<string | null>(null);
   const [selectedGradedId, setSelectedGradedId] = useState<string | null>(null);
+  const [selectedGradeKey, setSelectedGradeKey] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState<TimeRange>("30d");
 
   const loadData = useCallback(async () => {
@@ -49,6 +52,10 @@ export function Dashboard() {
       }
       if (!selectedGradedId && json.graded.length > 0) {
         setSelectedGradedId(json.graded[0].id);
+        const firstGrade = json.graded[0].grades[0];
+        if (firstGrade) {
+          setSelectedGradeKey(`${firstGrade.company}-${firstGrade.grade}`);
+        }
       }
     } catch {
       setError("Impossibile caricare i dati. Riprova più tardi.");
@@ -77,9 +84,17 @@ export function Dashboard() {
 
   const selectedSealed = data?.sealed.find((p) => p.id === selectedSealedId);
   const selectedGraded = data?.graded.find((c) => c.id === selectedGradedId);
-  const topGradedGrade = selectedGraded
-    ? [...selectedGraded.grades].sort((a, b) => b.price - a.price)[0]
-    : null;
+  const selectedGrade = selectedGraded?.grades.find(
+    (g) => `${g.company}-${g.grade}` === selectedGradeKey
+  ) ?? selectedGraded?.grades[0];
+
+  const showDualCharts =
+    filters.market === "all" || filters.market === "compare";
+
+  const chartRegion = (region: MarketRegion) =>
+    filters.market === region ||
+    filters.market === "all" ||
+    filters.market === "compare";
 
   const activeCategory = filters.category;
   const showSealed = activeCategory === "all" || activeCategory === "sealed";
@@ -112,6 +127,17 @@ export function Dashboard() {
     );
   }
 
+  const sealedIt = selectedSealed ? getSealedMarket(selectedSealed, "IT") : undefined;
+  const sealedIntl = selectedSealed
+    ? getSealedMarket(selectedSealed, "INTL")
+    : undefined;
+  const gradedIt = selectedGrade
+    ? getGradedMarket(selectedGrade, "IT")
+    : undefined;
+  const gradedIntl = selectedGrade
+    ? getGradedMarket(selectedGrade, "INTL")
+    : undefined;
+
   return (
     <div className="mx-auto min-h-screen max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <header className="mb-8">
@@ -122,8 +148,8 @@ export function Dashboard() {
               Dashboard Prezzi Pokémon
             </h1>
             <p className="mt-2 max-w-2xl text-zinc-400">
-              Monitora i prezzi di prodotti sealed e carte gradate (PSA, BGS, CGC)
-              sui mercati EU e US.
+              Confronta i prezzi tra mercato italiano (Cardmarket, eBay IT) e
+              internazionale (TCGPlayer, eBay US) per prodotti sealed e carte gradate.
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -142,6 +168,10 @@ export function Dashboard() {
           </div>
         </div>
       </header>
+
+      <section className="mb-6">
+        <MarketSourcesBanner />
+      </section>
 
       <section className="mb-8">
         <StatsCards stats={data.stats} />
@@ -165,22 +195,60 @@ export function Dashboard() {
 
       {(showSealed || showGraded) && (
         <section className="mb-8 grid gap-6 lg:grid-cols-2">
-          {showSealed && selectedSealed && (
-            <PriceChart
-              data={selectedSealed.history}
-              currency={selectedSealed.currency}
-              title={`${selectedSealed.name} — ${formatPrice(selectedSealed.price, selectedSealed.currency)}`}
-              color="#3b4cca"
+          {showSealed && selectedSealed && showDualCharts && (
+            <DualMarketChart
+              itQuote={sealedIt}
+              intlQuote={sealedIntl}
+              title={selectedSealed.name}
               timeRange={timeRange}
               onTimeRangeChange={setTimeRange}
             />
           )}
-          {showGraded && selectedGraded && topGradedGrade && (
+          {showSealed && selectedSealed && !showDualCharts && chartRegion("IT") && sealedIt && (
             <PriceChart
-              data={topGradedGrade.history}
-              currency={selectedGraded.market === "EU" ? "EUR" : "USD"}
-              title={`${selectedGraded.name} ${topGradedGrade.company} ${topGradedGrade.grade} — ${formatPrice(topGradedGrade.price, selectedGraded.market === "EU" ? "EUR" : "USD")}`}
-              color="#ffcb05"
+              data={sealedIt.history}
+              currency="EUR"
+              title={`${selectedSealed.name} · 🇮🇹 ${sealedIt.sourceLabel}`}
+              color="#4ade80"
+              timeRange={timeRange}
+              onTimeRangeChange={setTimeRange}
+            />
+          )}
+          {showSealed && selectedSealed && !showDualCharts && filters.market === "INTL" && sealedIntl && (
+            <PriceChart
+              data={sealedIntl.history}
+              currency="USD"
+              title={`${selectedSealed.name} · 🌍 ${sealedIntl.sourceLabel}`}
+              color="#fb923c"
+              timeRange={timeRange}
+              onTimeRangeChange={setTimeRange}
+            />
+          )}
+          {showGraded && selectedGraded && selectedGrade && showDualCharts && (
+            <DualMarketChart
+              itQuote={gradedIt}
+              intlQuote={gradedIntl}
+              title={`${selectedGraded.name} · ${selectedGrade.company} ${selectedGrade.grade}`}
+              timeRange={timeRange}
+              onTimeRangeChange={setTimeRange}
+            />
+          )}
+          {showGraded && selectedGraded && selectedGrade && !showDualCharts && filters.market === "IT" && gradedIt && (
+            <PriceChart
+              data={gradedIt.history}
+              currency="EUR"
+              title={`${selectedGraded.name} · ${selectedGrade.company} ${selectedGrade.grade} · 🇮🇹`}
+              color="#4ade80"
+              timeRange={timeRange}
+              onTimeRangeChange={setTimeRange}
+            />
+          )}
+          {showGraded && selectedGraded && selectedGrade && !showDualCharts && filters.market === "INTL" && gradedIntl && (
+            <PriceChart
+              data={gradedIntl.history}
+              currency="USD"
+              title={`${selectedGraded.name} · ${selectedGrade.company} ${selectedGrade.grade} · 🌍`}
+              color="#fb923c"
               timeRange={timeRange}
               onTimeRangeChange={setTimeRange}
             />
@@ -198,6 +266,7 @@ export function Dashboard() {
             products={filteredSealed}
             selectedId={selectedSealedId}
             onSelect={setSelectedSealedId}
+            marketFilter={filters.market}
           />
         </section>
       )}
@@ -211,13 +280,22 @@ export function Dashboard() {
           <GradedTable
             cards={filteredGraded}
             selectedId={selectedGradedId}
-            onSelect={setSelectedGradedId}
+            onSelect={(id) => {
+              setSelectedGradedId(id);
+              const card = data.graded.find((c) => c.id === id);
+              const grade = card?.grades[0];
+              if (grade) {
+                setSelectedGradeKey(`${grade.company}-${grade.grade}`);
+              }
+            }}
+            marketFilter={filters.market}
           />
         </section>
       )}
 
       <footer className="border-t border-zinc-800/80 pt-6 text-center text-xs text-zinc-600">
-        Dati demo · Integrabile con PkmnPrices, PokeTrace o TCG Price Lookup via API key
+        Dati demo · IT: Cardmarket / eBay IT · INTL: TCGPlayer / eBay US ·
+        Integrabile via API key (PkmnPrices, PokeTrace)
       </footer>
     </div>
   );
