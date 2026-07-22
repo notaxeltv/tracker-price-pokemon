@@ -18,10 +18,17 @@ import {
 } from "@/lib/utils";
 import { getSpreadPercent } from "@/lib/filters";
 import { getSealedMarket } from "@/lib/market-utils";
-import type { AccessoryProduct, GradedCard, MarketFilter, RawCard, SealedProduct } from "@/lib/types";
+import type { AccessoryProduct, GradedCard, MarketFilter, PortfolioEntry, RawCard, SealedProduct } from "@/lib/types";
 import { getGradedMarket } from "@/lib/market-utils";
+import { portfolioKey } from "@/lib/portfolio";
+import { PlexiglassBadge, PortfolioCostCell } from "./portfolio-panel";
 
-interface SealedTableProps {
+interface PortfolioTableProps {
+  portfolio: Record<string, PortfolioEntry>;
+  onEditPortfolio: (key: string, title: string, subtitle?: string) => void;
+}
+
+interface SealedTableProps extends PortfolioTableProps {
   products: SealedProduct[];
   selectedId: string | null;
   onSelect: (id: string) => void;
@@ -31,6 +38,8 @@ export function SealedTable({
   products,
   selectedId,
   onSelect,
+  portfolio,
+  onEditPortfolio,
 }: SealedTableProps) {
   if (products.length === 0) {
     return (
@@ -43,13 +52,14 @@ export function SealedTable({
   return (
     <div className="overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/60">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[900px] text-left text-sm">
+        <table className="w-full min-w-[1000px] text-left text-sm">
           <thead>
             <tr className="border-b border-zinc-800 text-xs uppercase tracking-wider text-zinc-500">
               <th className="px-4 py-3 font-medium">Prodotto</th>
               <th className="px-4 py-3 font-medium">Lingua</th>
               <th className="px-4 py-3 font-medium">Tipo</th>
               <th className="px-4 py-3 font-medium text-right">Prezzo</th>
+              <th className="px-4 py-3 font-medium text-right">Acquisto</th>
               <th className="px-4 py-3 font-medium text-right">7g</th>
               <th className="px-4 py-3 font-medium">Fonte</th>
               <th className="px-4 py-3 font-medium">Trend</th>
@@ -61,6 +71,7 @@ export function SealedTable({
                 product.language === "IT"
                   ? getSealedMarket(product, "IT")
                   : getSealedMarket(product, "INTL");
+              const entry = portfolio[product.id];
 
               return (
                 <tr
@@ -95,6 +106,7 @@ export function SealedTable({
                         <p className="truncate text-xs text-zinc-500">
                           {product.set} · {product.setCode}
                         </p>
+                        <PlexiglassBadge entry={entry} className="mt-1" />
                       </div>
                     </div>
                   </td>
@@ -108,6 +120,15 @@ export function SealedTable({
                   </td>
                   <td className="px-4 py-3">
                     <MarketPriceCell quote={quote} compact />
+                  </td>
+                  <td className="px-4 py-3">
+                    <PortfolioCostCell
+                      entry={entry}
+                      marketPrice={quote?.price}
+                      onEdit={() =>
+                        onEditPortfolio(product.id, product.name, product.set)
+                      }
+                    />
                   </td>
                   <td
                     className={cn(
@@ -141,7 +162,7 @@ export function SealedTable({
   );
 }
 
-interface GradedTableProps {
+interface GradedTableProps extends PortfolioTableProps {
   cards: GradedCard[];
   selectedId: string | null;
   onSelect: (id: string) => void;
@@ -153,6 +174,8 @@ export function GradedTable({
   selectedId,
   onSelect,
   marketFilter,
+  portfolio,
+  onEditPortfolio,
 }: GradedTableProps) {
   const showCompare = marketFilter === "all" || marketFilter === "compare";
 
@@ -219,6 +242,10 @@ export function GradedTable({
                     {card.grades.map((grade) => {
                       const it = getGradedMarket(grade, "IT");
                       const intl = getGradedMarket(grade, "INTL");
+                      const gradeKey = `${grade.company}-${grade.grade}`;
+                      const entryKey = portfolioKey(card.id, gradeKey);
+                      const entry = portfolio[entryKey];
+                      const primaryQuote = it ?? intl;
                       const spread =
                         it && intl
                           ? getSpreadPercent(it.price, intl.price)
@@ -226,13 +253,14 @@ export function GradedTable({
 
                       return (
                         <div
-                          key={`${grade.company}-${grade.grade}`}
+                          key={gradeKey}
                           className="rounded-xl border border-zinc-800 bg-zinc-800/40 p-3"
                         >
                           <div className="mb-2 flex flex-wrap items-center gap-2">
                             <span className="text-xs font-bold text-pokemon-yellow">
                               {grade.company} {grade.grade}
                             </span>
+                            <PlexiglassBadge entry={entry} />
                             {showCompare && it && intl && (
                               <SpreadBadge spreadPercent={spread} />
                             )}
@@ -240,6 +268,19 @@ export function GradedTable({
                               live={it?.live || intl?.live}
                               blocked={it?.blocked || intl?.blocked}
                             />
+                            <div className="ml-auto">
+                              <PortfolioCostCell
+                                entry={entry}
+                                marketPrice={primaryQuote?.price}
+                                onEdit={() =>
+                                  onEditPortfolio(
+                                    entryKey,
+                                    `${card.name} · ${grade.company} ${grade.grade}`,
+                                    card.set
+                                  )
+                                }
+                              />
+                            </div>
                           </div>
                           <div className="grid gap-3 sm:grid-cols-2">
                             {(marketFilter === "all" ||
@@ -333,13 +374,19 @@ export function GradedTable({
   );
 }
 
-interface RawTableProps {
+interface RawTableProps extends PortfolioTableProps {
   cards: RawCard[];
   selectedId: string | null;
   onSelect: (id: string) => void;
 }
 
-export function RawTable({ cards, selectedId, onSelect }: RawTableProps) {
+export function RawTable({
+  cards,
+  selectedId,
+  onSelect,
+  portfolio,
+  onEditPortfolio,
+}: RawTableProps) {
   if (cards.length === 0) {
     return (
       <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-12 text-center text-zinc-500">
@@ -351,7 +398,7 @@ export function RawTable({ cards, selectedId, onSelect }: RawTableProps) {
   return (
     <div className="overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/60">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[800px] text-left text-sm">
+        <table className="w-full min-w-[960px] text-left text-sm">
           <thead>
             <tr className="border-b border-zinc-800 text-xs uppercase tracking-wider text-zinc-500">
               <th className="px-4 py-3 font-medium">Carta</th>
@@ -359,6 +406,7 @@ export function RawTable({ cards, selectedId, onSelect }: RawTableProps) {
               <th className="px-4 py-3 font-medium">#</th>
               <th className="px-4 py-3 font-medium text-right">Prezzo IT</th>
               <th className="px-4 py-3 font-medium text-right">Prezzo INTL</th>
+              <th className="px-4 py-3 font-medium text-right">Acquisto</th>
               <th className="px-4 py-3 font-medium">Fonte</th>
             </tr>
           </thead>
@@ -366,6 +414,8 @@ export function RawTable({ cards, selectedId, onSelect }: RawTableProps) {
             {cards.map((card) => {
               const it = card.markets.find((m) => m.region === "IT");
               const intl = card.markets.find((m) => m.region === "INTL");
+              const entry = portfolio[card.id];
+              const marketPrice = it?.price ?? intl?.price;
 
               return (
                 <tr
@@ -381,6 +431,7 @@ export function RawTable({ cards, selectedId, onSelect }: RawTableProps) {
                     <p className="text-xs text-zinc-500">
                       {card.set} · {card.setCode}
                     </p>
+                    <PlexiglassBadge entry={entry} className="mt-1" />
                   </td>
                   <td className="px-4 py-3">
                     <LanguageBadge lang={card.language} />
@@ -391,6 +442,15 @@ export function RawTable({ cards, selectedId, onSelect }: RawTableProps) {
                   </td>
                   <td className="px-4 py-3">
                     <MarketPriceCell quote={intl} compact />
+                  </td>
+                  <td className="px-4 py-3">
+                    <PortfolioCostCell
+                      entry={entry}
+                      marketPrice={marketPrice}
+                      onEdit={() =>
+                        onEditPortfolio(card.id, card.name, card.set)
+                      }
+                    />
                   </td>
                   <td className="px-4 py-3">
                     <LiveBadge
@@ -408,11 +468,15 @@ export function RawTable({ cards, selectedId, onSelect }: RawTableProps) {
   );
 }
 
-interface AccessoryTableProps {
+interface AccessoryTableProps extends PortfolioTableProps {
   products: AccessoryProduct[];
 }
 
-export function AccessoryTable({ products }: AccessoryTableProps) {
+export function AccessoryTable({
+  products,
+  portfolio,
+  onEditPortfolio,
+}: AccessoryTableProps) {
   if (products.length === 0) {
     return (
       <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-12 text-center text-zinc-500">
@@ -424,32 +488,43 @@ export function AccessoryTable({ products }: AccessoryTableProps) {
   return (
     <div className="overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/60">
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[700px] text-left text-sm">
+        <table className="w-full min-w-[860px] text-left text-sm">
           <thead>
             <tr className="border-b border-zinc-800 text-xs uppercase tracking-wider text-zinc-500">
               <th className="px-4 py-3 font-medium">Accessorio</th>
               <th className="px-4 py-3 font-medium text-right">Prezzo IT</th>
               <th className="px-4 py-3 font-medium text-right">Prezzo INTL</th>
+              <th className="px-4 py-3 font-medium text-right">Acquisto</th>
             </tr>
           </thead>
           <tbody>
             {products.map((product) => {
               const it = product.markets.find((m) => m.region === "IT");
               const intl = product.markets.find((m) => m.region === "INTL");
+              const entry = portfolio[product.id];
+              const marketPrice = it?.price ?? intl?.price;
 
               return (
                 <tr
                   key={product.id}
                   className="border-b border-zinc-800/50 hover:bg-zinc-800/40"
                 >
-                  <td className="px-4 py-3 font-medium text-zinc-100">
-                    {product.name}
+                  <td className="px-4 py-3">
+                    <p className="font-medium text-zinc-100">{product.name}</p>
+                    <PlexiglassBadge entry={entry} className="mt-1" />
                   </td>
                   <td className="px-4 py-3">
                     <MarketPriceCell quote={it} compact />
                   </td>
                   <td className="px-4 py-3">
                     <MarketPriceCell quote={intl} compact />
+                  </td>
+                  <td className="px-4 py-3">
+                    <PortfolioCostCell
+                      entry={entry}
+                      marketPrice={marketPrice}
+                      onEdit={() => onEditPortfolio(product.id, product.name)}
+                    />
                   </td>
                 </tr>
               );

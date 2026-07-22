@@ -1,20 +1,56 @@
 "use client";
 
-import { cn, formatPercent, getChangeColor, getMarketRegionLabel } from "@/lib/utils";
-import type { DashboardStats } from "@/lib/types";
+import { cn, formatPercent, formatPrice, getChangeColor, getMarketRegionLabel } from "@/lib/utils";
+import type { DashboardStats, PortfolioSummary } from "@/lib/types";
 import {
   Package,
   TrendingUp,
   TrendingDown,
   BarChart3,
   Globe,
+  Wallet,
 } from "lucide-react";
 
 interface StatsCardsProps {
   stats: DashboardStats;
+  portfolioSummary?: PortfolioSummary | null;
 }
 
-export function StatsCards({ stats }: StatsCardsProps) {
+export function StatsCards({ stats, portfolioSummary }: StatsCardsProps) {
+  const portfolioCards =
+    portfolioSummary && portfolioSummary.trackedCount > 0
+      ? [
+          {
+            label: "Portfolio — investito",
+            value: formatPrice(portfolioSummary.totalInvested),
+            sub: `${portfolioSummary.trackedCount} voci con prezzo acquisto`,
+            icon: Wallet,
+            accent: "from-violet-500/20 to-violet-600/5",
+            iconColor: "text-violet-400",
+          },
+          {
+            label: "Portfolio — valore mercato",
+            value: formatPrice(portfolioSummary.totalMarketValue),
+            sub: "Confronto vs prezzi live/snapshot",
+            icon: BarChart3,
+            accent: "from-indigo-500/20 to-indigo-600/5",
+            iconColor: "text-indigo-400",
+          },
+          {
+            label: "Portfolio — P/L totale",
+            value: formatPrice(portfolioSummary.totalGainLoss),
+            sub: formatPercent(portfolioSummary.totalGainLossPercent),
+            icon: portfolioSummary.totalGainLoss >= 0 ? TrendingUp : TrendingDown,
+            accent:
+              portfolioSummary.totalGainLoss >= 0
+                ? "from-emerald-500/20 to-emerald-600/5"
+                : "from-red-500/20 to-red-600/5",
+            iconColor: getChangeColor(portfolioSummary.totalGainLossPercent),
+            valueColor: getChangeColor(portfolioSummary.totalGainLossPercent),
+          },
+        ]
+      : [];
+
   const cards = [
     {
       label: "Prodotti monitorati",
@@ -69,8 +105,48 @@ export function StatsCards({ stats }: StatsCardsProps) {
   ];
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
-      {cards.map((card) => (
+    <div className="space-y-4">
+      {portfolioCards.length > 0 && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {portfolioCards.map((card) => (
+            <div
+              key={card.label}
+              className={cn(
+                "relative overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/60 p-5 backdrop-blur-sm",
+                `bg-gradient-to-br ${card.accent}`
+              )}
+            >
+              <div className="flex items-start justify-between">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-zinc-400">{card.label}</p>
+                  <p
+                    className={cn(
+                      "mt-1 text-2xl font-semibold tracking-tight text-zinc-50",
+                      card.valueColor
+                    )}
+                  >
+                    {card.value}
+                  </p>
+                  <p className={cn("mt-1 text-xs", card.valueColor ?? "text-zinc-500")}>
+                    {card.sub}
+                  </p>
+                </div>
+                <div
+                  className={cn(
+                    "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-zinc-800/80",
+                    card.iconColor
+                  )}
+                >
+                  <card.icon className="h-5 w-5" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        {cards.map((card) => (
         <div
           key={card.label}
           className={cn(
@@ -105,7 +181,8 @@ export function StatsCards({ stats }: StatsCardsProps) {
             </div>
           </div>
         </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
@@ -126,7 +203,7 @@ export function MarketSourcesBanner() {
         <div>
           <p className="text-sm font-medium text-zinc-200">Il tuo portfolio</p>
           <p className="mt-1 text-xs text-zinc-500">
-            PSA/BGS/CGC · Sealed ITA/ENG/JP · Raw · Accessori — snapshot JSON via npm run scrape
+            Prezzo acquisto manuale · teca plexiglass opzionale · P/L vs mercato
           </p>
         </div>
           <div className="flex flex-wrap gap-3 text-xs">

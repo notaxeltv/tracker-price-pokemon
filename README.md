@@ -14,7 +14,9 @@ src/lib/
 │   └── playwright-scraper.ts   # Bypass Cloudflare (locale)
 ├── data-service.server.ts      # Live scrape + lettura snapshot
 ├── providers/cardtrader/       # Solo immagini (mai prezzi)
+├── portfolio.ts · portfolio.server.ts  # Prezzo acquisto manuale
 scripts/scrape-cron.ts            # Cron locale → data/scrape-snapshot.json
+data/portfolio.json               # Portfolio utente (gitignored)
 ```
 
 ## Catalogo attivo
@@ -78,6 +80,16 @@ CARDTRADER_API_TOKEN=your_jwt_token
 ```
 
 Nel catalogo (`products.ts`) puoi mappare `cardtraderBlueprintId` e `cardtraderExpansionId` per ogni prodotto.
+
+### Portfolio (prezzo acquisto manuale)
+
+Clicca **Inserisci** nella colonna **Acquisto** per registrare:
+
+- **Prezzo di acquisto** (€)
+- **Teca in plexiglass** — checkbox con etichetta visibile sulla riga
+- **Costo teca** (opzionale) — se lasci vuoto, la teca è già inclusa nel prezzo di acquisto
+
+I dati vengono salvati in `data/portfolio.json` (separati dallo snapshot prezzi). Le carte gradate usano una chiave per grado (`productId:PSA-10`).
 
 ## Stack
 

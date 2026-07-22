@@ -6,6 +6,7 @@ import { CategoryTabs } from "./category-tabs";
 import { SearchFilters } from "./search-filters";
 import { DualMarketChart, PriceChart } from "./price-chart";
 import { SealedTable, GradedTable, RawTable, AccessoryTable } from "./product-table";
+import { PortfolioEditPanel } from "./portfolio-panel";
 import {
   filterAccessoryProducts,
   filterGradedCards,
@@ -13,9 +14,12 @@ import {
   filterSealedProducts,
 } from "@/lib/filters";
 import { getGradedMarket, getSealedMarket } from "@/lib/market-utils";
+import { computePortfolioSummary } from "@/lib/portfolio-summary";
 import type {
   DashboardData,
   MarketRegion,
+  PortfolioData,
+  PortfolioEntry,
   ProductCategory,
   ProductFilters,
   TimeRange,
@@ -34,22 +38,41 @@ const defaultFilters: ProductFilters = {
 
 export function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
+  const [portfolio, setPortfolio] = useState<PortfolioData>({
+    entries: {},
+    updatedAt: new Date().toISOString(),
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<ProductFilters>(defaultFilters);
   const [selectedSealedId, setSelectedSealedId] = useState<string | null>(null);
   const [selectedGradedId, setSelectedGradedId] = useState<string | null>(null);
+  const [selectedRawId, setSelectedRawId] = useState<string | null>(null);
   const [selectedGradeKey, setSelectedGradeKey] = useState<string | null>(null);
   const [timeRange, setTimeRange] = useState<TimeRange>("30d");
+  const [portfolioEdit, setPortfolioEdit] = useState<{
+    key: string;
+    title: string;
+    subtitle?: string;
+  } | null>(null);
 
   const loadData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/dashboard");
-      if (!res.ok) throw new Error("Errore nel caricamento");
-      const json: DashboardData = await res.json();
+      const [dashboardRes, portfolioRes] = await Promise.all([
+        fetch("/api/dashboard"),
+        fetch("/api/portfolio"),
+      ]);
+      if (!dashboardRes.ok) throw new Error("Errore nel caricamento");
+      const json: DashboardData = await dashboardRes.json();
       setData(json);
+
+      if (portfolioRes.ok) {
+        const portfolioJson: PortfolioData = await portfolioRes.json();
+        setPortfolio(portfolioJson);
+      }
+
       if (!selectedSealedId && json.sealed.length > 0) {
         setSelectedSealedId(json.sealed[0].id);
       }
@@ -60,12 +83,36 @@ export function Dashboard() {
           setSelectedGradeKey(`${firstGrade.company}-${firstGrade.grade}`);
         }
       }
+      if (!selectedRawId && json.raw?.length > 0) {
+        setSelectedRawId(json.raw[0].id);
+      }
     } catch {
       setError("Impossibile caricare i dati. Riprova più tardi.");
     } finally {
       setLoading(false);
     }
-  }, [selectedSealedId, selectedGradedId]);
+  }, [selectedSealedId, selectedGradedId, selectedRawId]);
+
+  const savePortfolioEntry = useCallback(
+    async (key: string, entry: PortfolioEntry | null) => {
+      const res = await fetch("/api/portfolio", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key, entry }),
+      });
+      if (!res.ok) throw new Error("Salvataggio fallito");
+      const updated: PortfolioData = await res.json();
+      setPortfolio(updated);
+    },
+    []
+  );
+
+  const openPortfolioEdit = useCallback(
+    (key: string, title: string, subtitle?: string) => {
+      setPortfolioEdit({ key, title, subtitle });
+    },
+    []
+  );
 
   useEffect(() => {
     loadData();
@@ -93,6 +140,11 @@ export function Dashboard() {
   const filteredGraded = useMemo(
     () => (data ? filterGradedCards(data.graded, filters) : []),
     [data, filters]
+  );
+
+  const portfolioSummary = useMemo(
+    () => (data ? computePortfolioSummary(data, portfolio) : null),
+    [data, portfolio]
   );
 
   const selectedSealed = data?.sealed.find((p) => p.id === selectedSealedId);
@@ -190,7 +242,7 @@ export function Dashboard() {
       </section>
 
       <section className="mb-8">
-        <StatsCards stats={data.stats} />
+        <StatsCards stats={data.stats} portfolioSummary={portfolioSummary} />
       </section>
 
       <section className="mb-6 space-y-4">
@@ -285,6 +337,8 @@ export function Dashboard() {
             products={filteredSealed}
             selectedId={selectedSealedId}
             onSelect={setSelectedSealedId}
+            portfolio={portfolio.entries}
+            onEditPortfolio={openPortfolioEdit}
           />
         </section>
       )}
@@ -307,6 +361,8 @@ export function Dashboard() {
               }
             }}
             marketFilter={filters.market}
+            portfolio={portfolio.entries}
+            onEditPortfolio={openPortfolioEdit}
           />
         </section>
       )}
@@ -319,8 +375,10 @@ export function Dashboard() {
           </h2>
           <RawTable
             cards={filteredRaw}
-            selectedId={selectedSealedId}
-            onSelect={setSelectedSealedId}
+            selectedId={selectedRawId}
+            onSelect={setSelectedRawId}
+            portfolio={portfolio.entries}
+            onEditPortfolio={openPortfolioEdit}
           />
         </section>
       )}
@@ -331,17 +389,33 @@ export function Dashboard() {
             <span className="h-2 w-2 rounded-full bg-zinc-400" />
             Accessori
           </h2>
-          <AccessoryTable products={filteredAccessory} />
+          <AccessoryTable
+            products={filteredAccessory}
+            portfolio={portfolio.entries}
+            onEditPortfolio={openPortfolioEdit}
+          />
         </section>
       )}
 
       <footer className="border-t border-zinc-800/80 pt-6 text-center text-xs text-zinc-600">
-        Scraping Cardmarket · eBay · TCGPlayer — snapshot JSON ·{" "}
+        Scraping Cardmarket · eBay · TCGPlayer — snapshot JSON · portfolio in data/portfolio.json ·{" "}
         {data.dataSource === "snapshot" && "dati da cron locale · "}
         {data.stats.blockedCount > 0 &&
           `${data.stats.blockedCount} sorgenti bloccate — npm run scrape in locale · `}
         Catalogo in src/lib/catalog/products.ts
       </footer>
+
+      <PortfolioEditPanel
+        open={portfolioEdit != null}
+        title={portfolioEdit?.title ?? ""}
+        subtitle={portfolioEdit?.subtitle}
+        entryKey={portfolioEdit?.key ?? ""}
+        initialEntry={
+          portfolioEdit ? portfolio.entries[portfolioEdit.key] : undefined
+        }
+        onClose={() => setPortfolioEdit(null)}
+        onSave={savePortfolioEntry}
+      />
     </div>
   );
 }

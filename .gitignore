@@ -41,3 +41,4 @@ next-env.d.ts
 
 # scrape snapshot (generato da npm run scrape)
 /data/scrape-snapshot.json
+/data/portfolio.json
