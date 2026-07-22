@@ -43,3 +43,5 @@ next-env.d.ts
 /data/scrape-snapshot.json
 /data/portfolio.json
 /data/user-catalog.json
+/data/alert-state.json
+test-results/

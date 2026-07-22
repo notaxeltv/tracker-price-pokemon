@@ -7,7 +7,7 @@ import { OverviewPanel } from "./overview-panel";
 import { CategoryTabs } from "./category-tabs";
 import { CategoryHub } from "./category-hub";
 import { SearchFilters } from "./search-filters";
-import { DualMarketChart, PriceChart } from "./price-chart";
+import { DualMarketChart, PriceChart, CompareProductsChart } from "./price-chart";
 import { SealedTable, GradedTable, RawTable, AccessoryTable } from "./product-table";
 import { PortfolioEditPanel, SoldEditPanel } from "./portfolio-panel";
 import { AddProductPanel } from "./add-product-panel";
@@ -33,6 +33,7 @@ import type {
   TimeRange,
 } from "@/lib/types";
 import { getPriceAlertStatus, getTotalCost } from "@/lib/portfolio";
+import { getCategoryFreshness } from "@/lib/category-freshness";
 import { RefreshCw } from "lucide-react";
 import type { ChartReferenceLine } from "./price-chart";
 
@@ -74,6 +75,7 @@ export function Dashboard() {
   } | null>(null);
   const [addProductOpen, setAddProductOpen] = useState(false);
   const [manageCatalogOpen, setManageCatalogOpen] = useState(false);
+  const [compareKeys, setCompareKeys] = useState<string[]>([]);
 
   const snapshotMaxAgeMs = 3600 * 1000;
 
@@ -156,8 +158,8 @@ export function Dashboard() {
         }
 
         if (needsScrape) {
-          const fresh = await runPriceScrape(forceRefresh);
-          if (fresh) {
+          const applyFresh = (fresh: DashboardData | null | undefined) => {
+            if (!fresh) return;
             setData(fresh);
             if (!selectedSealedId && fresh.sealed.length > 0) {
               setSelectedSealedId(fresh.sealed[0].id);
@@ -172,6 +174,12 @@ export function Dashboard() {
             if (!selectedRawId && fresh.raw?.length > 0) {
               setSelectedRawId(fresh.raw[0].id);
             }
+          };
+
+          if (snap && !forceRefresh) {
+            void runPriceScrape(false).then(applyFresh);
+          } else {
+            applyFresh(await runPriceScrape(forceRefresh));
           }
         }
       } catch {
@@ -226,7 +234,7 @@ export function Dashboard() {
         {
           value: cost,
           label: `Acquisto ${cost.toLocaleString("it-IT", { style: "currency", currency: "EUR", maximumFractionDigits: 0 })}`,
-          color: "#a78bfa",
+          color: "#5eead4",
         },
       ];
     },
@@ -293,6 +301,36 @@ export function Dashboard() {
     [data, portfolio]
   );
 
+  const categoryFreshness = useMemo(
+    () => (data ? getCategoryFreshness(data) : undefined),
+    [data]
+  );
+
+  const compareSeries = useMemo(() => {
+    if (!data || compareKeys.length < 2) return [];
+    const colors = ["#14b8a6", "#67e8f9"];
+    return compareKeys.slice(0, 2).map((key, i) => {
+      const sealed = data.sealed.find((p) => p.id === key);
+      if (sealed) {
+        const q = getSealedMarket(sealed, "IT") ?? getSealedMarket(sealed, "INTL");
+        return { label: sealed.name, history: q?.history ?? [], color: colors[i] };
+      }
+      const graded = data.graded.find((c) => c.id === key);
+      if (graded) {
+        const grade = graded.grades[0];
+        const q = grade
+          ? getGradedMarket(grade, "IT") ?? getGradedMarket(grade, "INTL")
+          : undefined;
+        return {
+          label: `${graded.name} · ${grade?.company ?? ""} ${grade?.grade ?? ""}`.trim(),
+          history: q?.history ?? [],
+          color: colors[i],
+        };
+      }
+      return { label: key, history: [], color: colors[i] };
+    });
+  }, [compareKeys, data]);
+
   const selectedSealed = data?.sealed.find((p) => p.id === selectedSealedId);
   const selectedGraded = data?.graded.find((c) => c.id === selectedGradedId);
   const selectedGrade = selectedGraded?.grades.find(
@@ -329,7 +367,7 @@ export function Dashboard() {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="flex flex-col items-center gap-3 text-zinc-400">
-          <RefreshCw className="h-8 w-8 animate-spin text-pokemon-yellow" />
+          <RefreshCw className="h-8 w-8 animate-spin text-brand-light" />
           <p>Caricamento dashboard...</p>
         </div>
       </div>
@@ -343,7 +381,7 @@ export function Dashboard() {
           <p className="text-red-400">{error ?? "Errore sconosciuto"}</p>
           <button
             onClick={() => loadData({ forceRefresh: true })}
-            className="mt-4 rounded-xl bg-pokemon-yellow px-4 py-2 text-sm font-medium text-zinc-900"
+            className="btn-primary mt-4"
           >
             Riprova
           </button>
@@ -370,8 +408,29 @@ export function Dashboard() {
     accessory: data.accessory?.length ?? 0,
   };
 
+  const toggleCompareKey = (key: string) => {
+    setCompareKeys((prev) => {
+      if (prev.includes(key)) return prev.filter((k) => k !== key);
+      if (prev.length >= 2) return [prev[1], key];
+      return [...prev, key];
+    });
+  };
+
+  const selectSealed = (id: string) => {
+    if (filters.compareMode) toggleCompareKey(id);
+    setSelectedSealedId(id);
+  };
+
+  const selectGraded = (id: string) => {
+    if (filters.compareMode) toggleCompareKey(id);
+    setSelectedGradedId(id);
+    const card = data.graded.find((c) => c.id === id);
+    const grade = card?.grades[0];
+    if (grade) setSelectedGradeKey(`${grade.company}-${grade.grade}`);
+  };
+
   return (
-    <div className="mx-auto min-h-screen max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+    <div className="app-shell">
       <DashboardHeader
         data={data}
         scraping={scraping}
@@ -392,14 +451,14 @@ export function Dashboard() {
       </section>
 
       {activeAlerts.length > 0 && appView !== "portfolio" && (
-        <section className="mb-6 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3">
-          <p className="text-sm font-medium text-amber-200">
+        <section className="alert-banner mb-6">
+          <p className="text-sm text-brand-light">
             {activeAlerts.length} alert prezzo attivi
           </p>
           <button
             type="button"
             onClick={() => setAppView("portfolio")}
-            className="mt-1 text-xs text-amber-100/90 underline underline-offset-2"
+            className="mt-1 text-xs text-zinc-500 underline underline-offset-2 hover:text-zinc-300"
           >
             Vai al Portfolio
           </button>
@@ -422,6 +481,7 @@ export function Dashboard() {
           portfolio={portfolio}
           onEdit={openPortfolioEdit}
           onSold={openSoldEdit}
+          onPortfolioUpdated={setPortfolio}
         />
       )}
 
@@ -434,6 +494,7 @@ export function Dashboard() {
             gradedCount={categoryCounts.graded}
             rawCount={categoryCounts.raw}
             accessoryCount={categoryCounts.accessory}
+            freshness={categoryFreshness}
           />
 
           {!isCategoryHub && (
@@ -449,7 +510,15 @@ export function Dashboard() {
             <CategoryHub counts={categoryCounts} onSelect={setMarketCategory} />
           )}
 
-          {showCharts && (
+          {filters.compareMode && compareSeries.length === 2 && (
+            <CompareProductsChart
+              series={compareSeries}
+              timeRange={timeRange}
+              onTimeRangeChange={setTimeRange}
+            />
+          )}
+
+          {showCharts && !(filters.compareMode && compareKeys.length === 2) && (
             <section className="grid gap-6 lg:grid-cols-2">
               {showSealed && selectedSealed && showDualCharts && (
                 <DualMarketChart
@@ -477,7 +546,7 @@ export function Dashboard() {
                   data={sealedIntl.history}
                   currency="EUR"
                   title={`${selectedSealed.name} · eBay EU`}
-                  color="#fb923c"
+                  color="#67e8f9"
                   timeRange={timeRange}
                   onTimeRangeChange={setTimeRange}
                   referenceLines={sealedChartRefs}
@@ -509,7 +578,7 @@ export function Dashboard() {
                   data={gradedIntl.history}
                   currency="EUR"
                   title={`${selectedGraded.name} · ${selectedGrade.company} ${selectedGrade.grade} · eBay EU`}
-                  color="#fb923c"
+                  color="#67e8f9"
                   timeRange={timeRange}
                   onTimeRangeChange={setTimeRange}
                   referenceLines={gradedChartRefs}
@@ -523,7 +592,7 @@ export function Dashboard() {
               <SealedTable
                 products={filteredSealed}
                 selectedId={selectedSealedId}
-                onSelect={setSelectedSealedId}
+                onSelect={selectSealed}
                 portfolio={portfolio.entries}
                 onEditPortfolio={openPortfolioEdit}
                 onSoldPortfolio={openSoldEdit}
@@ -536,14 +605,7 @@ export function Dashboard() {
               <GradedTable
                 cards={filteredGraded}
                 selectedId={selectedGradedId}
-                onSelect={(id) => {
-                  setSelectedGradedId(id);
-                  const card = data.graded.find((c) => c.id === id);
-                  const grade = card?.grades[0];
-                  if (grade) {
-                    setSelectedGradeKey(`${grade.company}-${grade.grade}`);
-                  }
-                }}
+                onSelect={selectGraded}
                 marketFilter={filters.market}
                 portfolio={portfolio.entries}
                 onEditPortfolio={openPortfolioEdit}
@@ -578,7 +640,7 @@ export function Dashboard() {
         </div>
       )}
 
-      <footer className="mt-10 border-t border-zinc-800/80 pt-4 text-center text-xs text-zinc-600">
+      <footer className="app-footer">
         Cardmarket · eBay EU · snapshot locale
         {data.stats.blockedCount > 0 &&
           ` · ${data.stats.blockedCount} sorgenti bloccate`}

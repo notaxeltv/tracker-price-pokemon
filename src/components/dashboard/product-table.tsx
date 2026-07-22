@@ -22,6 +22,7 @@ import type { AccessoryProduct, GradedCard, MarketFilter, PortfolioEntry, RawCar
 import { getGradedMarket } from "@/lib/market-utils";
 import { portfolioKey } from "@/lib/portfolio";
 import { PlexiglassBadge, PortfolioCostCell, PortfolioMetaBadges, SoldBadge } from "./portfolio-panel";
+import { EmptyState, TableShell } from "@/components/ui/card";
 
 interface PortfolioTableProps {
   portfolio: Record<string, PortfolioEntry>;
@@ -45,18 +46,18 @@ export function SealedTable({
 }: SealedTableProps) {
   if (products.length === 0) {
     return (
-      <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-12 text-center text-zinc-500">
+      <EmptyState className="text-zinc-500">
         Nessun prodotto sealed trovato con i filtri attuali.
-      </div>
+      </EmptyState>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/60">
+    <TableShell>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[1000px] text-left text-sm">
           <thead>
-            <tr className="border-b border-zinc-800 text-xs uppercase tracking-wider text-zinc-500">
+            <tr className="table-head">
               <th className="px-4 py-3 font-medium">Prodotto</th>
               <th className="px-4 py-3 font-medium">Lingua</th>
               <th className="px-4 py-3 font-medium">Tipo</th>
@@ -80,8 +81,8 @@ export function SealedTable({
                   key={product.id}
                   onClick={() => onSelect(product.id)}
                   className={cn(
-                    "cursor-pointer border-b border-zinc-800/50 transition-colors hover:bg-zinc-800/40",
-                    selectedId === product.id && "bg-pokemon-blue/10"
+                    "table-row cursor-pointer hover:bg-zinc-800/40",
+                    selectedId === product.id && "table-row-selected"
                   )}
                 >
                   <td className="px-4 py-3">
@@ -180,7 +181,7 @@ export function SealedTable({
           </tbody>
         </table>
       </div>
-    </div>
+    </TableShell>
   );
 }
 
@@ -204,9 +205,9 @@ export function GradedTable({
 
   if (cards.length === 0) {
     return (
-      <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-12 text-center text-zinc-500">
+      <EmptyState className="text-zinc-500">
         Nessuna carta gradata trovata con i filtri attuali.
-      </div>
+      </EmptyState>
     );
   }
 
@@ -227,8 +228,8 @@ export function GradedTable({
             key={card.id}
             onClick={() => onSelect(card.id)}
             className={cn(
-              "cursor-pointer rounded-2xl border border-zinc-800/80 bg-zinc-900/60 p-4 transition-all hover:border-zinc-700",
-              isSelected && "border-pokemon-blue/50 bg-pokemon-blue/5"
+              "card cursor-pointer p-4 transition-all hover:border-border-strong",
+              isSelected && "border-brand/40 bg-brand/8"
             )}
           >
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
@@ -280,7 +281,7 @@ export function GradedTable({
                           className="rounded-xl border border-zinc-800 bg-zinc-800/40 p-3"
                         >
                           <div className="mb-2 flex flex-wrap items-center gap-2">
-                            <span className="text-xs font-bold text-pokemon-yellow">
+                            <span className="text-xs font-bold text-brand-light">
                               {grade.company} {grade.grade}
                             </span>
                             <PlexiglassBadge entry={entry} />
@@ -428,18 +429,18 @@ export function RawTable({
 }: RawTableProps) {
   if (cards.length === 0) {
     return (
-      <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-12 text-center text-zinc-500">
+      <EmptyState className="text-zinc-500">
         Nessuna carta raw trovata con i filtri attuali.
-      </div>
+      </EmptyState>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/60">
+    <TableShell>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[960px] text-left text-sm">
           <thead>
-            <tr className="border-b border-zinc-800 text-xs uppercase tracking-wider text-zinc-500">
+            <tr className="table-head">
               <th className="px-4 py-3 font-medium">Carta</th>
               <th className="px-4 py-3 font-medium">Lingua</th>
               <th className="px-4 py-3 font-medium">#</th>
@@ -461,8 +462,8 @@ export function RawTable({
                   key={card.id}
                   onClick={() => onSelect(card.id)}
                   className={cn(
-                    "cursor-pointer border-b border-zinc-800/50 transition-colors hover:bg-zinc-800/40",
-                    selectedId === card.id && "bg-pokemon-blue/10"
+                    "table-row cursor-pointer hover:bg-zinc-800/40",
+                    selectedId === card.id && "table-row-selected"
                   )}
                 >
                   <td className="px-4 py-3">
@@ -513,7 +514,7 @@ export function RawTable({
           </tbody>
         </table>
       </div>
-    </div>
+    </TableShell>
   );
 }
 
@@ -529,18 +530,18 @@ export function AccessoryTable({
 }: AccessoryTableProps) {
   if (products.length === 0) {
     return (
-      <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-12 text-center text-zinc-500">
+      <EmptyState className="text-zinc-500">
         Nessun accessorio trovato con i filtri attuali.
-      </div>
+      </EmptyState>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-zinc-800/80 bg-zinc-900/60">
+    <TableShell>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[860px] text-left text-sm">
           <thead>
-            <tr className="border-b border-zinc-800 text-xs uppercase tracking-wider text-zinc-500">
+            <tr className="table-head">
               <th className="px-4 py-3 font-medium">Accessorio</th>
               <th className="px-4 py-3 font-medium text-right">Cardmarket</th>
               <th className="px-4 py-3 font-medium text-right">eBay EU</th>
@@ -555,10 +556,7 @@ export function AccessoryTable({
               const marketPrice = it?.price ?? intl?.price;
 
               return (
-                <tr
-                  key={product.id}
-                  className="border-b border-zinc-800/50 hover:bg-zinc-800/40"
-                >
+                <tr key={product.id} className="table-row">
                   <td className="px-4 py-3">
                     <p className="font-medium text-zinc-100">{product.name}</p>
                     <div className="mt-1 flex flex-wrap gap-1">
@@ -591,6 +589,6 @@ export function AccessoryTable({
           </tbody>
         </table>
       </div>
-    </div>
+    </TableShell>
   );
 }

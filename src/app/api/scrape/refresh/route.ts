@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { clearScraperCache } from "@/lib/scrapers/cache";
 import { isSnapshotFresh, loadSnapshot } from "@/lib/scrapers/snapshot";
 import { refreshSnapshot } from "@/lib/data-service";
+import { dispatchPriceAlerts } from "@/lib/alert-notifications.server";
+import { loadPortfolio } from "@/lib/portfolio.server";
 
 function minIntervalSeconds(): number {
   return parseInt(process.env.SCRAPE_MIN_INTERVAL ?? "300", 10);
@@ -45,6 +47,8 @@ export async function POST(request: Request) {
 
   clearScraperCache();
   const data = await refreshSnapshot();
+  const portfolio = await loadPortfolio();
+  const alerts = await dispatchPriceAlerts(data, portfolio);
   return NextResponse.json({
     ok: true,
     skipped: false,
@@ -53,5 +57,6 @@ export async function POST(request: Request) {
     blockedCount: data.stats.blockedCount,
     dataSource: data.dataSource,
     lastUpdated: data.lastUpdated,
+    alerts,
   });
 }

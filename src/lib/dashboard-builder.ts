@@ -3,7 +3,6 @@ import {
   getGradedMarket,
   getSealedMarket,
 } from "./market-utils";
-import { buildFlatHistory } from "./scrapers/http";
 import { scrapeForRegion } from "./scrapers/orchestrator";
 import {
   isSnapshotFresh,
@@ -43,7 +42,7 @@ function scrapeToQuote(result: ScrapeResult, region: MarketRegion): MarketQuote 
     change24h: 0,
     change7d: 0,
     change30d: 0,
-    history: buildFlatHistory(price > 0 ? price : 1, 0),
+    history: [],
     externalUrl: result.externalUrl,
     live: result.success,
     blocked: result.blocked,

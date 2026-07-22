@@ -1,0 +1,19 @@
+{
+  "name": "Pokémon Price Tracker",
+  "short_name": "PPT Pokémon",
+  "description": "Monitor prezzi Cardmarket e eBay EU + portfolio Pokémon TCG",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d1117",
+  "theme_color": "#14b8a6",
+  "orientation": "portrait-primary",
+  "lang": "it",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
