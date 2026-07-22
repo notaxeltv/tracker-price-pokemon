@@ -73,6 +73,30 @@ interface SpreadBadgeProps {
   spreadPercent: number;
 }
 
+export function LiveBadge({ live }: { live?: boolean }) {
+  if (live) {
+    return (
+      <span className="rounded-md bg-emerald-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-400">
+        Live
+      </span>
+    );
+  }
+  return (
+    <span className="rounded-md bg-zinc-800 px-2 py-0.5 text-[10px] font-medium text-zinc-500">
+      Stima
+    </span>
+  );
+}
+
+export function LanguageBadge({ lang }: { lang: "JP" | "IT" | "EN" }) {
+  const labels = { JP: "🇯🇵 JP", IT: "🇮🇹 ITA", EN: "🇬🇧 ENG" };
+  return (
+    <span className="rounded-md bg-zinc-800 px-2 py-0.5 text-xs font-medium text-zinc-300">
+      {labels[lang]}
+    </span>
+  );
+}
+
 export function SpreadBadge({ spreadPercent }: SpreadBadgeProps) {
   const cheaper =
     spreadPercent > 2 ? "INTL" : spreadPercent < -2 ? "IT" : "pari";

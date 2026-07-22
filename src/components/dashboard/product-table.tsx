@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { MiniSparkline } from "./price-chart";
 import {
+  LanguageBadge,
+  LiveBadge,
   MarketBadge,
   MarketPriceCell,
   SourceLink,
@@ -14,8 +16,8 @@ import {
   getChangeColor,
   getSealedTypeLabel,
 } from "@/lib/utils";
-import { getSealedMarket } from "@/lib/market-utils";
 import { getSpreadPercent } from "@/lib/data-service";
+import { getSealedMarket } from "@/lib/market-utils";
 import type { GradedCard, MarketFilter, SealedProduct } from "@/lib/types";
 import { getGradedMarket } from "@/lib/market-utils";
 
@@ -23,19 +25,13 @@ interface SealedTableProps {
   products: SealedProduct[];
   selectedId: string | null;
   onSelect: (id: string) => void;
-  marketFilter: MarketFilter;
 }
 
 export function SealedTable({
   products,
   selectedId,
   onSelect,
-  marketFilter,
 }: SealedTableProps) {
-  const showCompare = marketFilter === "all" || marketFilter === "compare";
-  const showIT = showCompare || marketFilter === "IT";
-  const showINTL = showCompare || marketFilter === "INTL";
-
   if (products.length === 0) {
     return (
       <div className="rounded-2xl border border-zinc-800/80 bg-zinc-900/40 p-12 text-center text-zinc-500">
@@ -51,25 +47,20 @@ export function SealedTable({
           <thead>
             <tr className="border-b border-zinc-800 text-xs uppercase tracking-wider text-zinc-500">
               <th className="px-4 py-3 font-medium">Prodotto</th>
+              <th className="px-4 py-3 font-medium">Lingua</th>
               <th className="px-4 py-3 font-medium">Tipo</th>
-              {showIT && (
-                <th className="px-4 py-3 font-medium text-right">🇮🇹 Italia</th>
-              )}
-              {showINTL && (
-                <th className="px-4 py-3 font-medium text-right">🌍 Internazionale</th>
-              )}
-              {showCompare && (
-                <th className="px-4 py-3 font-medium text-center">Spread</th>
-              )}
-              <th className="px-4 py-3 font-medium">Trend IT</th>
+              <th className="px-4 py-3 font-medium text-right">Prezzo</th>
+              <th className="px-4 py-3 font-medium text-right">7g</th>
+              <th className="px-4 py-3 font-medium">Fonte</th>
+              <th className="px-4 py-3 font-medium">Trend</th>
             </tr>
           </thead>
           <tbody>
             {products.map((product) => {
-              const it = getSealedMarket(product, "IT");
-              const intl = getSealedMarket(product, "INTL");
-              const spread =
-                it && intl ? getSpreadPercent(it.price, intl.price) : 0;
+              const quote =
+                product.language === "IT"
+                  ? getSealedMarket(product, "IT")
+                  : getSealedMarket(product, "INTL");
 
               return (
                 <tr
@@ -104,35 +95,39 @@ export function SealedTable({
                         <p className="truncate text-xs text-zinc-500">
                           {product.set} · {product.setCode}
                         </p>
-                        <SourceLink quote={it} />
                       </div>
                     </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <LanguageBadge lang={product.language} />
                   </td>
                   <td className="px-4 py-3">
                     <span className="rounded-md bg-zinc-800 px-2 py-1 text-xs text-zinc-400">
                       {getSealedTypeLabel(product.type)}
                     </span>
                   </td>
-                  {showIT && (
-                    <td className="px-4 py-3">
-                      <MarketPriceCell quote={it} />
-                    </td>
-                  )}
-                  {showINTL && (
-                    <td className="px-4 py-3">
-                      <MarketPriceCell quote={intl} />
-                    </td>
-                  )}
-                  {showCompare && (
-                    <td className="px-4 py-3 text-center">
-                      <SpreadBadge spreadPercent={spread} />
-                    </td>
-                  )}
                   <td className="px-4 py-3">
-                    {it && (
+                    <MarketPriceCell quote={quote} compact />
+                  </td>
+                  <td
+                    className={cn(
+                      "px-4 py-3 text-right text-sm font-medium",
+                      quote && getChangeColor(quote.change7d)
+                    )}
+                  >
+                    {quote ? formatPercent(quote.change7d) : "—"}
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-col gap-1">
+                      <LiveBadge live={quote?.live} />
+                      <SourceLink quote={quote} />
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    {quote && (
                       <MiniSparkline
-                        data={it.history}
-                        positive={it.change7d >= 0}
+                        data={quote.history}
+                        positive={quote.change7d >= 0}
                       />
                     )}
                   </td>
@@ -210,6 +205,10 @@ export function GradedTable({
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <h3 className="font-semibold text-zinc-100">{card.name}</h3>
+                    {card.nameJa && (
+                      <span className="text-sm text-zinc-400">{card.nameJa}</span>
+                    )}
+                    <LanguageBadge lang="JP" />
                     <span className="text-xs text-zinc-500">#{card.cardNumber}</span>
                   </div>
                   <p className="mt-0.5 text-sm text-zinc-500">
@@ -232,11 +231,14 @@ export function GradedTable({
                         >
                           <div className="mb-2 flex flex-wrap items-center gap-2">
                             <span className="text-xs font-bold text-pokemon-yellow">
-                              {grade.company} {grade.grade}
+                              PSA {grade.grade}
                             </span>
                             {showCompare && it && intl && (
                               <SpreadBadge spreadPercent={spread} />
                             )}
+                            <LiveBadge
+                              live={it?.live || intl?.live}
+                            />
                           </div>
                           <div className="grid gap-3 sm:grid-cols-2">
                             {(marketFilter === "all" ||

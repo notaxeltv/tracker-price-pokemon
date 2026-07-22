@@ -1,6 +1,9 @@
 export type ProductCategory = "sealed" | "graded";
 
-export type GradingCompany = "PSA" | "BGS" | "CGC";
+/** Solo PSA per carte gradate JP dell'utente */
+export type GradingCompany = "PSA";
+
+export type ProductLanguage = "JP" | "IT" | "EN";
 
 export type SealedProductType =
   | "booster_box"
@@ -9,7 +12,7 @@ export type SealedProductType =
   | "collection_box"
   | "tin";
 
-/** Mercato italiano (Cardmarket IT) vs internazionale (TCGPlayer / eBay) */
+/** IT = mercato italiano/EU (Cardmarket) · INTL = mercato ENG/US (TCGPlayer/eBay) */
 export type MarketRegion = "IT" | "INTL";
 
 export type PriceSource = "cardmarket" | "tcgplayer" | "ebay";
@@ -30,6 +33,7 @@ export interface MarketQuote {
   change30d: number;
   history: PricePoint[];
   externalUrl?: string;
+  live?: boolean;
 }
 
 export interface GradedPrice {
@@ -45,19 +49,27 @@ export interface SealedProduct {
   set: string;
   setCode: string;
   type: SealedProductType;
+  /** Lingua/edizione del prodotto sealed */
+  language: "IT" | "EN";
   imageUrl?: string;
   markets: MarketQuote[];
+  tcgplayerProductId?: number;
 }
 
 export interface GradedCard {
   id: string;
   category: "graded";
   name: string;
+  nameJa?: string;
   set: string;
   setCode: string;
   cardNumber: string;
+  /** Carte gradate JP PSA */
+  language: "JP";
   imageUrl?: string;
   grades: GradedPrice[];
+  tcgdxCardId?: string;
+  pkmnPricesCardId?: number;
 }
 
 export type Product = SealedProduct | GradedCard;
@@ -65,11 +77,14 @@ export type Product = SealedProduct | GradedCard;
 export interface DashboardStats {
   totalProducts: number;
   sealedCount: number;
+  sealedItCount: number;
+  sealedEnCount: number;
   gradedCount: number;
   avgChange7dIT: number;
   avgChange7dINTL: number;
   topGainer: { name: string; change: number; region: MarketRegion } | null;
   topLoser: { name: string; change: number; region: MarketRegion } | null;
+  liveCount: number;
 }
 
 export interface DashboardData {
@@ -77,6 +92,7 @@ export interface DashboardData {
   sealed: SealedProduct[];
   graded: GradedCard[];
   lastUpdated: string;
+  dataSource: "live" | "mixed" | "demo";
 }
 
 export type TimeRange = "7d" | "30d" | "90d" | "1y";
@@ -85,12 +101,14 @@ export type SortField = "name" | "price" | "change7d" | "change30d";
 export type SortDirection = "asc" | "desc";
 
 export type MarketFilter = "all" | "IT" | "INTL" | "compare";
+export type SealedLanguageFilter = "all" | "IT" | "EN";
 
 export interface ProductFilters {
   category: ProductCategory | "all";
   search: string;
   market: MarketFilter;
-  gradingCompany?: GradingCompany;
+  sealedLanguage: SealedLanguageFilter;
+  psaGrade?: number;
   sortField: SortField;
   sortDirection: SortDirection;
 }

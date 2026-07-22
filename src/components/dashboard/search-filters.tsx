@@ -1,18 +1,20 @@
 "use client";
 
-import { Search, Globe, ArrowUpDown } from "lucide-react";
-import type { GradingCompany, ProductFilters } from "@/lib/types";
+import { Search, Globe, ArrowUpDown, Languages } from "lucide-react";
+import type { ProductFilters } from "@/lib/types";
 
 interface SearchFiltersProps {
   filters: ProductFilters;
   onChange: (filters: Partial<ProductFilters>) => void;
-  showGradingFilter?: boolean;
+  showSealedLang?: boolean;
+  showPsaFilter?: boolean;
 }
 
 export function SearchFilters({
   filters,
   onChange,
-  showGradingFilter = false,
+  showSealedLang = false,
+  showPsaFilter = false,
 }: SearchFiltersProps) {
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
@@ -20,7 +22,7 @@ export function SearchFilters({
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
         <input
           type="text"
-          placeholder="Cerca prodotto, set o numero carta..."
+          placeholder="Cerca carta JP, sealed ITA/ENG..."
           value={filters.search}
           onChange={(e) => onChange({ search: e.target.value })}
           className="w-full rounded-xl border border-zinc-800 bg-zinc-900/80 py-2.5 pl-10 pr-4 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-pokemon-blue focus:outline-none focus:ring-1 focus:ring-pokemon-blue/50"
@@ -28,6 +30,26 @@ export function SearchFilters({
       </div>
 
       <div className="flex flex-wrap gap-2">
+        {showSealedLang && (
+          <div className="relative">
+            <Languages className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
+            <select
+              value={filters.sealedLanguage}
+              onChange={(e) =>
+                onChange({
+                  sealedLanguage: e.target
+                    .value as ProductFilters["sealedLanguage"],
+                })
+              }
+              className="appearance-none rounded-xl border border-zinc-800 bg-zinc-900/80 py-2.5 pl-10 pr-8 text-sm text-zinc-100 focus:border-pokemon-blue focus:outline-none"
+            >
+              <option value="all">Sealed: ITA + ENG</option>
+              <option value="IT">🇮🇹 Solo italiano</option>
+              <option value="EN">🇬🇧 Solo inglese</option>
+            </select>
+          </div>
+        )}
+
         <div className="relative">
           <Globe className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
           <select
@@ -44,23 +66,22 @@ export function SearchFilters({
           </select>
         </div>
 
-        {showGradingFilter && (
+        {showPsaFilter && (
           <select
-            value={filters.gradingCompany ?? "all"}
+            value={filters.psaGrade ?? "all"}
             onChange={(e) =>
               onChange({
-                gradingCompany:
+                psaGrade:
                   e.target.value === "all"
                     ? undefined
-                    : (e.target.value as GradingCompany),
+                    : Number(e.target.value),
               })
             }
             className="rounded-xl border border-zinc-800 bg-zinc-900/80 px-4 py-2.5 text-sm text-zinc-100 focus:border-pokemon-blue focus:outline-none"
           >
-            <option value="all">Tutte le grading</option>
-            <option value="PSA">PSA</option>
-            <option value="BGS">BGS</option>
-            <option value="CGC">CGC</option>
+            <option value="all">PSA: tutti i gradi</option>
+            <option value="10">PSA 10</option>
+            <option value="9">PSA 9</option>
           </select>
         )}
 

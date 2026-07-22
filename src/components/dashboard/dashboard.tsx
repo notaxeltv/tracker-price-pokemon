@@ -25,6 +25,7 @@ const defaultFilters: ProductFilters = {
   category: "all",
   search: "",
   market: "compare",
+  sealedLanguage: "all",
   sortField: "change7d",
   sortDirection: "desc",
 };
@@ -148,8 +149,8 @@ export function Dashboard() {
               Dashboard Prezzi Pokémon
             </h1>
             <p className="mt-2 max-w-2xl text-zinc-400">
-              Confronta i prezzi tra mercato italiano (Cardmarket, eBay IT) e
-              internazionale (TCGPlayer, eBay US) per prodotti sealed e carte gradate.
+              Monitora le tue carte <strong className="font-medium text-zinc-300">PSA giapponesi</strong> e i prodotti{" "}
+              <strong className="font-medium text-zinc-300">sealed ITA e ENG</strong>.
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -189,7 +190,8 @@ export function Dashboard() {
         <SearchFilters
           filters={filters}
           onChange={updateFilters}
-          showGradingFilter={showGraded}
+          showSealedLang={showSealed}
+          showPsaFilter={showGraded}
         />
       </section>
 
@@ -260,13 +262,12 @@ export function Dashboard() {
         <section className="mb-8">
           <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-zinc-200">
             <span className="h-2 w-2 rounded-full bg-pokemon-blue" />
-            Prodotti Sealed
+            Sealed ITA & ENG
           </h2>
           <SealedTable
             products={filteredSealed}
             selectedId={selectedSealedId}
             onSelect={setSelectedSealedId}
-            marketFilter={filters.market}
           />
         </section>
       )}
@@ -275,7 +276,7 @@ export function Dashboard() {
         <section className="mb-8">
           <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-zinc-200">
             <span className="h-2 w-2 rounded-full bg-pokemon-yellow" />
-            Carte Gradate
+            Carte PSA Giapponesi
           </h2>
           <GradedTable
             cards={filteredGraded}
@@ -294,7 +295,9 @@ export function Dashboard() {
       )}
 
       <footer className="border-t border-zinc-800/80 pt-6 text-center text-xs text-zinc-600">
-        Dati demo · Cardmarket: nessuna API pubblica · Live via PkmnPrices / PokeTrace / TCGdex
+        {data.dataSource === "live" && "Dati live · "}
+        {data.dataSource === "mixed" && "Dati misti (live + stime) · "}
+        Sealed ENG: TCGPlayer · Sealed ITA / PSA JP: stime · Pro: PkmnPrices per Cardmarket + eBay JP
       </footer>
     </div>
   );
