@@ -21,7 +21,7 @@ import { getSealedMarket } from "@/lib/market-utils";
 import type { AccessoryProduct, GradedCard, MarketFilter, PortfolioEntry, RawCard, SealedProduct } from "@/lib/types";
 import { getGradedMarket } from "@/lib/market-utils";
 import { portfolioKey } from "@/lib/portfolio";
-import { PlexiglassBadge, PortfolioCostCell, SoldBadge } from "./portfolio-panel";
+import { PlexiglassBadge, PortfolioCostCell, PortfolioMetaBadges, SoldBadge } from "./portfolio-panel";
 
 interface PortfolioTableProps {
   portfolio: Record<string, PortfolioEntry>;
@@ -112,6 +112,10 @@ export function SealedTable({
                           <PlexiglassBadge entry={entry} />
                           <SoldBadge entry={entry} />
                         </div>
+                        <PortfolioMetaBadges
+                          entry={entry}
+                          marketPrice={marketPrice}
+                        />
                       </div>
                     </div>
                   </td>
@@ -281,6 +285,10 @@ export function GradedTable({
                             </span>
                             <PlexiglassBadge entry={entry} />
                             <SoldBadge entry={entry} />
+                            <PortfolioMetaBadges
+                              entry={entry}
+                              marketPrice={primaryQuote?.price}
+                            />
                             {showCompare && it && intl && (
                               <SpreadBadge spreadPercent={spread} />
                             )}
@@ -466,6 +474,7 @@ export function RawTable({
                       <PlexiglassBadge entry={entry} />
                       <SoldBadge entry={entry} />
                     </div>
+                    <PortfolioMetaBadges entry={entry} marketPrice={marketPrice} />
                   </td>
                   <td className="px-4 py-3">
                     <LanguageBadge lang={card.language} />
@@ -556,6 +565,7 @@ export function AccessoryTable({
                       <PlexiglassBadge entry={entry} />
                       <SoldBadge entry={entry} />
                     </div>
+                    <PortfolioMetaBadges entry={entry} marketPrice={marketPrice} />
                   </td>
                   <td className="px-4 py-3">
                     <MarketPriceCell quote={it} compact />

@@ -13,8 +13,12 @@ export function parsePortfolioKey(key: string): {
   return { productId: key.slice(0, idx), gradeKey: key.slice(idx + 1) };
 }
 
-/** Costo totale: acquisto + teca (solo se costo teca specificato separatamente). */
-export function getTotalCost(entry: PortfolioEntry): number | null {
+export function getQuantity(entry: PortfolioEntry): number {
+  return entry.quantity != null && entry.quantity > 0 ? entry.quantity : 1;
+}
+
+/** Costo unitario: acquisto + teca (se separata). */
+export function getUnitCost(entry: PortfolioEntry): number | null {
   if (entry.purchasePrice == null || entry.purchasePrice <= 0) return null;
 
   let total = entry.purchasePrice;
@@ -27,6 +31,13 @@ export function getTotalCost(entry: PortfolioEntry): number | null {
   }
 
   return total;
+}
+
+/** Costo totale investito = costo unitario × quantità. */
+export function getTotalCost(entry: PortfolioEntry): number | null {
+  const unit = getUnitCost(entry);
+  if (unit == null) return null;
+  return unit * getQuantity(entry);
 }
 
 export function isSold(entry: PortfolioEntry): boolean {
@@ -57,7 +68,9 @@ export function getGainLoss(
   const total = getTotalCost(entry);
   if (total == null || marketPrice <= 0) return null;
 
-  const amount = marketPrice - total;
+  const qty = getQuantity(entry);
+  const marketValue = marketPrice * qty;
+  const amount = marketValue - total;
   return {
     amount,
     percent: (amount / total) * 100,
@@ -77,6 +90,29 @@ export function getDisplayGainLoss(
     if (unrealized) return { ...unrealized, kind: "unrealized" };
   }
   return null;
+}
+
+export type PriceAlertStatus = "above" | "below";
+
+export function getPriceAlertStatus(
+  entry: PortfolioEntry,
+  marketPrice?: number
+): PriceAlertStatus | null {
+  if (isSold(entry) || marketPrice == null || marketPrice <= 0) return null;
+  if (entry.alertAbove != null && entry.alertAbove > 0 && marketPrice >= entry.alertAbove) {
+    return "above";
+  }
+  if (entry.alertBelow != null && entry.alertBelow > 0 && marketPrice <= entry.alertBelow) {
+    return "below";
+  }
+  return null;
+}
+
+export function hasActivePriceAlert(
+  entry: PortfolioEntry,
+  marketPrice?: number
+): boolean {
+  return getPriceAlertStatus(entry, marketPrice) != null;
 }
 
 export function hasPortfolioData(entry?: PortfolioEntry): boolean {
@@ -117,9 +153,12 @@ export function emptyPortfolioEntry(): PortfolioEntry {
     purchasePrice: undefined,
     purchaseDate: undefined,
     notes: undefined,
+    quantity: 1,
     hasPlexiglassCase: false,
     plexiglassCost: undefined,
     soldPrice: undefined,
     soldDate: undefined,
+    alertAbove: undefined,
+    alertBelow: undefined,
   };
 }

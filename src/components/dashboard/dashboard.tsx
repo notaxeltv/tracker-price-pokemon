@@ -17,17 +17,19 @@ import {
 } from "@/lib/filters";
 import { getGradedMarket, getSealedMarket } from "@/lib/market-utils";
 import { computePortfolioSummary } from "@/lib/portfolio-summary";
+import { ManageCatalogPanel } from "./manage-catalog-panel";
+import { PortfolioView } from "./portfolio-view";
+import { buildPortfolioRows } from "@/lib/portfolio-resolve";
 import type {
   DashboardData,
   MarketRegion,
   PortfolioData,
   PortfolioEntry,
-  ProductCategory,
   ProductFilters,
   TimeRange,
 } from "@/lib/types";
-import { getTotalCost } from "@/lib/portfolio";
-import { RefreshCw, Plus } from "lucide-react";
+import { getPriceAlertStatus, getTotalCost } from "@/lib/portfolio";
+import { RefreshCw, Plus, Settings2 } from "lucide-react";
 import type { ChartReferenceLine } from "./price-chart";
 
 const defaultFilters: ProductFilters = {
@@ -66,6 +68,7 @@ export function Dashboard() {
     subtitle?: string;
   } | null>(null);
   const [addProductOpen, setAddProductOpen] = useState(false);
+  const [manageCatalogOpen, setManageCatalogOpen] = useState(false);
 
   const snapshotMaxAgeMs = 3600 * 1000;
 
@@ -261,6 +264,21 @@ export function Dashboard() {
     [data, filters, portfolio.entries]
   );
 
+  const portfolioRows = useMemo(
+    () => (data ? buildPortfolioRows(data, portfolio.entries) : []),
+    [data, portfolio.entries]
+  );
+
+  const activeAlerts = useMemo(
+    () =>
+      portfolioRows.filter(
+        (row) =>
+          !row.entry.soldPrice &&
+          getPriceAlertStatus(row.entry, row.marketPrice) != null
+      ),
+    [portfolioRows]
+  );
+
   const portfolioSummary = useMemo(
     () => (data ? computePortfolioSummary(data, portfolio) : null),
     [data, portfolio]
@@ -288,10 +306,11 @@ export function Dashboard() {
     filters.market === "compare";
 
   const activeCategory = filters.category;
-  const showSealed = activeCategory === "all" || activeCategory === "sealed";
-  const showGraded = activeCategory === "all" || activeCategory === "graded";
-  const showRaw = activeCategory === "all" || activeCategory === "raw";
-  const showAccessory = activeCategory === "all" || activeCategory === "accessory";
+  const showPortfolio = activeCategory === "portfolio";
+  const showSealed = !showPortfolio && (activeCategory === "all" || activeCategory === "sealed");
+  const showGraded = !showPortfolio && (activeCategory === "all" || activeCategory === "graded");
+  const showRaw = !showPortfolio && (activeCategory === "all" || activeCategory === "raw");
+  const showAccessory = !showPortfolio && (activeCategory === "all" || activeCategory === "accessory");
 
   if (loading && !data) {
     return (
@@ -348,6 +367,13 @@ export function Dashboard() {
           <div className="flex flex-wrap items-center gap-3">
             <SnapshotStatusBadge data={data} scraping={scraping} />
             <button
+              onClick={() => setManageCatalogOpen(true)}
+              className="inline-flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/80 px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-zinc-700"
+            >
+              <Settings2 className="h-4 w-4" />
+              Catalogo
+            </button>
+            <button
               onClick={() => setAddProductOpen(true)}
               className="inline-flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/80 px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-zinc-700"
             >
@@ -379,26 +405,61 @@ export function Dashboard() {
         <StatsCards stats={data.stats} portfolioSummary={portfolioSummary} />
       </section>
 
+      {activeAlerts.length > 0 && (
+        <section className="mb-6 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3">
+          <p className="text-sm font-medium text-amber-200">
+            {activeAlerts.length} alert prezzo attivi
+          </p>
+          <ul className="mt-2 space-y-1 text-xs text-amber-100/90">
+            {activeAlerts.slice(0, 5).map((row) => {
+              const status = getPriceAlertStatus(row.entry, row.marketPrice);
+              return (
+                <li key={row.key}>
+                  {row.title} —{" "}
+                  {status === "above" ? "sopra target" : "sotto soglia"} (
+                  {row.marketPrice != null
+                    ? `${row.marketPrice.toLocaleString("it-IT", { style: "currency", currency: "EUR" })}`
+                    : "—"}
+                  )
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
+
       <section className="mb-6 space-y-4">
         <CategoryTabs
           active={filters.category}
-          onChange={(category) =>
-            updateFilters({ category: category as ProductCategory | "all" })
-          }
+          onChange={(category) => updateFilters({ category })}
           sealedCount={data.sealed.length}
           gradedCount={data.graded.length}
           rawCount={data.raw?.length ?? 0}
           accessoryCount={data.accessory?.length ?? 0}
+          portfolioCount={portfolioRows.length}
         />
-        <SearchFilters
-          filters={filters}
-          onChange={updateFilters}
-          showSealedLang={showSealed}
-          showGradedFilters={showGraded}
-        />
+        {!showPortfolio && (
+          <SearchFilters
+            filters={filters}
+            onChange={updateFilters}
+            showSealedLang={showSealed}
+            showGradedFilters={showGraded}
+          />
+        )}
       </section>
 
-      {(showSealed || showGraded) && (
+      {showPortfolio && (
+        <section className="mb-8">
+          <PortfolioView
+            data={data}
+            portfolio={portfolio}
+            onEdit={openPortfolioEdit}
+            onSold={openSoldEdit}
+          />
+        </section>
+      )}
+
+      {(showSealed || showGraded) && !showPortfolio && (
         <section className="mb-8 grid gap-6 lg:grid-cols-2">
           {showSealed && selectedSealed && showDualCharts && (
             <DualMarketChart
@@ -467,7 +528,7 @@ export function Dashboard() {
         </section>
       )}
 
-      {showSealed && (
+      {showSealed && !showPortfolio && (
         <section className="mb-8">
           <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-zinc-200">
             <span className="h-2 w-2 rounded-full bg-pokemon-blue" />
@@ -484,7 +545,7 @@ export function Dashboard() {
         </section>
       )}
 
-      {showGraded && (
+      {showGraded && !showPortfolio && (
         <section className="mb-8">
           <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-zinc-200">
             <span className="h-2 w-2 rounded-full bg-pokemon-yellow" />
@@ -509,7 +570,7 @@ export function Dashboard() {
         </section>
       )}
 
-      {showRaw && (
+      {showRaw && !showPortfolio && (
         <section className="mb-8">
           <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-zinc-200">
             <span className="h-2 w-2 rounded-full bg-violet-400" />
@@ -526,7 +587,7 @@ export function Dashboard() {
         </section>
       )}
 
-      {showAccessory && (
+      {showAccessory && !showPortfolio && (
         <section className="mb-8">
           <h2 className="mb-4 flex items-center gap-2 text-lg font-semibold text-zinc-200">
             <span className="h-2 w-2 rounded-full bg-zinc-400" />
@@ -576,6 +637,12 @@ export function Dashboard() {
         open={addProductOpen}
         onClose={() => setAddProductOpen(false)}
         onAdded={() => loadData({ forceRefresh: true })}
+      />
+
+      <ManageCatalogPanel
+        open={manageCatalogOpen}
+        onClose={() => setManageCatalogOpen(false)}
+        onChanged={() => loadData({ forceRefresh: true })}
       />
     </div>
   );

@@ -50,3 +50,48 @@ export function buildUserProductId(kind: string, name: string): string {
   const slug = slugifyId(name) || "prodotto";
   return `user-${kind}-${slug}-${Date.now().toString(36)}`;
 }
+
+export function isUserCatalogProduct(id: string): boolean {
+  return id.startsWith("user-");
+}
+
+export async function updateUserCatalogProduct(
+  id: string,
+  updates: Partial<CatalogProduct>
+): Promise<CatalogProduct[]> {
+  if (!isUserCatalogProduct(id)) {
+    throw new Error("Solo i prodotti aggiunti da UI sono modificabili");
+  }
+
+  const current = await loadUserCatalog();
+  const index = current.findIndex((p) => p.id === id);
+  if (index === -1) throw new Error("Prodotto non trovato");
+
+  const existing = current[index];
+  current[index] = {
+    ...existing,
+    ...updates,
+    id: existing.id,
+    tags: ["user"],
+  };
+
+  await saveUserCatalog(current);
+  return current;
+}
+
+export async function deleteUserCatalogProduct(
+  id: string
+): Promise<CatalogProduct[]> {
+  if (!isUserCatalogProduct(id)) {
+    throw new Error("Solo i prodotti aggiunti da UI sono eliminabili");
+  }
+
+  const current = await loadUserCatalog();
+  const next = current.filter((p) => p.id !== id);
+  if (next.length === current.length) {
+    throw new Error("Prodotto non trovato");
+  }
+
+  await saveUserCatalog(next);
+  return next;
+}

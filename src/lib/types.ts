@@ -143,8 +143,10 @@ export type MarketFilter = "all" | "IT" | "INTL" | "compare";
 export type SealedLanguageFilter = "all" | "IT" | "EN" | "JP";
 export type GradingCompanyFilter = "all" | GradingCompany;
 
+export type DashboardCategory = ProductCategory | "all" | "portfolio";
+
 export interface ProductFilters {
-  category: ProductCategory | "all";
+  category: DashboardCategory;
   search: string;
   market: MarketFilter;
   sealedLanguage: SealedLanguageFilter;
@@ -161,11 +163,28 @@ export interface PortfolioEntry {
   purchasePrice?: number;
   purchaseDate?: string;
   notes?: string;
+  /** Numero di copie (default 1) */
+  quantity?: number;
   hasPlexiglassCase?: boolean;
   plexiglassCost?: number;
-  /** Prezzo di vendita effettivo */
+  /** Prezzo di vendita effettivo (totale lotto) */
   soldPrice?: number;
   soldDate?: string;
+  /** Alert quando prezzo mercato (unitario) ≥ soglia */
+  alertAbove?: number;
+  /** Alert quando prezzo mercato (unitario) ≤ soglia */
+  alertBelow?: number;
+}
+
+export interface ResolvedPortfolioRow {
+  key: string;
+  productId: string;
+  title: string;
+  subtitle?: string;
+  category: ProductCategory | "unknown";
+  entry: PortfolioEntry;
+  marketPrice?: number;
+  isUserProduct?: boolean;
 }
 
 export interface PortfolioData {

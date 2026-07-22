@@ -72,6 +72,8 @@ function normalizeEntry(entry: PortfolioEntry): PortfolioEntry {
         : undefined,
     purchaseDate: entry.purchaseDate?.trim() || undefined,
     notes: entry.notes?.trim() || undefined,
+    quantity:
+      entry.quantity != null && entry.quantity > 0 ? entry.quantity : undefined,
     hasPlexiglassCase: Boolean(entry.hasPlexiglassCase),
     plexiglassCost:
       entry.hasPlexiglassCase &&
@@ -84,5 +86,13 @@ function normalizeEntry(entry: PortfolioEntry): PortfolioEntry {
         ? entry.soldPrice
         : undefined,
     soldDate: entry.soldDate?.trim() || undefined,
+    alertAbove:
+      entry.alertAbove != null && entry.alertAbove > 0
+        ? entry.alertAbove
+        : undefined,
+    alertBelow:
+      entry.alertBelow != null && entry.alertBelow > 0
+        ? entry.alertBelow
+        : undefined,
   };
 }

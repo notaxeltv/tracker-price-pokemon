@@ -1,16 +1,38 @@
 "use client";
 
-import { useState } from "react";
-import { X, Plus } from "lucide-react";
+import { useEffect, useState } from "react";
+import { X, Plus, Pencil } from "lucide-react";
 import type { CatalogProduct } from "@/lib/scrapers/types";
 
 interface AddProductPanelProps {
   open: boolean;
   onClose: () => void;
   onAdded: () => void;
+  editProduct?: CatalogProduct;
 }
 
-export function AddProductPanel({ open, onClose, onAdded }: AddProductPanelProps) {
+function productToForm(product: CatalogProduct) {
+  return {
+    kind: product.kind,
+    name: product.name,
+    set: product.set ?? "",
+    language: product.language ?? ("EN" as CatalogProduct["language"]),
+    searchTerm: product.scrape?.searchTerm ?? "",
+    cardmarketUrl: product.scrape?.cardmarketUrl ?? "",
+    cardNumber: product.cardNumber ?? "",
+    gradingCompany: product.grading?.company ?? "PSA",
+    grade: String(product.grading?.grades?.[0] ?? 10),
+    sealedType: product.sealedType ?? ("etb" as CatalogProduct["sealedType"]),
+  };
+}
+
+export function AddProductPanel({
+  open,
+  onClose,
+  onAdded,
+  editProduct,
+}: AddProductPanelProps) {
+  const isEdit = editProduct != null;
   const [kind, setKind] = useState<CatalogProduct["kind"]>("graded");
   const [name, setName] = useState("");
   const [set, setSet] = useState("");
@@ -24,6 +46,35 @@ export function AddProductPanel({ open, onClose, onAdded }: AddProductPanelProps
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (!open) return;
+    if (editProduct) {
+      const form = productToForm(editProduct);
+      setKind(form.kind);
+      setName(form.name);
+      setSet(form.set);
+      setLanguage(form.language);
+      setSearchTerm(form.searchTerm);
+      setCardmarketUrl(form.cardmarketUrl);
+      setCardNumber(form.cardNumber);
+      setGradingCompany(form.gradingCompany);
+      setGrade(form.grade);
+      setSealedType(form.sealedType);
+    } else {
+      setKind("graded");
+      setName("");
+      setSet("");
+      setLanguage("JP");
+      setSearchTerm("");
+      setCardmarketUrl("");
+      setCardNumber("");
+      setGradingCompany("PSA");
+      setGrade("10");
+      setSealedType("etb");
+    }
+    setError(null);
+  }, [open, editProduct]);
+
   if (!open) return null;
 
   const handleSubmit = async () => {
@@ -34,29 +85,29 @@ export function AddProductPanel({ open, onClose, onAdded }: AddProductPanelProps
     setSaving(true);
     setError(null);
     try {
+      const payload = {
+        id: editProduct?.id,
+        kind,
+        name,
+        set,
+        language,
+        searchTerm,
+        cardmarketUrl,
+        cardNumber,
+        gradingCompany,
+        grade: Number(grade),
+        sealedType,
+      };
+
       const res = await fetch("/api/catalog", {
-        method: "POST",
+        method: isEdit ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          kind,
-          name,
-          set,
-          language,
-          searchTerm,
-          cardmarketUrl,
-          cardNumber,
-          gradingCompany,
-          grade: Number(grade),
-          sealedType,
-        }),
+        body: JSON.stringify(payload),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Errore");
       onAdded();
       onClose();
-      setName("");
-      setSearchTerm("");
-      setCardmarketUrl("");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Errore salvataggio");
     } finally {
@@ -65,17 +116,23 @@ export function AddProductPanel({ open, onClose, onAdded }: AddProductPanelProps
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 sm:items-center">
+    <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/60 p-4 sm:items-center">
       <div className="absolute inset-0" onClick={onClose} aria-hidden />
       <div className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-zinc-700 bg-zinc-900 p-5 shadow-2xl">
         <div className="mb-4 flex items-start justify-between gap-3">
           <div>
             <h3 className="flex items-center gap-2 font-semibold text-zinc-100">
-              <Plus className="h-4 w-4 text-pokemon-yellow" />
-              Aggiungi prodotto
+              {isEdit ? (
+                <Pencil className="h-4 w-4 text-pokemon-yellow" />
+              ) : (
+                <Plus className="h-4 w-4 text-pokemon-yellow" />
+              )}
+              {isEdit ? "Modifica prodotto" : "Aggiungi prodotto"}
             </h3>
             <p className="mt-0.5 text-sm text-zinc-500">
-              Salvato in data/user-catalog.json — poi clicca Aggiorna prezzi
+              {isEdit
+                ? "Aggiorna i dati di scraping del prodotto personalizzato"
+                : "Salvato in data/user-catalog.json — poi clicca Aggiorna prezzi"}
             </p>
           </div>
           <button type="button" onClick={onClose} className="rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-800">
@@ -89,7 +146,8 @@ export function AddProductPanel({ open, onClose, onAdded }: AddProductPanelProps
             <select
               value={kind}
               onChange={(e) => setKind(e.target.value as CatalogProduct["kind"])}
-              className="w-full rounded-xl border border-zinc-700 bg-zinc-800 px-3 py-2 text-zinc-100"
+              disabled={isEdit}
+              className="w-full rounded-xl border border-zinc-700 bg-zinc-800 px-3 py-2 text-zinc-100 disabled:opacity-60"
             >
               <option value="graded">Gradato</option>
               <option value="sealed">Sealed</option>
@@ -215,7 +273,7 @@ export function AddProductPanel({ open, onClose, onAdded }: AddProductPanelProps
           disabled={saving}
           className="mt-5 w-full rounded-xl bg-pokemon-yellow py-2.5 text-sm font-semibold text-zinc-900 disabled:opacity-50"
         >
-          {saving ? "Salvataggio…" : "Aggiungi al catalogo"}
+          {saving ? "Salvataggio…" : isEdit ? "Salva modifiche" : "Aggiungi al catalogo"}
         </button>
       </div>
     </div>

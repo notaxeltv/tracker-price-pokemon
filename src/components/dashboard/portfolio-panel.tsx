@@ -6,9 +6,12 @@ import { cn, formatPrice } from "@/lib/utils";
 import {
   emptyPortfolioEntry,
   getDisplayGainLoss,
+  getQuantity,
   getTotalCost,
+  getPriceAlertStatus,
   isSold,
 } from "@/lib/portfolio";
+import { formatDate } from "@/lib/utils";
 import type { PortfolioEntry } from "@/lib/types";
 
 interface PortfolioEditPanelProps {
@@ -33,6 +36,9 @@ export function PortfolioEditPanel({
   const [purchasePrice, setPurchasePrice] = useState("");
   const [purchaseDate, setPurchaseDate] = useState("");
   const [notes, setNotes] = useState("");
+  const [quantity, setQuantity] = useState("1");
+  const [alertAbove, setAlertAbove] = useState("");
+  const [alertBelow, setAlertBelow] = useState("");
   const [hasPlexiglassCase, setHasPlexiglassCase] = useState(false);
   const [plexiglassCost, setPlexiglassCost] = useState("");
   const [saving, setSaving] = useState(false);
@@ -49,6 +55,17 @@ export function PortfolioEditPanel({
     );
     setPurchaseDate(entry.purchaseDate ?? "");
     setNotes(entry.notes ?? "");
+    setQuantity(String(entry.quantity ?? 1));
+    setAlertAbove(
+      entry.alertAbove != null && entry.alertAbove > 0
+        ? String(entry.alertAbove)
+        : ""
+    );
+    setAlertBelow(
+      entry.alertBelow != null && entry.alertBelow > 0
+        ? String(entry.alertBelow)
+        : ""
+    );
     setHasPlexiglassCase(Boolean(entry.hasPlexiglassCase));
     setPlexiglassCost(
       entry.plexiglassCost != null && entry.plexiglassCost > 0
@@ -67,6 +84,13 @@ export function PortfolioEditPanel({
     return Number.isFinite(num) && num > 0 ? num : undefined;
   };
 
+  const parseQty = (value: string): number | undefined => {
+    const trimmed = value.trim();
+    if (!trimmed) return 1;
+    const num = Number(trimmed);
+    return Number.isFinite(num) && num >= 1 ? Math.floor(num) : undefined;
+  };
+
   const handleSave = async () => {
     setSaving(true);
     setError(null);
@@ -74,6 +98,9 @@ export function PortfolioEditPanel({
     try {
       const purchase = parseAmount(purchasePrice);
       const teca = parseAmount(plexiglassCost);
+      const qty = parseQty(quantity) ?? 1;
+      const alertHigh = parseAmount(alertAbove);
+      const alertLow = parseAmount(alertBelow);
 
       if (!purchase && !hasPlexiglassCase && !initialEntry?.soldPrice) {
         await onSave(entryKey, null);
@@ -90,10 +117,13 @@ export function PortfolioEditPanel({
         purchasePrice: purchase,
         purchaseDate: purchaseDate.trim() || undefined,
         notes: notes.trim() || undefined,
+        quantity: qty > 1 ? qty : undefined,
         hasPlexiglassCase,
         plexiglassCost: hasPlexiglassCase ? teca : undefined,
         soldPrice: initialEntry?.soldPrice,
         soldDate: initialEntry?.soldDate,
+        alertAbove: alertHigh,
+        alertBelow: alertLow,
       });
       onClose();
     } catch {
@@ -118,11 +148,14 @@ export function PortfolioEditPanel({
 
   const previewPurchase = parseAmount(purchasePrice);
   const previewTeca = parseAmount(plexiglassCost);
-  const previewTotal =
+  const previewQty = parseQty(quantity) ?? 1;
+  const previewUnit =
     previewPurchase != null
       ? previewPurchase +
         (hasPlexiglassCase && previewTeca != null ? previewTeca : 0)
       : null;
+  const previewTotal =
+    previewUnit != null ? previewUnit * previewQty : null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 sm:items-center">
@@ -174,6 +207,20 @@ export function PortfolioEditPanel({
 
           <label className="block">
             <span className="mb-1.5 block text-sm font-medium text-zinc-300">
+              Quantità
+            </span>
+            <input
+              type="number"
+              min={1}
+              step={1}
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+              className="w-full rounded-xl border border-zinc-700 bg-zinc-800/80 px-3 py-2.5 text-sm text-zinc-100 outline-none focus:border-pokemon-yellow/50 focus:ring-2"
+            />
+          </label>
+
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-medium text-zinc-300">
               Note
             </span>
             <textarea
@@ -218,12 +265,47 @@ export function PortfolioEditPanel({
             </label>
           )}
 
+          <div className="rounded-xl border border-zinc-800 bg-zinc-800/30 p-3">
+            <p className="mb-2 text-xs font-medium text-zinc-400">
+              Alert prezzo (unitario €)
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="block text-sm">
+                <span className="mb-1 block text-zinc-500">Sopra</span>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="Target vendita"
+                  value={alertAbove}
+                  onChange={(e) => setAlertAbove(e.target.value)}
+                  className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-2.5 py-2 text-sm text-zinc-100"
+                />
+              </label>
+              <label className="block text-sm">
+                <span className="mb-1 block text-zinc-500">Sotto</span>
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  placeholder="Stop loss"
+                  value={alertBelow}
+                  onChange={(e) => setAlertBelow(e.target.value)}
+                  className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-2.5 py-2 text-sm text-zinc-100"
+                />
+              </label>
+            </div>
+          </div>
+
           {previewTotal != null && (
             <div className="rounded-xl border border-zinc-800 bg-zinc-800/30 px-3 py-2.5 text-sm">
               <span className="text-zinc-500">Totale investito: </span>
               <span className="font-semibold text-zinc-100">
                 {formatPrice(previewTotal)}
               </span>
+              {previewQty > 1 && previewUnit != null && (
+                <span className="mt-1 block text-xs text-zinc-500">
+                  {previewQty}× {formatPrice(previewUnit)} cad.
+                </span>
+              )}
             </div>
           )}
 
@@ -492,6 +574,77 @@ export function SoldBadge({ entry, className }: SoldBadgeProps) {
   );
 }
 
+interface PriceAlertBadgeProps {
+  entry?: PortfolioEntry;
+  marketPrice?: number;
+  className?: string;
+}
+
+export function PriceAlertBadge({
+  entry,
+  marketPrice,
+  className,
+}: PriceAlertBadgeProps) {
+  if (!entry) return null;
+  const status = getPriceAlertStatus(entry, marketPrice);
+  if (!status) return null;
+
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-md border px-2 py-0.5 text-[11px] font-medium",
+        status === "above"
+          ? "border-amber-500/30 bg-amber-500/10 text-amber-300"
+          : "border-red-500/30 bg-red-500/10 text-red-300",
+        className
+      )}
+    >
+      {status === "above" ? "▲ Target raggiunto" : "▼ Sotto soglia"}
+    </span>
+  );
+}
+
+interface PortfolioMetaBadgesProps {
+  entry?: PortfolioEntry;
+  marketPrice?: number;
+  className?: string;
+}
+
+export function PortfolioMetaBadges({
+  entry,
+  marketPrice,
+  className,
+}: PortfolioMetaBadgesProps) {
+  if (!entry) return null;
+
+  const qty = getQuantity(entry);
+  const hasMeta =
+    entry.purchaseDate ||
+    entry.notes ||
+    qty > 1 ||
+    getPriceAlertStatus(entry, marketPrice);
+
+  if (!hasMeta) return null;
+
+  return (
+    <div className={cn("mt-1 space-y-0.5", className)}>
+      {(entry.purchaseDate || qty > 1) && (
+        <p className="text-[11px] text-zinc-500">
+          {entry.purchaseDate && (
+            <span>Acq. {formatDate(entry.purchaseDate)}</span>
+          )}
+          {entry.purchaseDate && qty > 1 && " · "}
+          {qty > 1 && <span>{qty} copie</span>}
+        </p>
+      )}
+      {entry.notes && (
+        <p className="line-clamp-2 text-[11px] italic text-zinc-500">{entry.notes}</p>
+      )}
+      <PriceAlertBadge entry={entry} marketPrice={marketPrice} />
+    </div>
+  );
+}
+
 interface PortfolioCostCellProps {
   entry?: PortfolioEntry;
   marketPrice?: number;
@@ -506,6 +659,7 @@ export function PortfolioCostCell({
   onSold,
 }: PortfolioCostCellProps) {
   const total = entry ? getTotalCost(entry) : null;
+  const qty = entry ? getQuantity(entry) : 1;
   const pl = getDisplayGainLoss(entry, marketPrice);
   const sold = entry && isSold(entry);
 
@@ -521,7 +675,14 @@ export function PortfolioCostCell({
           className="text-right transition-colors hover:text-pokemon-yellow"
         >
           {total != null ? (
-            <span className="font-medium text-zinc-200">{formatPrice(total)}</span>
+            <span className="font-medium text-zinc-200">
+              {formatPrice(total)}
+              {qty > 1 && (
+                <span className="ml-1 text-xs font-normal text-zinc-500">
+                  ({qty}×)
+                </span>
+              )}
+            </span>
           ) : (
             <span className="text-xs text-zinc-500 underline decoration-dotted underline-offset-2">
               Acquisto

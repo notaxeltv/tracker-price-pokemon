@@ -2,6 +2,7 @@ import type { DashboardData, PortfolioData, PortfolioSummary } from "./types";
 import { getGradedMarket, getSealedMarket } from "./market-utils";
 import {
   getRealizedGainLoss,
+  getQuantity,
   getTotalCost,
   getUnrealizedGainLoss,
   isSold,
@@ -35,7 +36,7 @@ export function computePortfolioSummary(
     const marketPrice = resolveMarketPrice(data, key);
     if (marketPrice == null || marketPrice <= 0) continue;
 
-    totalMarketValue += marketPrice;
+    totalMarketValue += marketPrice * getQuantity(entry);
     const unrealized = getUnrealizedGainLoss(marketPrice, entry);
     if (unrealized) unrealizedGainLoss += unrealized.amount;
   }
