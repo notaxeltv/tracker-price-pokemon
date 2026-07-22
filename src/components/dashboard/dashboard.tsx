@@ -226,7 +226,7 @@ export function Dashboard() {
         {
           value: cost,
           label: `Acquisto ${cost.toLocaleString("it-IT", { style: "currency", currency: "EUR", maximumFractionDigits: 0 })}`,
-          color: "#a78bfa",
+          color: "#5eead4",
         },
       ];
     },
@@ -477,7 +477,7 @@ export function Dashboard() {
                   data={sealedIntl.history}
                   currency="EUR"
                   title={`${selectedSealed.name} · eBay EU`}
-                  color="#fb923c"
+                  color="#67e8f9"
                   timeRange={timeRange}
                   onTimeRangeChange={setTimeRange}
                   referenceLines={sealedChartRefs}
@@ -509,7 +509,7 @@ export function Dashboard() {
                   data={gradedIntl.history}
                   currency="EUR"
                   title={`${selectedGraded.name} · ${selectedGrade.company} ${selectedGrade.grade} · eBay EU`}
-                  color="#fb923c"
+                  color="#67e8f9"
                   timeRange={timeRange}
                   onTimeRangeChange={setTimeRange}
                   referenceLines={gradedChartRefs}

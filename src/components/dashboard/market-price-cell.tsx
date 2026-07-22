@@ -74,7 +74,7 @@ export function SourceLink({ quote }: SourceLinkProps) {
       target="_blank"
       rel="noopener noreferrer"
       onClick={(e) => e.stopPropagation()}
-      className="inline-flex items-center gap-1 text-xs text-pokemon-blue hover:underline"
+      className="inline-flex items-center gap-1 text-xs text-brand-light hover:underline"
     >
       {quote.sourceLabel}
       <ExternalLink className="h-3 w-3" />

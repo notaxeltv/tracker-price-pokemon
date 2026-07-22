@@ -122,9 +122,9 @@ export function AddProductPanel({
         onClose={onClose}
         icon={
           isEdit ? (
-            <Pencil className="h-4 w-4 text-pokemon-yellow" />
+            <Pencil className="h-4 w-4 text-brand-light" />
           ) : (
-            <Plus className="h-4 w-4 text-pokemon-yellow" />
+            <Plus className="h-4 w-4 text-brand-light" />
           )
         }
         title={isEdit ? "Modifica prodotto" : "Aggiungi prodotto"}

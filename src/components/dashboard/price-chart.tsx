@@ -63,7 +63,7 @@ export function PriceChart({
   data,
   currency = "EUR",
   title,
-  color = "#ffcb05",
+  color = "#14b8a6",
   timeRange,
   onTimeRangeChange,
   compact = false,

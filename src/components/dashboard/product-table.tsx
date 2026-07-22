@@ -229,7 +229,7 @@ export function GradedTable({
             onClick={() => onSelect(card.id)}
             className={cn(
               "card cursor-pointer p-4 transition-all hover:border-border-strong",
-              isSelected && "border-pokemon-blue/50 bg-pokemon-blue/5"
+              isSelected && "border-brand/40 bg-brand/8"
             )}
           >
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
@@ -281,7 +281,7 @@ export function GradedTable({
                           className="rounded-xl border border-zinc-800 bg-zinc-800/40 p-3"
                         >
                           <div className="mb-2 flex flex-wrap items-center gap-2">
-                            <span className="text-xs font-bold text-pokemon-yellow">
+                            <span className="text-xs font-bold text-brand-light">
                               {grade.company} {grade.grade}
                             </span>
                             <PlexiglassBadge entry={entry} />

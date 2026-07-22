@@ -28,7 +28,7 @@ export function metricCardClass(accent: AccentTone, extra?: string): string {
 export type CategoryCardVariant = "sealed" | "graded" | "raw" | "accessory";
 
 const categoryIconClasses: Record<CategoryCardVariant, string> = {
-  sealed: "text-pokemon-blue",
+  sealed: "text-market-intl",
   graded: "text-brand-light",
   raw: "text-zinc-400",
   accessory: "text-zinc-500",

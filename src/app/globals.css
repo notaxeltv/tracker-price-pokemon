@@ -1,28 +1,30 @@
 @import "tailwindcss";
 
 @theme {
-  /* Brand — oro attenuato, meno neon */
-  --color-pokemon-yellow: #c9a84c;
-  --color-pokemon-blue: #6b7fd7;
-  --color-pokemon-red: #e05c5c;
+  /* Palette C — Grafite + Teal */
+  --color-brand: #14b8a6;
+  --color-brand-light: #5eead4;
+  --color-brand-dark: #0d9488;
+  --color-brand-foreground: #042f2e;
 
-  --color-brand: #c9a84c;
-  --color-brand-light: #e2c878;
-  --color-brand-dark: #a6883a;
+  /* Alias legacy → teal */
+  --color-pokemon-yellow: #14b8a6;
+  --color-pokemon-blue: #2dd4bf;
+  --color-pokemon-red: #f87171;
 
-  /* Superfici — slate caldo */
-  --color-surface: #0e1016;
-  --color-surface-raised: #161922;
-  --color-surface-card: #141820;
-  --color-surface-input: #1a1f2b;
+  /* Superfici — GitHub-style graphite */
+  --color-surface: #0d1117;
+  --color-surface-raised: #161b22;
+  --color-surface-card: #161b22;
+  --color-surface-input: #21262d;
 
   /* Bordi */
-  --color-border: #252a36;
-  --color-border-strong: #343b4a;
+  --color-border: #30363d;
+  --color-border-strong: #484f58;
 
   /* Mercati */
-  --color-market-it: #6db892;
-  --color-market-intl: #d4926a;
+  --color-market-it: #4ade80;
+  --color-market-intl: #67e8f9;
 
   /* Tipografia */
   --font-sans: var(--font-inter, "Inter"), ui-sans-serif, system-ui, sans-serif;
@@ -47,10 +49,10 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
-    radial-gradient(ellipse 70% 45% at 50% -15%, rgba(107, 127, 215, 0.07), transparent),
-    radial-gradient(ellipse 50% 35% at 100% 100%, rgba(201, 168, 76, 0.04), transparent),
+    radial-gradient(ellipse 65% 40% at 50% -12%, rgba(45, 212, 191, 0.08), transparent),
+    radial-gradient(ellipse 45% 30% at 100% 100%, rgba(56, 189, 248, 0.04), transparent),
     var(--color-surface);
-  color: #e4e4e7;
+  color: #e6edf3;
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
@@ -65,12 +67,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #343b4a;
+  background: #484f58;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #454d5e;
+  background: #6e7681;
 }
 
 @layer components {
@@ -79,7 +81,7 @@ body {
   }
 
   .heading-page {
-    @apply text-2xl font-bold tracking-tight text-zinc-100 sm:text-3xl;
+    @apply text-2xl font-bold tracking-tight text-zinc-50 sm:text-3xl;
   }
 
   .heading-section {
@@ -91,7 +93,7 @@ body {
   }
 
   .text-link {
-    @apply inline-flex items-center gap-1 text-xs text-zinc-500 transition-colors hover:text-zinc-300;
+    @apply inline-flex items-center gap-1 text-xs text-zinc-500 transition-colors hover:text-brand-light;
   }
 
   .card {
@@ -111,7 +113,7 @@ body {
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-surface transition-all hover:bg-brand-light disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-sm font-semibold text-brand-foreground transition-all hover:bg-brand-light hover:text-brand-foreground disabled:pointer-events-none disabled:opacity-50;
   }
 
   .btn-secondary {
@@ -135,7 +137,7 @@ body {
   }
 
   .btn-tab-active {
-    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-brand/35 bg-brand/10 px-3.5 py-2 text-sm font-medium text-brand-light transition-all disabled:pointer-events-none disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border border-brand/40 bg-brand/10 px-3.5 py-2 text-sm font-medium text-brand-light transition-all disabled:pointer-events-none disabled:opacity-50;
   }
 
   .btn-tab-inactive {
@@ -143,7 +145,7 @@ body {
   }
 
   .btn-range-active {
-    @apply rounded-lg bg-surface-input px-2.5 py-1 text-xs font-medium text-zinc-200 transition-colors;
+    @apply rounded-lg bg-surface-input px-2.5 py-1 text-xs font-medium text-brand-light transition-colors;
   }
 
   .btn-range-inactive {
@@ -151,19 +153,19 @@ body {
   }
 
   .input {
-    @apply w-full rounded-xl border border-border-strong bg-surface-input px-3 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-brand/40 focus:ring-2 focus:ring-brand/20;
+    @apply w-full rounded-xl border border-border-strong bg-surface-input px-3 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-brand/50 focus:ring-2 focus:ring-brand/20;
   }
 
   .textarea {
-    @apply w-full resize-none rounded-xl border border-border-strong bg-surface-input px-3 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-brand/40 focus:ring-2 focus:ring-brand/20;
+    @apply w-full resize-none rounded-xl border border-border-strong bg-surface-input px-3 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-brand/50 focus:ring-2 focus:ring-brand/20;
   }
 
   .input-search {
-    @apply w-full rounded-xl border border-border-strong bg-surface-input py-2.5 pl-10 pr-4 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-pokemon-blue/50 focus:ring-2 focus:ring-pokemon-blue/20;
+    @apply w-full rounded-xl border border-border-strong bg-surface-input py-2.5 pl-10 pr-4 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-brand/50 focus:ring-2 focus:ring-brand/20;
   }
 
   .select {
-    @apply appearance-none rounded-xl border border-border bg-surface-input py-2.5 pl-10 pr-8 text-sm text-zinc-100 focus:border-pokemon-blue/50 focus:outline-none;
+    @apply appearance-none rounded-xl border border-border bg-surface-input py-2.5 pl-10 pr-8 text-sm text-zinc-100 focus:border-brand/50 focus:outline-none;
   }
 
   .label {
@@ -187,7 +189,7 @@ body {
   }
 
   .nav-card-active {
-    @apply flex flex-1 items-center gap-3 rounded-2xl border border-brand/30 bg-brand/8 px-4 py-3 text-left transition-all;
+    @apply flex flex-1 items-center gap-3 rounded-2xl border border-brand/35 bg-brand/10 px-4 py-3 text-left transition-all;
   }
 
   .nav-card-inactive {
@@ -199,7 +201,7 @@ body {
   }
 
   .nav-icon-active {
-    @apply bg-brand/12 text-brand-light;
+    @apply bg-brand/15 text-brand-light;
   }
 
   .nav-icon-inactive {
@@ -215,19 +217,19 @@ body {
   }
 
   .table-row {
-    @apply border-b border-border/60 transition-colors hover:bg-surface-raised/60;
+    @apply border-b border-border/60 transition-colors hover:bg-surface-raised/80;
   }
 
   .table-row-selected {
-    @apply bg-pokemon-blue/8;
+    @apply bg-brand/8;
   }
 
   .modal-overlay {
-    @apply fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-4 sm:items-center;
+    @apply fixed inset-0 z-50 flex items-end justify-center bg-black/75 p-4 sm:items-center;
   }
 
   .modal-overlay-top {
-    @apply fixed inset-0 z-[60] flex items-end justify-center bg-black/70 p-4 sm:items-center;
+    @apply fixed inset-0 z-[60] flex items-end justify-center bg-black/75 p-4 sm:items-center;
   }
 
   .modal-panel-lg {
@@ -239,7 +241,7 @@ body {
   }
 
   .alert-banner {
-    @apply rounded-xl border border-brand/25 bg-brand/8 px-4 py-3;
+    @apply rounded-xl border border-brand/30 bg-brand/10 px-4 py-3;
   }
 
   .dropdown-menu {
@@ -262,9 +264,8 @@ body {
     @apply mt-10 border-t border-border pt-4 text-center text-xs text-zinc-600;
   }
 
-  /* Metriche — accento solo sul bordo sinistro */
   .accent-violet {
-    @apply border-l-2 border-l-zinc-500/50;
+    @apply border-l-2 border-l-brand/40;
   }
 
   .accent-emerald {
@@ -276,11 +277,11 @@ body {
   }
 
   .accent-blue {
-    @apply border-l-2 border-l-pokemon-blue/50;
+    @apply border-l-2 border-l-market-intl/50;
   }
 
   .accent-amber {
-    @apply border-l-2 border-l-brand/50;
+    @apply border-l-2 border-l-brand-light/50;
   }
 
   .accent-zinc {
@@ -296,7 +297,7 @@ body {
   }
 
   .category-card {
-    @apply flex items-start gap-4 rounded-2xl border border-border bg-surface-card p-5 text-left transition-colors hover:border-border-strong hover:bg-surface-raised;
+    @apply flex items-start gap-4 rounded-2xl border border-border bg-surface-card p-5 text-left transition-colors hover:border-brand/25 hover:bg-surface-raised;
   }
 
   .category-icon-wrap {
@@ -308,14 +309,14 @@ body {
   }
 
   .status-badge-warn {
-    @apply border-brand/25 bg-brand/8 text-brand-light;
+    @apply border-brand/30 bg-brand/10 text-brand-light;
   }
 
   .status-badge-error {
-    @apply border-pokemon-red/25 bg-pokemon-red/8 text-red-300/90;
+    @apply border-pokemon-red/30 bg-pokemon-red/10 text-red-300;
   }
 
   .status-badge-ok {
-    @apply border-market-it/25 bg-market-it/8 text-market-it;
+    @apply border-market-it/30 bg-market-it/10 text-market-it;
   }
 }
