@@ -189,7 +189,7 @@ export function PortfolioEditPanel({
               placeholder="es. 740,00"
               value={purchasePrice}
               onChange={(e) => setPurchasePrice(e.target.value)}
-              className="w-full rounded-xl border border-zinc-700 bg-zinc-800/80 px-3 py-2.5 text-sm text-zinc-100 outline-none ring-pokemon-yellow/40 placeholder:text-zinc-600 focus:border-pokemon-yellow/50 focus:ring-2"
+              className="input"
             />
           </label>
 
@@ -201,7 +201,7 @@ export function PortfolioEditPanel({
               type="date"
               value={purchaseDate}
               onChange={(e) => setPurchaseDate(e.target.value)}
-              className="w-full rounded-xl border border-zinc-700 bg-zinc-800/80 px-3 py-2.5 text-sm text-zinc-100 outline-none focus:border-pokemon-yellow/50 focus:ring-2"
+              className="input"
             />
           </label>
 
@@ -215,7 +215,7 @@ export function PortfolioEditPanel({
               step={1}
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
-              className="w-full rounded-xl border border-zinc-700 bg-zinc-800/80 px-3 py-2.5 text-sm text-zinc-100 outline-none focus:border-pokemon-yellow/50 focus:ring-2"
+              className="input"
             />
           </label>
 
@@ -228,7 +228,7 @@ export function PortfolioEditPanel({
               placeholder="Es. acquistato da collezionista, con certificato…"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full resize-none rounded-xl border border-zinc-700 bg-zinc-800/80 px-3 py-2.5 text-sm text-zinc-100 outline-none placeholder:text-zinc-600 focus:border-pokemon-yellow/50 focus:ring-2"
+              className="textarea"
             />
           </label>
 
@@ -237,7 +237,7 @@ export function PortfolioEditPanel({
               type="checkbox"
               checked={hasPlexiglassCase}
               onChange={(e) => setHasPlexiglassCase(e.target.checked)}
-              className="mt-0.5 h-4 w-4 rounded border-zinc-600 bg-zinc-800 text-pokemon-yellow focus:ring-pokemon-yellow/40"
+              className="mt-0.5 h-4 w-4 rounded border-border-strong bg-surface-input text-brand focus:ring-brand/30"
             />
             <span>
               <span className="block text-sm font-medium text-zinc-200">
@@ -260,7 +260,7 @@ export function PortfolioEditPanel({
                 placeholder="Lascia vuoto se già incluso nel prezzo"
                 value={plexiglassCost}
                 onChange={(e) => setPlexiglassCost(e.target.value)}
-                className="w-full rounded-xl border border-zinc-700 bg-zinc-800/80 px-3 py-2.5 text-sm text-zinc-100 outline-none ring-pokemon-yellow/40 placeholder:text-zinc-600 focus:border-pokemon-yellow/50 focus:ring-2"
+                className="input"
               />
             </label>
           )}
@@ -317,7 +317,7 @@ export function PortfolioEditPanel({
             type="button"
             onClick={handleSave}
             disabled={saving}
-            className="flex-1 rounded-xl bg-pokemon-yellow px-4 py-2.5 text-sm font-semibold text-zinc-900 transition-opacity hover:opacity-90 disabled:opacity-50"
+            className="btn-primary flex-1"
           >
             {saving ? "Salvataggio…" : "Salva"}
           </button>
@@ -470,7 +470,7 @@ export function SoldEditPanel({
               placeholder="es. 850,00"
               value={soldPrice}
               onChange={(e) => setSoldPrice(e.target.value)}
-              className="w-full rounded-xl border border-zinc-700 bg-zinc-800/80 px-3 py-2.5 text-sm text-zinc-100 outline-none focus:border-emerald-500/50 focus:ring-2"
+              className="input focus:border-emerald-500/50 focus:ring-emerald-500/40"
             />
           </label>
 
@@ -482,7 +482,7 @@ export function SoldEditPanel({
               type="date"
               value={soldDate}
               onChange={(e) => setSoldDate(e.target.value)}
-              className="w-full rounded-xl border border-zinc-700 bg-zinc-800/80 px-3 py-2.5 text-sm text-zinc-100 outline-none focus:border-emerald-500/50 focus:ring-2"
+              className="input focus:border-emerald-500/50 focus:ring-emerald-500/40"
             />
           </label>
 
@@ -672,7 +672,7 @@ export function PortfolioCostCell({
             e.stopPropagation();
             onEdit();
           }}
-          className="text-right transition-colors hover:text-pokemon-yellow"
+          className="text-right transition-colors hover:text-brand-light"
         >
           {total != null ? (
             <span className="font-medium text-zinc-200">

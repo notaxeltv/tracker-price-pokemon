@@ -63,7 +63,7 @@ export function PriceChart({
   data,
   currency = "EUR",
   title,
-  color = "#ffcb05",
+  color = "#14b8a6",
   timeRange,
   onTimeRangeChange,
   compact = false,
@@ -84,8 +84,7 @@ export function PriceChart({
   return (
     <div
       className={cn(
-        "rounded-2xl border border-zinc-800/80 bg-zinc-900/60 p-4 backdrop-blur-sm",
-        compact ? "h-[220px]" : "h-[320px]"
+        compact ? "chart-card-compact" : "chart-card"
       )}
     >
       <div className="mb-3 flex items-center justify-between gap-2">
@@ -98,10 +97,7 @@ export function PriceChart({
               key={r.id}
               onClick={() => onTimeRangeChange(r.id)}
               className={cn(
-                "rounded-lg px-2.5 py-1 text-xs font-medium transition-colors",
-                timeRange === r.id
-                  ? "bg-zinc-700 text-zinc-100"
-                  : "text-zinc-500 hover:text-zinc-300"
+                timeRange === r.id ? "btn-range-active" : "btn-range-inactive"
               )}
             >
               {r.label}

@@ -226,7 +226,7 @@ export function Dashboard() {
         {
           value: cost,
           label: `Acquisto ${cost.toLocaleString("it-IT", { style: "currency", currency: "EUR", maximumFractionDigits: 0 })}`,
-          color: "#a78bfa",
+          color: "#5eead4",
         },
       ];
     },
@@ -329,7 +329,7 @@ export function Dashboard() {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="flex flex-col items-center gap-3 text-zinc-400">
-          <RefreshCw className="h-8 w-8 animate-spin text-pokemon-yellow" />
+          <RefreshCw className="h-8 w-8 animate-spin text-brand-light" />
           <p>Caricamento dashboard...</p>
         </div>
       </div>
@@ -343,7 +343,7 @@ export function Dashboard() {
           <p className="text-red-400">{error ?? "Errore sconosciuto"}</p>
           <button
             onClick={() => loadData({ forceRefresh: true })}
-            className="mt-4 rounded-xl bg-pokemon-yellow px-4 py-2 text-sm font-medium text-zinc-900"
+            className="btn-primary mt-4"
           >
             Riprova
           </button>
@@ -371,7 +371,7 @@ export function Dashboard() {
   };
 
   return (
-    <div className="mx-auto min-h-screen max-w-6xl px-4 py-6 sm:px-6 lg:px-8">
+    <div className="app-shell">
       <DashboardHeader
         data={data}
         scraping={scraping}
@@ -392,14 +392,14 @@ export function Dashboard() {
       </section>
 
       {activeAlerts.length > 0 && appView !== "portfolio" && (
-        <section className="mb-6 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3">
-          <p className="text-sm font-medium text-amber-200">
+        <section className="alert-banner mb-6">
+          <p className="text-sm text-brand-light">
             {activeAlerts.length} alert prezzo attivi
           </p>
           <button
             type="button"
             onClick={() => setAppView("portfolio")}
-            className="mt-1 text-xs text-amber-100/90 underline underline-offset-2"
+            className="mt-1 text-xs text-zinc-500 underline underline-offset-2 hover:text-zinc-300"
           >
             Vai al Portfolio
           </button>
@@ -477,7 +477,7 @@ export function Dashboard() {
                   data={sealedIntl.history}
                   currency="EUR"
                   title={`${selectedSealed.name} · eBay EU`}
-                  color="#fb923c"
+                  color="#67e8f9"
                   timeRange={timeRange}
                   onTimeRangeChange={setTimeRange}
                   referenceLines={sealedChartRefs}
@@ -509,7 +509,7 @@ export function Dashboard() {
                   data={gradedIntl.history}
                   currency="EUR"
                   title={`${selectedGraded.name} · ${selectedGrade.company} ${selectedGrade.grade} · eBay EU`}
-                  color="#fb923c"
+                  color="#67e8f9"
                   timeRange={timeRange}
                   onTimeRangeChange={setTimeRange}
                   referenceLines={gradedChartRefs}
@@ -578,7 +578,7 @@ export function Dashboard() {
         </div>
       )}
 
-      <footer className="mt-10 border-t border-zinc-800/80 pt-4 text-center text-xs text-zinc-600">
+      <footer className="app-footer">
         Cardmarket · eBay EU · snapshot locale
         {data.stats.blockedCount > 0 &&
           ` · ${data.stats.blockedCount} sorgenti bloccate`}

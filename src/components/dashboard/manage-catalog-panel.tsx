@@ -1,9 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Pencil, Trash2, X } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import type { CatalogProduct } from "@/lib/scrapers/types";
 import { AddProductPanel } from "./add-product-panel";
+import { Modal, ModalHeader } from "@/components/ui/modal";
+import { Button } from "@/components/ui/button";
 
 interface ManageCatalogPanelProps {
   open: boolean;
@@ -56,80 +58,64 @@ export function ManageCatalogPanel({
     }
   };
 
-  if (!open) return null;
-
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 sm:items-center">
-        <div className="absolute inset-0" onClick={onClose} aria-hidden />
-        <div className="relative max-h-[85vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-zinc-700 bg-zinc-900 p-5 shadow-2xl">
-          <div className="mb-4 flex items-start justify-between gap-3">
-            <div>
-              <h3 className="font-semibold text-zinc-100">Catalogo personalizzato</h3>
-              <p className="mt-0.5 text-sm text-zinc-500">
-                Modifica o elimina prodotti aggiunti da UI
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-800"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </div>
+      <Modal open={open} onClose={onClose} size="lg">
+        <ModalHeader
+          onClose={onClose}
+          title="Catalogo personalizzato"
+          description="Modifica o elimina prodotti aggiunti da UI"
+        />
 
-          {loading && (
-            <p className="py-8 text-center text-sm text-zinc-500">Caricamento…</p>
-          )}
+        {loading && (
+          <p className="py-8 text-center text-sm text-zinc-500">Caricamento…</p>
+        )}
 
-          {!loading && products.length === 0 && (
-            <p className="py-8 text-center text-sm text-zinc-500">
-              Nessun prodotto personalizzato. Usa &quot;Aggiungi prodotto&quot;.
-            </p>
-          )}
+        {!loading && products.length === 0 && (
+          <p className="py-8 text-center text-sm text-zinc-500">
+            Nessun prodotto personalizzato. Usa &quot;Aggiungi prodotto&quot;.
+          </p>
+        )}
 
-          {!loading && products.length > 0 && (
-            <ul className="space-y-2">
-              {products.map((product) => (
-                <li
-                  key={product.id}
-                  className="flex items-start justify-between gap-3 rounded-xl border border-zinc-800 bg-zinc-800/40 p-3"
-                >
-                  <div className="min-w-0">
-                    <p className="truncate font-medium text-zinc-100">
-                      {product.name}
-                    </p>
-                    <p className="text-xs text-zinc-500">
-                      {product.kind} · {product.set} · {product.language}
-                    </p>
-                  </div>
-                  <div className="flex shrink-0 gap-1">
-                    <button
-                      type="button"
-                      onClick={() => setEditProduct(product)}
-                      className="rounded-lg p-2 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-200"
-                      title="Modifica"
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(product.id, product.name)}
-                      className="rounded-lg p-2 text-zinc-400 hover:bg-red-500/10 hover:text-red-400"
-                      title="Elimina"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
+        {!loading && products.length > 0 && (
+          <ul className="space-y-2">
+            {products.map((product) => (
+              <li
+                key={product.id}
+                className="flex items-start justify-between gap-3 rounded-xl border border-border bg-zinc-800/40 p-3"
+              >
+                <div className="min-w-0">
+                  <p className="truncate font-medium text-zinc-100">
+                    {product.name}
+                  </p>
+                  <p className="text-xs text-zinc-500">
+                    {product.kind} · {product.set} · {product.language}
+                  </p>
+                </div>
+                <div className="flex shrink-0 gap-1">
+                  <Button
+                    variant="danger-ghost"
+                    onClick={() => setEditProduct(product)}
+                    title="Modifica"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="danger-ghost"
+                    onClick={() => handleDelete(product.id, product.name)}
+                    className="hover:bg-red-500/10 hover:text-red-400"
+                    title="Elimina"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
 
-          {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
-        </div>
-      </div>
+        {error && <p className="mt-3 text-sm text-red-400">{error}</p>}
+      </Modal>
 
       <AddProductPanel
         open={editProduct != null}
