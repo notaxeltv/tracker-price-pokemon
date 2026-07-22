@@ -124,6 +124,23 @@ export const PRODUCT_CATALOG: CatalogProduct[] = [
     tags: ["current"],
   },
   {
+    id: "sealed-ascesa-eroica-etb-it",
+    kind: "sealed",
+    name: "Ascesa Eroica ETB (IT)",
+    set: "Megaevoluzione — Ascesa Eroica",
+    setCode: "ASC",
+    language: "IT",
+    sealedType: "etb",
+    sources: ["cardmarket"],
+    scrape: {
+      cardmarketUrl:
+        "https://www.cardmarket.com/it/Pokemon/Products/Elite-Trainer-Boxes/Ascended-Heroes-Elite-Trainer-Box",
+      searchTerm:
+        "pokemon ascesa eroica set allenatore fuoriclasse italiano sigillato",
+    },
+    tags: ["current", "it"],
+  },
+  {
     id: "sealed-obsidian-etb-it",
     kind: "sealed",
     name: "Fiamme Obsidiane ETB (IT)",
