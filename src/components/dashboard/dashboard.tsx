@@ -43,6 +43,8 @@ export function Dashboard() {
     updatedAt: new Date().toISOString(),
   });
   const [loading, setLoading] = useState(true);
+  const [scraping, setScraping] = useState(false);
+  const [scrapeMessage, setScrapeMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<ProductFilters>(defaultFilters);
   const [selectedSealedId, setSelectedSealedId] = useState<string | null>(null);
@@ -56,42 +58,119 @@ export function Dashboard() {
     subtitle?: string;
   } | null>(null);
 
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+  const snapshotMaxAgeMs = 3600 * 1000;
+
+  const isSnapshotStale = (lastUpdated: string) =>
+    Date.now() - new Date(lastUpdated).getTime() > snapshotMaxAgeMs;
+
+  const fetchSnapshot = useCallback(async (): Promise<DashboardData | null> => {
+    const res = await fetch("/api/dashboard?fast=1");
+    if (!res.ok) return null;
+    return res.json() as Promise<DashboardData>;
+  }, []);
+
+  const runPriceScrape = useCallback(async (force = false) => {
+    setScraping(true);
+    setScrapeMessage("Aggiornamento prezzi Cardmarket + eBay EU…");
     try {
-      const [dashboardRes, portfolioRes] = await Promise.all([
-        fetch("/api/dashboard"),
-        fetch("/api/portfolio"),
-      ]);
-      if (!dashboardRes.ok) throw new Error("Errore nel caricamento");
-      const json: DashboardData = await dashboardRes.json();
-      setData(json);
-
-      if (portfolioRes.ok) {
-        const portfolioJson: PortfolioData = await portfolioRes.json();
-        setPortfolio(portfolioJson);
+      const url = force ? "/api/scrape/refresh?force=1" : "/api/scrape/refresh";
+      const res = await fetch(url, { method: "POST" });
+      if (!res.ok) throw new Error("Scrape fallito");
+      const meta = (await res.json()) as {
+        skipped?: boolean;
+        message?: string;
+        liveCount?: number;
+        blockedCount?: number;
+      };
+      if (meta.skipped) {
+        setScrapeMessage(meta.message ?? "Dati già aggiornati");
+      } else {
+        setScrapeMessage(
+          meta.blockedCount
+            ? `Completato · ${meta.liveCount ?? 0} live · ${meta.blockedCount} bloccati`
+            : `Prezzi aggiornati · ${meta.liveCount ?? 0} live`
+        );
       }
-
-      if (!selectedSealedId && json.sealed.length > 0) {
-        setSelectedSealedId(json.sealed[0].id);
-      }
-      if (!selectedGradedId && json.graded.length > 0) {
-        setSelectedGradedId(json.graded[0].id);
-        const firstGrade = json.graded[0].grades[0];
-        if (firstGrade) {
-          setSelectedGradeKey(`${firstGrade.company}-${firstGrade.grade}`);
-        }
-      }
-      if (!selectedRawId && json.raw?.length > 0) {
-        setSelectedRawId(json.raw[0].id);
-      }
-    } catch {
-      setError("Impossibile caricare i dati. Riprova più tardi.");
+      return await fetchSnapshot();
     } finally {
-      setLoading(false);
+      setScraping(false);
+      window.setTimeout(() => setScrapeMessage(null), 4000);
     }
-  }, [selectedSealedId, selectedGradedId, selectedRawId]);
+  }, [fetchSnapshot]);
+
+  const loadData = useCallback(
+    async (options?: { forceRefresh?: boolean }) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const [portfolioRes, snap] = await Promise.all([
+          fetch("/api/portfolio"),
+          fetchSnapshot(),
+        ]);
+
+        if (portfolioRes.ok) {
+          const portfolioJson: PortfolioData = await portfolioRes.json();
+          setPortfolio(portfolioJson);
+        }
+
+        const forceRefresh = options?.forceRefresh === true;
+        const needsScrape =
+          forceRefresh ||
+          !snap ||
+          isSnapshotStale(snap.lastUpdated) ||
+          (snap.stats.liveCount === 0 && snap.stats.blockedCount > 0);
+
+        if (snap && !forceRefresh) {
+          setData(snap);
+          if (!selectedSealedId && snap.sealed.length > 0) {
+            setSelectedSealedId(snap.sealed[0].id);
+          }
+          if (!selectedGradedId && snap.graded.length > 0) {
+            setSelectedGradedId(snap.graded[0].id);
+            const firstGrade = snap.graded[0].grades[0];
+            if (firstGrade) {
+              setSelectedGradeKey(`${firstGrade.company}-${firstGrade.grade}`);
+            }
+          }
+          if (!selectedRawId && snap.raw?.length > 0) {
+            setSelectedRawId(snap.raw[0].id);
+          }
+          setLoading(false);
+        }
+
+        if (needsScrape) {
+          const fresh = await runPriceScrape(forceRefresh);
+          if (fresh) {
+            setData(fresh);
+            if (!selectedSealedId && fresh.sealed.length > 0) {
+              setSelectedSealedId(fresh.sealed[0].id);
+            }
+            if (!selectedGradedId && fresh.graded.length > 0) {
+              setSelectedGradedId(fresh.graded[0].id);
+              const firstGrade = fresh.graded[0].grades[0];
+              if (firstGrade) {
+                setSelectedGradeKey(`${firstGrade.company}-${firstGrade.grade}`);
+              }
+            }
+            if (!selectedRawId && fresh.raw?.length > 0) {
+              setSelectedRawId(fresh.raw[0].id);
+            }
+          }
+        }
+      } catch {
+        setError("Impossibile caricare i dati. Riprova più tardi.");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [
+      fetchSnapshot,
+      runPriceScrape,
+      selectedGradedId,
+      selectedRawId,
+      selectedSealedId,
+    ]
+  );
 
   const savePortfolioEntry = useCallback(
     async (key: string, entry: PortfolioEntry | null) => {
@@ -184,7 +263,7 @@ export function Dashboard() {
         <div className="text-center">
           <p className="text-red-400">{error ?? "Errore sconosciuto"}</p>
           <button
-            onClick={loadData}
+            onClick={() => loadData({ forceRefresh: true })}
             className="mt-4 rounded-xl bg-pokemon-yellow px-4 py-2 text-sm font-medium text-zinc-900"
           >
             Riprova
@@ -225,14 +304,19 @@ export function Dashboard() {
               Aggiornato: {formatDate(data.lastUpdated.split("T")[0])}
             </div>
             <button
-              onClick={loadData}
-              disabled={loading}
+              onClick={() => loadData({ forceRefresh: true })}
+              disabled={loading || scraping}
               className="inline-flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/80 px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-zinc-700 disabled:opacity-50"
             >
-              <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-              Aggiorna
+              <RefreshCw
+                className={`h-4 w-4 ${loading || scraping ? "animate-spin" : ""}`}
+              />
+              {scraping ? "Scraping…" : "Aggiorna prezzi"}
             </button>
           </div>
+          {scrapeMessage && (
+            <p className="mt-2 text-xs text-pokemon-yellow">{scrapeMessage}</p>
+          )}
         </div>
       </header>
 

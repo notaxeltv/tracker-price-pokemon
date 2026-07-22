@@ -399,16 +399,55 @@ export async function fetchDashboardDataLive(): Promise<DashboardData> {
   return assembleDashboard();
 }
 
+/** Legge solo lo snapshot (veloce, nessuno scrape). */
+export async function fetchDashboardSnapshot(): Promise<DashboardData | null> {
+  const snap = await loadSnapshot();
+  if (!snap) return null;
+  return enrichImagesIfConfigured({ ...snap, dataSource: "snapshot" });
+}
+
+function snapshotNeedsRefresh(data: DashboardData, maxAgeSeconds: number): boolean {
+  if (!isSnapshotFresh(data, maxAgeSeconds)) return true;
+  if (data.stats.liveCount === 0 && data.stats.blockedCount > 0) return true;
+  return false;
+}
+
 /** Legge snapshot se fresco, altrimenti scrape live */
-export async function fetchDashboardData(): Promise<DashboardData> {
+export async function fetchDashboardData(options?: {
+  forceRefresh?: boolean;
+}): Promise<DashboardData> {
+  const onDemand = process.env.SCRAPE_ON_DEMAND !== "false";
+  const refreshOnOpen = process.env.SCRAPE_REFRESH_ON_OPEN === "true";
   const useSnapshot = process.env.SCRAPE_USE_SNAPSHOT !== "false";
   const maxAge = parseInt(process.env.SCRAPE_CACHE_TTL ?? "3600", 10);
 
+  if (options?.forceRefresh && onDemand) {
+    return enrichImagesIfConfigured(await refreshSnapshot());
+  }
+
   if (useSnapshot) {
     const snap = await loadSnapshot();
-    if (snap && isSnapshotFresh(snap, maxAge)) {
-      return enrichImagesIfConfigured({ ...snap, dataSource: "snapshot" });
+    if (snap) {
+      const freshEnough =
+        isSnapshotFresh(snap, maxAge) &&
+        !(snap.stats.liveCount === 0 && snap.stats.blockedCount > 0);
+
+      if (freshEnough && !refreshOnOpen && !options?.forceRefresh) {
+        return enrichImagesIfConfigured({ ...snap, dataSource: "snapshot" });
+      }
+
+      if (onDemand && snapshotNeedsRefresh(snap, maxAge)) {
+        return enrichImagesIfConfigured(await refreshSnapshot());
+      }
+
+      if (!onDemand || options?.forceRefresh === false) {
+        return enrichImagesIfConfigured({ ...snap, dataSource: "snapshot" });
+      }
     }
+  }
+
+  if (onDemand) {
+    return enrichImagesIfConfigured(await refreshSnapshot());
   }
 
   return fetchDashboardDataLive();

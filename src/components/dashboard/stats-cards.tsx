@@ -203,7 +203,7 @@ export function MarketSourcesBanner() {
         <div>
           <p className="text-sm font-medium text-zinc-200">Il tuo portfolio</p>
           <p className="mt-1 text-xs text-zinc-500">
-            Prezzo acquisto manuale · teca plexiglass opzionale · P/L vs mercato
+            Prezzo acquisto manuale · teca plexiglass · scrape on-demand aprendo l&apos;app
           </p>
         </div>
           <div className="flex flex-wrap gap-3 text-xs">
@@ -224,8 +224,8 @@ export function MarketSourcesBanner() {
             <span className="text-zinc-500">Cardmarket + eBay EU</span>
           </div>
           <div className="flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/50 px-3 py-2">
-            <span className="font-medium text-zinc-300">⏱ Cron</span>
-            <span className="text-zinc-500">npm run scrape</span>
+            <span className="font-medium text-zinc-300">⏱ Scrape</span>
+            <span className="text-zinc-500">on-demand · Aggiorna prezzi</span>
           </div>
         </div>
       </div>

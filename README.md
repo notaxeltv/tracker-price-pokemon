@@ -39,32 +39,42 @@ npm install
 npm run dev
 ```
 
-La dashboard legge `data/scrape-snapshot.json` se fresco (`SCRAPE_USE_SNAPSHOT=true`, default).
+## Scrape on-demand (consigliato — nessun cron)
 
-## Cron locale (passo consigliato)
-
-Cardmarket/eBay sono bloccati su IP cloud. Esegui lo scrape **in locale** e salva lo snapshot:
+**Non serve tenere il programma sempre acceso.** Apri la dashboard quando ti serve: aggiorna i prezzi in automatico se lo snapshot è vecchio o mancante.
 
 ```bash
 # .env.local
 SCRAPE_USE_PLAYWRIGHT=true
-SCRAPE_CACHE_TTL=21600
-
-npm run scrape
+SCRAPE_ON_DEMAND=true
+SCRAPE_CACHE_TTL=3600
 ```
-
-Output: `data/scrape-snapshot.json` con prezzi live + storico giornaliero (merge automatico).
-
-**Crontab** (ogni 6 ore):
-
-```cron
-0 */6 * * * cd /path/to/tracker && SCRAPE_USE_PLAYWRIGHT=true npm run scrape >> scrape.log 2>&1
-```
-
-Refresh via API (invalida cache + riscrive snapshot):
 
 ```bash
-curl -X POST http://localhost:3000/api/scrape/refresh
+npm install
+npx playwright install chromium
+npm run dev
+```
+
+Flusso:
+
+1. Apri `http://localhost:3000` — vedi subito l’ultimo snapshot (se esiste)
+2. Se i dati hanno > 1h o sono bloccati, parte lo **scrape automatico** (Cardmarket + eBay EU)
+3. Clic **Aggiorna prezzi** per forzare un nuovo scrape in qualsiasi momento
+
+Cardmarket/eBay richiedono **Playwright in locale** (IP domestico). Il cloud resta bloccato.
+
+### Cron opzionale
+
+Se vuoi snapshot freschi anche senza aprire la dashboard:
+
+```bash
+npm run scrape
+# crontab ogni 6h — opzionale
+```
+
+```bash
+curl -X POST "http://localhost:3000/api/scrape/refresh?force=1"
 ```
 
 ## Variabili ambiente
@@ -73,7 +83,7 @@ Vedi `.env.example` — nessuna API key a pagamento per i prezzi.
 
 ### CardTrader (opzionale — solo immagini)
 
-Imposta `CARDTRADER_API_TOKEN` in `.env.local` per caricare le immagini ufficiali di carte e prodotti sigillati da CardTrader. **Non viene usato per i prezzi** (restano scraping Cardmarket/eBay/TCGPlayer).
+Imposta `CARDTRADER_API_TOKEN` in `.env.local` per caricare le immagini ufficiali di carte e prodotti sigillati da CardTrader. **Non viene usato per i prezzi** (restano Cardmarket + eBay EU).
 
 ```bash
 # .env.local
