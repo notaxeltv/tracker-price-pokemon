@@ -21,11 +21,12 @@ import { getSealedMarket } from "@/lib/market-utils";
 import type { AccessoryProduct, GradedCard, MarketFilter, PortfolioEntry, RawCard, SealedProduct } from "@/lib/types";
 import { getGradedMarket } from "@/lib/market-utils";
 import { portfolioKey } from "@/lib/portfolio";
-import { PlexiglassBadge, PortfolioCostCell } from "./portfolio-panel";
+import { PlexiglassBadge, PortfolioCostCell, SoldBadge } from "./portfolio-panel";
 
 interface PortfolioTableProps {
   portfolio: Record<string, PortfolioEntry>;
   onEditPortfolio: (key: string, title: string, subtitle?: string) => void;
+  onSoldPortfolio?: (key: string, title: string, subtitle?: string) => void;
 }
 
 interface SealedTableProps extends PortfolioTableProps {
@@ -40,6 +41,7 @@ export function SealedTable({
   onSelect,
   portfolio,
   onEditPortfolio,
+  onSoldPortfolio,
 }: SealedTableProps) {
   if (products.length === 0) {
     return (
@@ -106,7 +108,10 @@ export function SealedTable({
                         <p className="truncate text-xs text-zinc-500">
                           {product.set} · {product.setCode}
                         </p>
-                        <PlexiglassBadge entry={entry} className="mt-1" />
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          <PlexiglassBadge entry={entry} />
+                          <SoldBadge entry={entry} />
+                        </div>
                       </div>
                     </div>
                   </td>
@@ -130,6 +135,16 @@ export function SealedTable({
                       marketPrice={marketPrice}
                       onEdit={() =>
                         onEditPortfolio(product.id, product.name, product.set)
+                      }
+                      onSold={
+                        onSoldPortfolio
+                          ? () =>
+                              onSoldPortfolio(
+                                product.id,
+                                product.name,
+                                product.set
+                              )
+                          : undefined
                       }
                     />
                   </td>
@@ -179,6 +194,7 @@ export function GradedTable({
   marketFilter,
   portfolio,
   onEditPortfolio,
+  onSoldPortfolio,
 }: GradedTableProps) {
   const showCompare = marketFilter === "all" || marketFilter === "compare";
 
@@ -264,6 +280,7 @@ export function GradedTable({
                               {grade.company} {grade.grade}
                             </span>
                             <PlexiglassBadge entry={entry} />
+                            <SoldBadge entry={entry} />
                             {showCompare && it && intl && (
                               <SpreadBadge spreadPercent={spread} />
                             )}
@@ -281,6 +298,16 @@ export function GradedTable({
                                     `${card.name} · ${grade.company} ${grade.grade}`,
                                     card.set
                                   )
+                                }
+                                onSold={
+                                  onSoldPortfolio
+                                    ? () =>
+                                        onSoldPortfolio(
+                                          entryKey,
+                                          `${card.name} · ${grade.company} ${grade.grade}`,
+                                          card.set
+                                        )
+                                    : undefined
                                 }
                               />
                             </div>
@@ -389,6 +416,7 @@ export function RawTable({
   onSelect,
   portfolio,
   onEditPortfolio,
+  onSoldPortfolio,
 }: RawTableProps) {
   if (cards.length === 0) {
     return (
@@ -434,7 +462,10 @@ export function RawTable({
                     <p className="text-xs text-zinc-500">
                       {card.set} · {card.setCode}
                     </p>
-                    <PlexiglassBadge entry={entry} className="mt-1" />
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      <PlexiglassBadge entry={entry} />
+                      <SoldBadge entry={entry} />
+                    </div>
                   </td>
                   <td className="px-4 py-3">
                     <LanguageBadge lang={card.language} />
@@ -452,6 +483,12 @@ export function RawTable({
                       marketPrice={marketPrice}
                       onEdit={() =>
                         onEditPortfolio(card.id, card.name, card.set)
+                      }
+                      onSold={
+                        onSoldPortfolio
+                          ? () =>
+                              onSoldPortfolio(card.id, card.name, card.set)
+                          : undefined
                       }
                     />
                   </td>
@@ -479,6 +516,7 @@ export function AccessoryTable({
   products,
   portfolio,
   onEditPortfolio,
+  onSoldPortfolio,
 }: AccessoryTableProps) {
   if (products.length === 0) {
     return (
@@ -514,7 +552,10 @@ export function AccessoryTable({
                 >
                   <td className="px-4 py-3">
                     <p className="font-medium text-zinc-100">{product.name}</p>
-                    <PlexiglassBadge entry={entry} className="mt-1" />
+                    <div className="mt-1 flex flex-wrap gap-1">
+                      <PlexiglassBadge entry={entry} />
+                      <SoldBadge entry={entry} />
+                    </div>
                   </td>
                   <td className="px-4 py-3">
                     <MarketPriceCell quote={it} compact />
@@ -527,6 +568,11 @@ export function AccessoryTable({
                       entry={entry}
                       marketPrice={marketPrice}
                       onEdit={() => onEditPortfolio(product.id, product.name)}
+                      onSold={
+                        onSoldPortfolio
+                          ? () => onSoldPortfolio(product.id, product.name)
+                          : undefined
+                      }
                     />
                   </td>
                 </tr>

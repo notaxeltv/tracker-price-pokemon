@@ -6,7 +6,9 @@ import { CategoryTabs } from "./category-tabs";
 import { SearchFilters } from "./search-filters";
 import { DualMarketChart, PriceChart } from "./price-chart";
 import { SealedTable, GradedTable, RawTable, AccessoryTable } from "./product-table";
-import { PortfolioEditPanel } from "./portfolio-panel";
+import { PortfolioEditPanel, SoldEditPanel } from "./portfolio-panel";
+import { AddProductPanel } from "./add-product-panel";
+import { SnapshotStatusBadge } from "./snapshot-status-badge";
 import {
   filterAccessoryProducts,
   filterGradedCards,
@@ -24,8 +26,9 @@ import type {
   ProductFilters,
   TimeRange,
 } from "@/lib/types";
-import { formatDate } from "@/lib/utils";
-import { RefreshCw, Clock } from "lucide-react";
+import { getTotalCost } from "@/lib/portfolio";
+import { RefreshCw, Plus } from "lucide-react";
+import type { ChartReferenceLine } from "./price-chart";
 
 const defaultFilters: ProductFilters = {
   category: "all",
@@ -57,6 +60,12 @@ export function Dashboard() {
     title: string;
     subtitle?: string;
   } | null>(null);
+  const [soldEdit, setSoldEdit] = useState<{
+    key: string;
+    title: string;
+    subtitle?: string;
+  } | null>(null);
+  const [addProductOpen, setAddProductOpen] = useState(false);
 
   const snapshotMaxAgeMs = 3600 * 1000;
 
@@ -193,6 +202,29 @@ export function Dashboard() {
     []
   );
 
+  const openSoldEdit = useCallback(
+    (key: string, title: string, subtitle?: string) => {
+      setSoldEdit({ key, title, subtitle });
+    },
+    []
+  );
+
+  const buildReferenceLines = useCallback(
+    (entryKey: string): ChartReferenceLine[] => {
+      const entry = portfolio.entries[entryKey];
+      const cost = entry ? getTotalCost(entry) : null;
+      if (cost == null) return [];
+      return [
+        {
+          value: cost,
+          label: `Acquisto ${cost.toLocaleString("it-IT", { style: "currency", currency: "EUR", maximumFractionDigits: 0 })}`,
+          color: "#a78bfa",
+        },
+      ];
+    },
+    [portfolio.entries]
+  );
+
   useEffect(() => {
     loadData();
   }, [loadData]);
@@ -202,23 +234,31 @@ export function Dashboard() {
   };
 
   const filteredSealed = useMemo(
-    () => (data ? filterSealedProducts(data.sealed, filters) : []),
-    [data, filters]
+    () =>
+      data
+        ? filterSealedProducts(data.sealed, filters, portfolio.entries)
+        : [],
+    [data, filters, portfolio.entries]
   );
 
   const filteredRaw = useMemo(
-    () => (data ? filterRawCards(data.raw ?? [], filters) : []),
-    [data, filters]
+    () =>
+      data ? filterRawCards(data.raw ?? [], filters, portfolio.entries) : [],
+    [data, filters, portfolio.entries]
   );
 
   const filteredAccessory = useMemo(
-    () => (data ? filterAccessoryProducts(data.accessory ?? [], filters) : []),
-    [data, filters]
+    () =>
+      data
+        ? filterAccessoryProducts(data.accessory ?? [], filters, portfolio.entries)
+        : [],
+    [data, filters, portfolio.entries]
   );
 
   const filteredGraded = useMemo(
-    () => (data ? filterGradedCards(data.graded, filters) : []),
-    [data, filters]
+    () =>
+      data ? filterGradedCards(data.graded, filters, portfolio.entries) : [],
+    [data, filters, portfolio.entries]
   );
 
   const portfolioSummary = useMemo(
@@ -231,6 +271,13 @@ export function Dashboard() {
   const selectedGrade = selectedGraded?.grades.find(
     (g) => `${g.company}-${g.grade}` === selectedGradeKey
   ) ?? selectedGraded?.grades[0];
+
+  const gradedChartKey =
+    selectedGradedId && selectedGradeKey
+      ? `${selectedGradedId}:${selectedGradeKey}`
+      : null;
+  const sealedChartRefs = buildReferenceLines(selectedSealedId ?? "");
+  const gradedChartRefs = buildReferenceLines(gradedChartKey ?? "");
 
   const showDualCharts =
     filters.market === "all" || filters.market === "compare";
@@ -298,11 +345,15 @@ export function Dashboard() {
               <strong className="font-medium text-zinc-300">eBay EU</strong> (vendute / in vendita, provenienza UE).
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 text-xs text-zinc-500">
-              <Clock className="h-3.5 w-3.5" />
-              Aggiornato: {formatDate(data.lastUpdated.split("T")[0])}
-            </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <SnapshotStatusBadge data={data} scraping={scraping} />
+            <button
+              onClick={() => setAddProductOpen(true)}
+              className="inline-flex items-center gap-2 rounded-xl border border-zinc-700 bg-zinc-800/80 px-3 py-2 text-sm text-zinc-300 transition-colors hover:bg-zinc-700"
+            >
+              <Plus className="h-4 w-4" />
+              Aggiungi prodotto
+            </button>
             <button
               onClick={() => loadData({ forceRefresh: true })}
               disabled={loading || scraping}
@@ -356,6 +407,7 @@ export function Dashboard() {
               title={selectedSealed.name}
               timeRange={timeRange}
               onTimeRangeChange={setTimeRange}
+              referenceLines={sealedChartRefs}
             />
           )}
           {showSealed && selectedSealed && !showDualCharts && chartRegion("IT") && sealedIt && (
@@ -366,6 +418,7 @@ export function Dashboard() {
               color="#4ade80"
               timeRange={timeRange}
               onTimeRangeChange={setTimeRange}
+              referenceLines={sealedChartRefs}
             />
           )}
           {showSealed && selectedSealed && !showDualCharts && filters.market === "INTL" && sealedIntl && (
@@ -376,6 +429,7 @@ export function Dashboard() {
               color="#fb923c"
               timeRange={timeRange}
               onTimeRangeChange={setTimeRange}
+              referenceLines={sealedChartRefs}
             />
           )}
           {showGraded && selectedGraded && selectedGrade && showDualCharts && (
@@ -385,6 +439,7 @@ export function Dashboard() {
               title={`${selectedGraded.name} · ${selectedGrade.company} ${selectedGrade.grade}`}
               timeRange={timeRange}
               onTimeRangeChange={setTimeRange}
+              referenceLines={gradedChartRefs}
             />
           )}
           {showGraded && selectedGraded && selectedGrade && !showDualCharts && filters.market === "IT" && gradedIt && (
@@ -395,6 +450,7 @@ export function Dashboard() {
               color="#4ade80"
               timeRange={timeRange}
               onTimeRangeChange={setTimeRange}
+              referenceLines={gradedChartRefs}
             />
           )}
           {showGraded && selectedGraded && selectedGrade && !showDualCharts && filters.market === "INTL" && gradedIntl && (
@@ -405,6 +461,7 @@ export function Dashboard() {
               color="#fb923c"
               timeRange={timeRange}
               onTimeRangeChange={setTimeRange}
+              referenceLines={gradedChartRefs}
             />
           )}
         </section>
@@ -422,6 +479,7 @@ export function Dashboard() {
             onSelect={setSelectedSealedId}
             portfolio={portfolio.entries}
             onEditPortfolio={openPortfolioEdit}
+            onSoldPortfolio={openSoldEdit}
           />
         </section>
       )}
@@ -446,6 +504,7 @@ export function Dashboard() {
             marketFilter={filters.market}
             portfolio={portfolio.entries}
             onEditPortfolio={openPortfolioEdit}
+            onSoldPortfolio={openSoldEdit}
           />
         </section>
       )}
@@ -462,6 +521,7 @@ export function Dashboard() {
             onSelect={setSelectedRawId}
             portfolio={portfolio.entries}
             onEditPortfolio={openPortfolioEdit}
+            onSoldPortfolio={openSoldEdit}
           />
         </section>
       )}
@@ -476,16 +536,18 @@ export function Dashboard() {
             products={filteredAccessory}
             portfolio={portfolio.entries}
             onEditPortfolio={openPortfolioEdit}
+            onSoldPortfolio={openSoldEdit}
           />
         </section>
       )}
 
       <footer className="border-t border-zinc-800/80 pt-6 text-center text-xs text-zinc-600">
-        Cardmarket · eBay EU — snapshot JSON · portfolio in data/portfolio.json ·{" "}
+        Cardmarket · eBay EU — snapshot JSON · portfolio in data/portfolio.json ·
+        catalogo utente in data/user-catalog.json ·{" "}
         {data.dataSource === "snapshot" && "dati da cron locale · "}
         {data.stats.blockedCount > 0 &&
           `${data.stats.blockedCount} sorgenti bloccate — npm run scrape in locale · `}
-        Catalogo in src/lib/catalog/products.ts
+        Catalogo built-in + user-catalog.json
       </footer>
 
       <PortfolioEditPanel
@@ -498,6 +560,22 @@ export function Dashboard() {
         }
         onClose={() => setPortfolioEdit(null)}
         onSave={savePortfolioEntry}
+      />
+
+      <SoldEditPanel
+        open={soldEdit != null}
+        title={soldEdit?.title ?? ""}
+        subtitle={soldEdit?.subtitle}
+        entryKey={soldEdit?.key ?? ""}
+        initialEntry={soldEdit ? portfolio.entries[soldEdit.key] : undefined}
+        onClose={() => setSoldEdit(null)}
+        onSave={savePortfolioEntry}
+      />
+
+      <AddProductPanel
+        open={addProductOpen}
+        onClose={() => setAddProductOpen(false)}
+        onAdded={() => loadData({ forceRefresh: true })}
       />
     </div>
   );

@@ -29,6 +29,27 @@ export function getTotalCost(entry: PortfolioEntry): number | null {
   return total;
 }
 
+export function isSold(entry: PortfolioEntry): boolean {
+  return entry.soldPrice != null && entry.soldPrice > 0;
+}
+
+export function getRealizedGainLoss(
+  entry: PortfolioEntry
+): { amount: number; percent: number } | null {
+  const cost = getTotalCost(entry);
+  if (cost == null || !isSold(entry)) return null;
+  const amount = entry.soldPrice! - cost;
+  return { amount, percent: (amount / cost) * 100 };
+}
+
+export function getUnrealizedGainLoss(
+  marketPrice: number,
+  entry: PortfolioEntry
+): { amount: number; percent: number } | null {
+  if (isSold(entry)) return null;
+  return getGainLoss(marketPrice, entry);
+}
+
 export function getGainLoss(
   marketPrice: number,
   entry: PortfolioEntry
@@ -43,15 +64,41 @@ export function getGainLoss(
   };
 }
 
+/** P/L da mostrare: realizzato se venduto, altrimenti vs mercato. */
+export function getDisplayGainLoss(
+  entry: PortfolioEntry | undefined,
+  marketPrice?: number
+): { amount: number; percent: number; kind: "realized" | "unrealized" } | null {
+  if (!entry) return null;
+  const realized = getRealizedGainLoss(entry);
+  if (realized) return { ...realized, kind: "realized" };
+  if (marketPrice != null && marketPrice > 0) {
+    const unrealized = getUnrealizedGainLoss(marketPrice, entry);
+    if (unrealized) return { ...unrealized, kind: "unrealized" };
+  }
+  return null;
+}
+
 export function hasPortfolioData(entry?: PortfolioEntry): boolean {
   if (!entry) return false;
   return (
     (entry.purchasePrice != null && entry.purchasePrice > 0) ||
-    Boolean(entry.hasPlexiglassCase)
+    Boolean(entry.hasPlexiglassCase) ||
+    isSold(entry)
   );
 }
 
-/** Etichetta teca plexiglass per la UI. */
+export function productHasPortfolio(
+  productId: string,
+  portfolio: Record<string, PortfolioEntry>
+): boolean {
+  if (hasPortfolioData(portfolio[productId])) return true;
+  const prefix = `${productId}:`;
+  return Object.entries(portfolio).some(
+    ([key, entry]) => key.startsWith(prefix) && hasPortfolioData(entry)
+  );
+}
+
 export function formatPlexiglassLabel(entry: PortfolioEntry): string | null {
   if (!entry.hasPlexiglassCase) return null;
 
@@ -68,7 +115,11 @@ export function formatPlexiglassLabel(entry: PortfolioEntry): string | null {
 export function emptyPortfolioEntry(): PortfolioEntry {
   return {
     purchasePrice: undefined,
+    purchaseDate: undefined,
+    notes: undefined,
     hasPlexiglassCase: false,
     plexiglassCost: undefined,
+    soldPrice: undefined,
+    soldDate: undefined,
   };
 }

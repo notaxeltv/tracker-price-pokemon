@@ -23,21 +23,40 @@ export function StatsCards({ stats, portfolioSummary }: StatsCardsProps) {
           {
             label: "Portfolio — investito",
             value: formatPrice(portfolioSummary.totalInvested),
-            sub: `${portfolioSummary.trackedCount} voci con prezzo acquisto`,
+            sub: `${portfolioSummary.trackedCount} voci · ${portfolioSummary.soldCount} vendute`,
             icon: Wallet,
             accent: "from-violet-500/20 to-violet-600/5",
             iconColor: "text-violet-400",
           },
           {
-            label: "Portfolio — valore mercato",
-            value: formatPrice(portfolioSummary.totalMarketValue),
-            sub: "Confronto vs prezzi live/snapshot",
-            icon: BarChart3,
-            accent: "from-indigo-500/20 to-indigo-600/5",
-            iconColor: "text-indigo-400",
+            label: "P/L non realizzato",
+            value: formatPrice(portfolioSummary.unrealizedGainLoss),
+            sub: `Valore mercato ${formatPrice(portfolioSummary.totalMarketValue)}`,
+            icon: portfolioSummary.unrealizedGainLoss >= 0 ? TrendingUp : TrendingDown,
+            accent:
+              portfolioSummary.unrealizedGainLoss >= 0
+                ? "from-indigo-500/20 to-indigo-600/5"
+                : "from-red-500/20 to-red-600/5",
+            iconColor: getChangeColor(portfolioSummary.unrealizedGainLoss),
+            valueColor: getChangeColor(portfolioSummary.unrealizedGainLoss),
           },
           {
-            label: "Portfolio — P/L totale",
+            label: "P/L realizzato",
+            value: formatPrice(portfolioSummary.realizedGainLoss),
+            sub:
+              portfolioSummary.soldCount > 0
+                ? `${portfolioSummary.soldCount} vendite registrate`
+                : "Nessuna vendita",
+            icon: portfolioSummary.realizedGainLoss >= 0 ? TrendingUp : TrendingDown,
+            accent:
+              portfolioSummary.realizedGainLoss >= 0
+                ? "from-emerald-500/20 to-emerald-600/5"
+                : "from-red-500/20 to-red-600/5",
+            iconColor: getChangeColor(portfolioSummary.realizedGainLoss),
+            valueColor: getChangeColor(portfolioSummary.realizedGainLoss),
+          },
+          {
+            label: "P/L totale",
             value: formatPrice(portfolioSummary.totalGainLoss),
             sub: formatPercent(portfolioSummary.totalGainLossPercent),
             icon: portfolioSummary.totalGainLoss >= 0 ? TrendingUp : TrendingDown,
@@ -107,7 +126,7 @@ export function StatsCards({ stats, portfolioSummary }: StatsCardsProps) {
   return (
     <div className="space-y-4">
       {portfolioCards.length > 0 && (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {portfolioCards.map((card) => (
             <div
               key={card.label}
@@ -203,7 +222,7 @@ export function MarketSourcesBanner() {
         <div>
           <p className="text-sm font-medium text-zinc-200">Il tuo portfolio</p>
           <p className="mt-1 text-xs text-zinc-500">
-            Prezzo acquisto manuale · teca plexiglass · scrape on-demand aprendo l&apos;app
+            Prezzo acquisto · vendite · teca plexiglass · scrape on-demand
           </p>
         </div>
           <div className="flex flex-wrap gap-3 text-xs">

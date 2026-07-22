@@ -2,10 +2,12 @@ import type {
   AccessoryProduct,
   GradedCard,
   MarketRegion,
+  PortfolioEntry,
   ProductFilters,
   RawCard,
   SealedProduct,
 } from "./types";
+import { productHasPortfolio } from "./portfolio";
 import {
   getGradedMarket,
   getMaxChange7dForRegion,
@@ -26,11 +28,23 @@ function regionQuote(
   return markets.find((m) => m.region === region) ?? markets[0];
 }
 
+function applyPortfolioFilter<T extends { id: string }>(
+  items: T[],
+  filters: ProductFilters,
+  portfolio?: Record<string, PortfolioEntry>
+): T[] {
+  if (!filters.portfolioOnly || !portfolio) return items;
+  return items.filter((item) => productHasPortfolio(item.id, portfolio));
+}
+
 export function filterSealedProducts(
   products: SealedProduct[],
-  filters: ProductFilters
+  filters: ProductFilters,
+  portfolio?: Record<string, PortfolioEntry>
 ): SealedProduct[] {
   let result = [...products];
+
+  result = applyPortfolioFilter(result, filters, portfolio);
 
   if (filters.sealedLanguage !== "all") {
     result = result.filter((p) => p.language === filters.sealedLanguage);
@@ -75,7 +89,8 @@ export function filterSealedProducts(
 
 export function filterGradedCards(
   cards: GradedCard[],
-  filters: ProductFilters
+  filters: ProductFilters,
+  portfolio?: Record<string, PortfolioEntry>
 ): GradedCard[] {
   let result = cards.map((c) => ({
     ...c,
@@ -89,6 +104,8 @@ export function filterGradedCards(
   }));
 
   result = result.filter((c) => c.grades.length > 0);
+
+  result = applyPortfolioFilter(result, filters, portfolio);
 
   if (filters.search) {
     const q = filters.search.toLowerCase();
@@ -138,9 +155,12 @@ export function filterGradedCards(
 
 export function filterRawCards(
   cards: RawCard[],
-  filters: ProductFilters
+  filters: ProductFilters,
+  portfolio?: Record<string, PortfolioEntry>
 ): RawCard[] {
   let result = [...cards];
+
+  result = applyPortfolioFilter(result, filters, portfolio);
 
   if (filters.search) {
     const q = filters.search.toLowerCase();
@@ -182,9 +202,12 @@ export function filterRawCards(
 
 export function filterAccessoryProducts(
   products: AccessoryProduct[],
-  filters: ProductFilters
+  filters: ProductFilters,
+  portfolio?: Record<string, PortfolioEntry>
 ): AccessoryProduct[] {
   let result = [...products];
+
+  result = applyPortfolioFilter(result, filters, portfolio);
 
   if (filters.search) {
     const q = filters.search.toLowerCase();

@@ -85,7 +85,7 @@ async function scrapeEbayEuMode(
     const html = await res.text();
 
     if (!res.ok || detectBlocked(html) || html.includes("Something went wrong")) {
-      return {
+      const blockedResult: ScrapeResult = {
         source: "ebay_eu",
         success: false,
         price: null,
@@ -96,6 +96,13 @@ async function scrapeEbayEuMode(
         error: "eBay block — usa SCRAPE_USE_PLAYWRIGHT=true in locale",
         blocked: true,
       };
+
+      if (DEFAULT_SCRAPER_CONFIG.usePlaywright) {
+        const pw = await scrapeEbayEuPlaywright(query, mode);
+        if (pw) return pw;
+      }
+
+      return blockedResult;
     }
 
     const prices = extractEuroPrices(html);
@@ -132,6 +139,11 @@ async function scrapeEbayEuMode(
               : "Nessun annuncio EU in vendita",
         };
 
+    if (!result.success && DEFAULT_SCRAPER_CONFIG.usePlaywright) {
+      const pw = await scrapeEbayEuPlaywright(query, mode);
+      if (pw) return pw;
+    }
+
     if (result.success) {
       setCached(key, result, config.cacheTtlSeconds);
     }
@@ -147,6 +159,20 @@ async function scrapeEbayEuMode(
       scrapedAt: new Date().toISOString(),
       error: e instanceof Error ? e.message : "Errore scrape eBay EU",
     };
+  }
+}
+
+async function scrapeEbayEuPlaywright(
+  query: ScrapeQuery,
+  mode: EbayMode
+): Promise<ScrapeResult | null> {
+  if (!query.searchTerm) return null;
+  try {
+    const { scrapeEbayEuWithPlaywright } = await import("./playwright-scraper");
+    const url = buildEbayEuUrl(query.searchTerm, mode);
+    return scrapeEbayEuWithPlaywright(url, mode);
+  } catch {
+    return null;
   }
 }
 

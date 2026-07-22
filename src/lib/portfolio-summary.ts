@@ -1,35 +1,56 @@
 import type { DashboardData, PortfolioData, PortfolioSummary } from "./types";
 import { getGradedMarket, getSealedMarket } from "./market-utils";
-import { getGainLoss, getTotalCost } from "./portfolio";
+import {
+  getRealizedGainLoss,
+  getTotalCost,
+  getUnrealizedGainLoss,
+  isSold,
+} from "./portfolio";
 
 export function computePortfolioSummary(
   data: DashboardData,
   portfolio: PortfolioData
 ): PortfolioSummary {
   let trackedCount = 0;
+  let soldCount = 0;
   let totalInvested = 0;
   let totalMarketValue = 0;
+  let unrealizedGainLoss = 0;
+  let realizedGainLoss = 0;
 
   for (const [key, entry] of Object.entries(portfolio.entries)) {
     const invested = getTotalCost(entry);
     if (invested == null) continue;
 
+    trackedCount++;
+    totalInvested += invested;
+
+    if (isSold(entry)) {
+      soldCount++;
+      const realized = getRealizedGainLoss(entry);
+      if (realized) realizedGainLoss += realized.amount;
+      continue;
+    }
+
     const marketPrice = resolveMarketPrice(data, key);
     if (marketPrice == null || marketPrice <= 0) continue;
 
-    trackedCount++;
-    totalInvested += invested;
     totalMarketValue += marketPrice;
+    const unrealized = getUnrealizedGainLoss(marketPrice, entry);
+    if (unrealized) unrealizedGainLoss += unrealized.amount;
   }
 
-  const totalGainLoss = totalMarketValue - totalInvested;
+  const totalGainLoss = unrealizedGainLoss + realizedGainLoss;
   const totalGainLossPercent =
     totalInvested > 0 ? (totalGainLoss / totalInvested) * 100 : 0;
 
   return {
     trackedCount,
+    soldCount,
     totalInvested,
     totalMarketValue,
+    unrealizedGainLoss,
+    realizedGainLoss,
     totalGainLoss,
     totalGainLossPercent,
   };
@@ -43,9 +64,7 @@ function resolveMarketPrice(data: DashboardData, key: string): number | null {
   const sealed = data.sealed.find((p) => p.id === productId);
   if (sealed) {
     const quote =
-      sealed.language === "IT"
-        ? getSealedMarket(sealed, "IT")
-        : getSealedMarket(sealed, "INTL");
+      getSealedMarket(sealed, "IT") ?? getSealedMarket(sealed, "INTL");
     return quote?.price ?? null;
   }
 
@@ -85,4 +104,4 @@ export function resolveQuotePriceForKey(
   return resolveMarketPrice(data, key);
 }
 
-export { getGainLoss, getTotalCost };
+export { getTotalCost };

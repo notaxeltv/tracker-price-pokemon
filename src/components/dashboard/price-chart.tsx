@@ -9,9 +9,16 @@ import {
   Tooltip,
   ResponsiveContainer,
   CartesianGrid,
+  ReferenceLine,
 } from "recharts";
 import { cn, filterHistoryByRange, formatDate, formatPrice } from "@/lib/utils";
 import type { MarketQuote, PricePoint, TimeRange } from "@/lib/types";
+
+export interface ChartReferenceLine {
+  value: number;
+  label: string;
+  color: string;
+}
 
 interface PriceChartProps {
   data: PricePoint[];
@@ -21,6 +28,7 @@ interface PriceChartProps {
   timeRange: TimeRange;
   onTimeRangeChange: (range: TimeRange) => void;
   compact?: boolean;
+  referenceLines?: ChartReferenceLine[];
 }
 
 const ranges: { id: TimeRange; label: string }[] = [
@@ -59,15 +67,19 @@ export function PriceChart({
   timeRange,
   onTimeRangeChange,
   compact = false,
+  referenceLines = [],
 }: PriceChartProps) {
   const filtered = useMemo(
     () => filterHistoryByRange(data, timeRange),
     [data, timeRange]
   );
 
-  const minPrice = Math.min(...filtered.map((p) => p.price));
-  const maxPrice = Math.max(...filtered.map((p) => p.price));
-  const padding = (maxPrice - minPrice) * 0.1 || maxPrice * 0.05;
+  const refValues = referenceLines.map((r) => r.value);
+  const priceValues = filtered.map((p) => p.price);
+  const allValues = [...priceValues, ...refValues];
+  const minPrice = allValues.length > 0 ? Math.min(...allValues) : 0;
+  const maxPrice = allValues.length > 0 ? Math.max(...allValues) : 100;
+  const padding = (maxPrice - minPrice) * 0.1 || maxPrice * 0.05 || 5;
 
   return (
     <div
@@ -128,6 +140,20 @@ export function PriceChart({
             width={45}
           />
           <Tooltip content={<CustomTooltip currency={currency} />} />
+          {referenceLines.map((line) => (
+            <ReferenceLine
+              key={line.label}
+              y={line.value}
+              stroke={line.color}
+              strokeDasharray="6 4"
+              label={{
+                value: line.label,
+                fill: line.color,
+                fontSize: 10,
+                position: "insideTopRight",
+              }}
+            />
+          ))}
           <Line
             type="monotone"
             dataKey="price"
@@ -180,6 +206,7 @@ interface DualMarketChartProps {
   title: string;
   timeRange: TimeRange;
   onTimeRangeChange: (range: TimeRange) => void;
+  referenceLines?: ChartReferenceLine[];
 }
 
 function mergeHistories(
@@ -235,6 +262,7 @@ export function DualMarketChart({
   title,
   timeRange,
   onTimeRangeChange,
+  referenceLines = [],
 }: DualMarketChartProps) {
   const data = useMemo(
     () => mergeHistories(itQuote, intlQuote, timeRange),
@@ -244,9 +272,11 @@ export function DualMarketChart({
   const allValues = data.flatMap((d) =>
     [d.it, d.intl].filter((v): v is number => v !== undefined)
   );
-  const minPrice = Math.min(...allValues);
-  const maxPrice = Math.max(...allValues);
-  const padding = (maxPrice - minPrice) * 0.1 || maxPrice * 0.05;
+  const refValues = referenceLines.map((r) => r.value);
+  const allChartValues = [...allValues, ...refValues];
+  const minPrice = allChartValues.length > 0 ? Math.min(...allChartValues) : 0;
+  const maxPrice = allChartValues.length > 0 ? Math.max(...allChartValues) : 100;
+  const padding = (maxPrice - minPrice) * 0.1 || maxPrice * 0.05 || 5;
 
   return (
     <div className="h-[320px] rounded-2xl border border-zinc-800/80 bg-zinc-900/60 p-4 backdrop-blur-sm">
@@ -314,6 +344,20 @@ export function DualMarketChart({
             width={45}
           />
           <Tooltip content={<DualTooltip />} labelFormatter={(l) => l} />
+          {referenceLines.map((line) => (
+            <ReferenceLine
+              key={line.label}
+              y={line.value}
+              stroke={line.color}
+              strokeDasharray="6 4"
+              label={{
+                value: line.label,
+                fill: line.color,
+                fontSize: 10,
+                position: "insideTopRight",
+              }}
+            />
+          ))}
           {itQuote && (
             <Line
               type="monotone"

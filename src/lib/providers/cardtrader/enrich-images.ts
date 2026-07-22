@@ -1,5 +1,5 @@
 import type { CatalogProduct } from "../../scrapers/types";
-import { getEnabledCatalog } from "../../catalog/products";
+import { getMergedCatalog } from "../../catalog/merge";
 import type {
   AccessoryProduct,
   DashboardData,
@@ -38,7 +38,8 @@ async function imageForCatalogId(catalogId: string): Promise<string | null> {
     return catalogImageCache.get(catalogId) ?? null;
   }
 
-  const item = getEnabledCatalog().find((p) => p.id === catalogId);
+  const catalog = await getMergedCatalog();
+  const item = catalog.find((p) => p.id === catalogId);
   if (!item) {
     catalogImageCache.set(catalogId, null);
     return null;

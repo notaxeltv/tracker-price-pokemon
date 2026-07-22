@@ -59,16 +59,19 @@ export async function upsertPortfolioEntry(
 function hasEntryContent(entry: PortfolioEntry): boolean {
   return (
     (entry.purchasePrice != null && entry.purchasePrice > 0) ||
-    Boolean(entry.hasPlexiglassCase)
+    Boolean(entry.hasPlexiglassCase) ||
+    (entry.soldPrice != null && entry.soldPrice > 0)
   );
 }
 
 function normalizeEntry(entry: PortfolioEntry): PortfolioEntry {
-  const normalized: PortfolioEntry = {
+  return {
     purchasePrice:
       entry.purchasePrice != null && entry.purchasePrice > 0
         ? entry.purchasePrice
         : undefined,
+    purchaseDate: entry.purchaseDate?.trim() || undefined,
+    notes: entry.notes?.trim() || undefined,
     hasPlexiglassCase: Boolean(entry.hasPlexiglassCase),
     plexiglassCost:
       entry.hasPlexiglassCase &&
@@ -76,7 +79,10 @@ function normalizeEntry(entry: PortfolioEntry): PortfolioEntry {
       entry.plexiglassCost > 0
         ? entry.plexiglassCost
         : undefined,
+    soldPrice:
+      entry.soldPrice != null && entry.soldPrice > 0
+        ? entry.soldPrice
+        : undefined,
+    soldDate: entry.soldDate?.trim() || undefined,
   };
-
-  return normalized;
 }

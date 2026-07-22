@@ -1,4 +1,4 @@
-import { getCatalogByKind } from "./catalog/products";
+import { getCatalogByKind } from "./catalog/merge";
 import {
   getGradedMarket,
   getSealedMarket,
@@ -84,7 +84,7 @@ function catalogLanguage(language: CatalogLanguage): ProductLanguage {
 }
 
 async function buildSealedProducts(): Promise<SealedProduct[]> {
-  const catalog = getCatalogByKind("sealed");
+  const catalog = await getCatalogByKind("sealed");
 
   return Promise.all(
     catalog.map(async (item) => {
@@ -106,7 +106,7 @@ async function buildSealedProducts(): Promise<SealedProduct[]> {
 }
 
 async function buildGradedCards(): Promise<GradedCard[]> {
-  const catalog = getCatalogByKind("graded");
+  const catalog = await getCatalogByKind("graded");
 
   return Promise.all(
     catalog.map(async (item) => {
@@ -138,7 +138,7 @@ async function buildGradedCards(): Promise<GradedCard[]> {
 }
 
 async function buildRawCards(): Promise<RawCard[]> {
-  const catalog = getCatalogByKind("raw");
+  const catalog = await getCatalogByKind("raw");
 
   return Promise.all(
     catalog.map(async (item) => {
@@ -162,7 +162,7 @@ async function buildRawCards(): Promise<RawCard[]> {
 }
 
 async function buildAccessoryProducts(): Promise<AccessoryProduct[]> {
-  const catalog = getCatalogByKind("accessory");
+  const catalog = await getCatalogByKind("accessory");
 
   return Promise.all(
     catalog.map(async (item) => {

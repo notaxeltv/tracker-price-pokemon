@@ -1,6 +1,6 @@
 "use client";
 
-import { Search, Globe, ArrowUpDown, Languages } from "lucide-react";
+import { Search, Globe, ArrowUpDown, Languages, Wallet } from "lucide-react";
 import type { GradingCompany, ProductFilters } from "@/lib/types";
 
 interface SearchFiltersProps {
@@ -131,6 +131,17 @@ export function SearchFilters({
             <option value="name-asc">Nome A-Z</option>
           </select>
         </div>
+
+        <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900/80 px-3 py-2.5 text-sm text-zinc-300">
+          <input
+            type="checkbox"
+            checked={Boolean(filters.portfolioOnly)}
+            onChange={(e) => onChange({ portfolioOnly: e.target.checked })}
+            className="h-4 w-4 rounded border-zinc-600 bg-zinc-800 text-pokemon-yellow focus:ring-pokemon-yellow/40"
+          />
+          <Wallet className="h-4 w-4 text-violet-400" />
+          Solo portfolio
+        </label>
       </div>
     </div>
   );

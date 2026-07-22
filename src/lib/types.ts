@@ -152,19 +152,20 @@ export interface ProductFilters {
   grade?: number;
   sortField: SortField;
   sortDirection: SortDirection;
+  /** Mostra solo prodotti con dati portfolio */
+  portfolioOnly?: boolean;
 }
 
 /** Dati portfolio manuali — separati dallo snapshot prezzi di mercato. */
 export interface PortfolioEntry {
-  /** Prezzo di acquisto in EUR */
   purchasePrice?: number;
-  /** Prodotto/carta in teca plexiglass */
+  purchaseDate?: string;
+  notes?: string;
   hasPlexiglassCase?: boolean;
-  /**
-   * Costo teca separato in EUR.
-   * Se omesso con hasPlexiglassCase=true, la teca è già inclusa in purchasePrice.
-   */
   plexiglassCost?: number;
+  /** Prezzo di vendita effettivo */
+  soldPrice?: number;
+  soldDate?: string;
 }
 
 export interface PortfolioData {
@@ -174,8 +175,11 @@ export interface PortfolioData {
 
 export interface PortfolioSummary {
   trackedCount: number;
+  soldCount: number;
   totalInvested: number;
   totalMarketValue: number;
+  unrealizedGainLoss: number;
+  realizedGainLoss: number;
   totalGainLoss: number;
   totalGainLossPercent: number;
 }
